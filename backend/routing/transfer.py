@@ -46,12 +46,18 @@ def find_one_transfer_routes(source, destination, limit=10):
           AND d.arrival_time != 'None'
         LIMIT ?
         """,
-        (source, destination, source, destination, limit * 20),
+        (source, destination, source, destination, limit * 50),
     )
 
     routes = []
 
     for row in rows:
+        first_leg_stops = int(row["first_leg_stops"] or 0)
+        second_leg_stops = int(row["second_leg_stops"] or 0)
+
+        if first_leg_stops < 5 or second_leg_stops < 5:
+            continue
+
         if not is_valid_transfer(
             row["transfer_arrival"],
             row["transfer_departure"],
@@ -65,7 +71,7 @@ def find_one_transfer_routes(source, destination, limit=10):
             row["transfer_departure"],
         )
 
-        total_stops = int(row["first_leg_stops"] or 0) + int(row["second_leg_stops"] or 0)
+        total_stops = first_leg_stops + second_leg_stops
         score = 800 - total_stops - int(wait_hours * 5)
 
         routes.append({
@@ -83,8 +89,8 @@ def find_one_transfer_routes(source, destination, limit=10):
             "transfer_departure": row["transfer_departure"],
             "destination_arrival": row["destination_arrival"],
             "transfer_wait_hours": wait_hours,
-            "first_leg_stops": row["first_leg_stops"],
-            "second_leg_stops": row["second_leg_stops"],
+            "first_leg_stops": first_leg_stops,
+            "second_leg_stops": second_leg_stops,
             "total_stops": total_stops,
             "score": score,
         })
