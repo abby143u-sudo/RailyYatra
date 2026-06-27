@@ -1,4 +1,5 @@
 from backend.database.connection import fetch_all
+from backend.services.time_utils import is_valid_transfer, transfer_wait_hours
 
 
 def find_one_transfer_routes(source, destination, limit=10):
@@ -45,14 +46,27 @@ def find_one_transfer_routes(source, destination, limit=10):
           AND d.arrival_time != 'None'
         LIMIT ?
         """,
-        (source, destination, source, destination, limit),
+        (source, destination, source, destination, limit * 20),
     )
 
     routes = []
 
     for row in rows:
+        if not is_valid_transfer(
+            row["transfer_arrival"],
+            row["transfer_departure"],
+            min_wait_minutes=30,
+            max_wait_hours=8,
+        ):
+            continue
+
+        wait_hours = transfer_wait_hours(
+            row["transfer_arrival"],
+            row["transfer_departure"],
+        )
+
         total_stops = int(row["first_leg_stops"] or 0) + int(row["second_leg_stops"] or 0)
-        score = 800 - total_stops
+        score = 800 - total_stops - int(wait_hours * 5)
 
         routes.append({
             "type": "one_transfer",
@@ -68,6 +82,7 @@ def find_one_transfer_routes(source, destination, limit=10):
             "transfer_arrival": row["transfer_arrival"],
             "transfer_departure": row["transfer_departure"],
             "destination_arrival": row["destination_arrival"],
+            "transfer_wait_hours": wait_hours,
             "first_leg_stops": row["first_leg_stops"],
             "second_leg_stops": row["second_leg_stops"],
             "total_stops": total_stops,
@@ -75,4 +90,4 @@ def find_one_transfer_routes(source, destination, limit=10):
         })
 
     routes.sort(key=lambda x: x["score"], reverse=True)
-    return routes
+    return routes[:limit]
