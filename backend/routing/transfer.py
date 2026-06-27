@@ -1,5 +1,6 @@
 from backend.database.connection import fetch_all
 from backend.services.time_utils import is_valid_transfer, transfer_wait_hours
+from backend.services.journey_duration import calculate_transfer_duration
 
 
 def find_one_transfer_routes(source, destination, limit=10):
@@ -71,27 +72,44 @@ def find_one_transfer_routes(source, destination, limit=10):
             row["transfer_departure"],
         )
 
+        total_duration_hours = calculate_transfer_duration(
+            row["source_departure"],
+            row["destination_arrival"],
+        )
+
         total_stops = first_leg_stops + second_leg_stops
+
         score = 800 - total_stops - int(wait_hours * 5)
+
+        if total_duration_hours:
+            score -= int(total_duration_hours)
 
         routes.append({
             "type": "one_transfer",
             "source": source,
             "destination": destination,
+
             "first_train": row["first_train"],
             "first_train_name": row["first_train_name"],
+
             "transfer_station": row["transfer_station"],
             "transfer_station_name": row["transfer_station_name"],
+
             "second_train": row["second_train"],
             "second_train_name": row["second_train_name"],
+
             "source_departure": row["source_departure"],
             "transfer_arrival": row["transfer_arrival"],
             "transfer_departure": row["transfer_departure"],
             "destination_arrival": row["destination_arrival"],
+
             "transfer_wait_hours": wait_hours,
+            "total_duration_hours": total_duration_hours,
+
             "first_leg_stops": first_leg_stops,
             "second_leg_stops": second_leg_stops,
             "total_stops": total_stops,
+
             "score": score,
         })
 
