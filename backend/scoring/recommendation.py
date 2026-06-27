@@ -1,3 +1,4 @@
+from backend.scoring.explainer import explain_recommendation
 from backend.routing.direct import find_direct_trains
 from backend.routing.transfer import find_one_transfer_routes
 
@@ -8,6 +9,12 @@ def get_smart_recommendations(source, destination, limit=10):
 
     direct_trains = find_direct_trains(source, destination)
     transfer_routes = find_one_transfer_routes(source, destination, limit)
+
+train["explanation"] = explain_recommendation({
+    **train,
+    "type": "direct"
+})
+
 
     recommendations = []
 
