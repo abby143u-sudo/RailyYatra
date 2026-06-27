@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query, HTTPException
-from backend.scoring.recommendation import get_smart_recommendations
+from backend.routing.smart_route import plan_journey
 from backend.routing.direct import find_direct_trains
 from backend.routing.transfer import find_one_transfer_routes
 from backend.database.connection import fetch_all, fetch_one
@@ -37,7 +37,8 @@ def search(
     source = source.upper().strip()
     destination = destination.upper().strip()
 
-    results = get_smart_recommendations(source, destination, limit)
+    result = plan_journey(source, destination, limit)
+    return result
 
     return {
         "source": source,
