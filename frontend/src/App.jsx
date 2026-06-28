@@ -13,6 +13,7 @@ function App() {
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortMode, setSortMode] = useState("best");
+  const [expandedCard, setExpandedCard] = useState(null);
 
   const allRecommendations = result?.recommendations || [];
 
@@ -129,6 +130,7 @@ function App() {
     setResult(null);
     setActiveFilter("all");
     setSortMode("best");
+    setExpandedCard(null);
 
     try {
       const res = await fetch(
@@ -194,11 +196,17 @@ function App() {
     return 99;
   }
 
+  function toggleDetails(cardId) {
+    setExpandedCard(expandedCard === cardId ? null : cardId);
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
+    const cardId = `direct-${index}`;
+
     return (
-      <div className="journey-card" key={`direct-${index}`}>
+      <div className="journey-card" key={cardId}>
         <div className="card-top">
           <span className="badge direct-badge">Direct</span>
           <strong>Score {item.score}</strong>
@@ -213,13 +221,45 @@ function App() {
           <span>{safeValue(train.stops)} stops</span>
         </div>
 
-        <div className="section-title">Why recommended</div>
+        <button
+          type="button"
+          className="details-btn"
+          onClick={() => toggleDetails(cardId)}
+        >
+          {expandedCard === cardId ? "Hide details" : "View details"}
+        </button>
 
-        <ul>
-          {train.reasons?.map((reason, i) => (
-            <li key={i}>✓ {reason}</li>
-          ))}
-        </ul>
+        {expandedCard === cardId && (
+          <div className="details-panel">
+            <div className="section-title">Why recommended</div>
+
+            <ul>
+              {train.reasons?.map((reason, i) => (
+                <li key={i}>✓ {reason}</li>
+              ))}
+            </ul>
+
+            <div className="detail-grid">
+              <span>Train no</span>
+              <strong>{train.train_no}</strong>
+
+              <span>Train name</span>
+              <strong>{train.train_name}</strong>
+
+              <span>Departure</span>
+              <strong>{safeValue(train.departure)}</strong>
+
+              <span>Arrival</span>
+              <strong>{safeValue(train.arrival)}</strong>
+
+              <span>Duration</span>
+              <strong>{safeValue(train.duration_hours)} hrs</strong>
+
+              <span>Stops</span>
+              <strong>{safeValue(train.stops)}</strong>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -227,8 +267,10 @@ function App() {
   function renderTransferCard(item, index) {
     const route = item.data;
 
+    const cardId = `transfer-${index}`;
+
     return (
-      <div className="journey-card" key={`transfer-${index}`}>
+      <div className="journey-card" key={cardId}>
         <div className="card-top">
           <span className="badge transfer-badge">One transfer</span>
           <strong>Score {item.score}</strong>
@@ -267,6 +309,40 @@ function App() {
           <span>{safeValue(route.total_stops)} stops</span>
           <span>Wait {safeValue(route.transfer_wait_hours)} hrs</span>
         </div>
+
+        <button
+          type="button"
+          className="details-btn"
+          onClick={() => toggleDetails(cardId)}
+        >
+          {expandedCard === cardId ? "Hide details" : "View details"}
+        </button>
+
+        {expandedCard === cardId && (
+          <div className="details-panel">
+            <div className="section-title">Journey breakdown</div>
+
+            <div className="detail-grid">
+              <span>First train</span>
+              <strong>{route.first_train} — {route.first_train_name}</strong>
+
+              <span>Transfer station</span>
+              <strong>{route.transfer_station} — {route.transfer_station_name}</strong>
+
+              <span>Second train</span>
+              <strong>{route.second_train} — {route.second_train_name}</strong>
+
+              <span>First leg</span>
+              <strong>{safeValue(route.first_leg_duration_hours)} hrs</strong>
+
+              <span>Wait time</span>
+              <strong>{safeValue(route.transfer_wait_hours)} hrs</strong>
+
+              <span>Second leg</span>
+              <strong>{safeValue(route.second_leg_duration_hours)} hrs</strong>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -275,8 +351,10 @@ function App() {
     const route = item.data;
     const firstLeg = route.train_legs?.[0];
 
+    const cardId = `smart-${index}`;
+
     return (
-      <div className="journey-card" key={`smart-${index}`}>
+      <div className="journey-card" key={cardId}>
         <div className="card-top">
           <span className="badge direct-badge">
             {route.transfers === 0 ? "Smart direct" : "Smart route"}
@@ -318,22 +396,30 @@ function App() {
           </div>
         )}
 
-        {route.reasons?.length > 0 && (
-          <>
-            <div className="section-title">Why recommended</div>
-            <ul>
-              {route.reasons.map((reason, i) => (
-                <li key={i}>✓ {reason}</li>
-              ))}
-            </ul>
-          </>
-        )}
+        <button
+          type="button"
+          className="details-btn"
+          onClick={() => toggleDetails(cardId)}
+        >
+          {expandedCard === cardId ? "Hide details" : "View details"}
+        </button>
 
-        {route.train_legs?.length > 1 && (
-          <>
+        {expandedCard === cardId && (
+          <div className="details-panel">
+            {route.reasons?.length > 0 && (
+              <>
+                <div className="section-title">Why recommended</div>
+                <ul>
+                  {route.reasons.map((reason, i) => (
+                    <li key={i}>✓ {reason}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
             <div className="section-title">Train legs</div>
             <ul>
-              {route.train_legs.map((leg, i) => (
+              {route.train_legs?.map((leg, i) => (
                 <li key={i}>
                   ✓ {leg.from} → {leg.to} by {leg.train_no} ·{" "}
                   {leg.train_name || "Train"} · {safeValue(leg.start_time)} →{" "}
@@ -341,7 +427,7 @@ function App() {
                 </li>
               ))}
             </ul>
-          </>
+          </div>
         )}
       </div>
     );

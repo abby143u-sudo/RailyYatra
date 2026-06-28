@@ -493,3 +493,44 @@ li {
   border-color: #10b981;
   box-shadow: 0 10px 24px rgba(16, 185, 129, 0.22);
 }
+
+.details-btn {
+  margin-top: 16px;
+  border: 0;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.details-btn:hover {
+  background: #1e293b;
+}
+
+.details-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px 14px;
+  margin-top: 12px;
+}
+
+.detail-grid span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.detail-grid strong {
+  color: #0f172a;
+  font-size: 13px;
+}
