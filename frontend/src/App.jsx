@@ -307,7 +307,6 @@ function App() {
             <label>From</label>
             <input
               value={source}
-              list="source-stations"
               onChange={(e) => {
                 const value = e.target.value.toUpperCase();
                 setSource(value);
@@ -315,16 +314,25 @@ function App() {
               }}
               placeholder="PNBE or Patna"
             />
-            <datalist id="source-stations">
-              {sourceSuggestions.map((station, index) => (
-                <option
-                  key={index}
-                  value={getStationCode(station)}
-                >
-                  {getStationCode(station)} - {getStationName(station)}
-                </option>
-              ))}
-            </datalist>
+
+            {sourceSuggestions.length > 0 && (
+              <div className="suggestions-panel">
+                {sourceSuggestions.map((station, index) => (
+                  <button
+                    type="button"
+                    className="suggestion-item"
+                    key={index}
+                    onClick={() => {
+                      setSource(getStationCode(station));
+                      setSourceSuggestions([]);
+                    }}
+                  >
+                    <strong>{getStationCode(station)}</strong>
+                    <span>{getStationName(station)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <button type="button" className="swap-btn" onClick={swapStations}>
@@ -335,7 +343,6 @@ function App() {
             <label>To</label>
             <input
               value={destination}
-              list="destination-stations"
               onChange={(e) => {
                 const value = e.target.value.toUpperCase();
                 setDestination(value);
@@ -343,16 +350,25 @@ function App() {
               }}
               placeholder="NDLS or Delhi"
             />
-            <datalist id="destination-stations">
-              {destinationSuggestions.map((station, index) => (
-                <option
-                  key={index}
-                  value={getStationCode(station)}
-                >
-                  {getStationCode(station)} - {getStationName(station)}
-                </option>
-              ))}
-            </datalist>
+
+            {destinationSuggestions.length > 0 && (
+              <div className="suggestions-panel">
+                {destinationSuggestions.map((station, index) => (
+                  <button
+                    type="button"
+                    className="suggestion-item"
+                    key={index}
+                    onClick={() => {
+                      setDestination(getStationCode(station));
+                      setDestinationSuggestions([]);
+                    }}
+                  >
+                    <strong>{getStationCode(station)}</strong>
+                    <span>{getStationName(station)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <button type="submit" className="search-btn">
