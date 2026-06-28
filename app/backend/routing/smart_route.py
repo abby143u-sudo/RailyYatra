@@ -9,9 +9,10 @@ from backend.services.official_fare_service import enrich_fare_with_table
 from backend.services.split_ticket_engine import build_split_ticket_plan
 
 
-def plan_journey(source, destination, limit=10, journey_date=None):
+def plan_journey(source, destination, limit=10, journey_date=None, class_code='SL'):
     source = source.upper().strip()
     destination = destination.upper().strip()
+    class_code = str(class_code or "SL").upper().strip()
 
     route_exists = has_route(source, destination)
 
@@ -49,7 +50,7 @@ def plan_journey(source, destination, limit=10, journey_date=None):
     )
 
     all_recommendations = [
-        enrich_recommendation(item, source, destination, journey_date)
+        enrich_recommendation(item, source, destination, journey_date, class_code)
         for item in all_recommendations
     ]
 
@@ -70,7 +71,7 @@ def plan_journey(source, destination, limit=10, journey_date=None):
     balanced_recommendations.extend(transfer_recommendations[:3])
 
     balanced_recommendations = [
-        enrich_recommendation(item, source, destination, journey_date)
+        enrich_recommendation(item, source, destination, journey_date, class_code)
         for item in balanced_recommendations
     ]
 
@@ -100,7 +101,7 @@ def plan_journey(source, destination, limit=10, journey_date=None):
     }
 
 
-def enrich_recommendation(item, source, destination, journey_date=None):
+def enrich_recommendation(item, source, destination, journey_date=None, class_code='SL'):
     item = dict(item)
 
     item["fare"] = estimate_journey_fare(
@@ -114,7 +115,7 @@ def enrich_recommendation(item, source, destination, journey_date=None):
         fare=item.get("fare", {}),
         source=source,
         destination=destination,
-        class_code="SL",
+        class_code=class_code,
     )
 
     item["fare_coverage"] = calculate_fare_coverage(
@@ -122,7 +123,7 @@ def enrich_recommendation(item, source, destination, journey_date=None):
         data=item.get("data", {}),
         source=source,
         destination=destination,
-        class_code="SL",
+        class_code=class_code,
     )
 
     item["running_day"] = build_running_day_info(

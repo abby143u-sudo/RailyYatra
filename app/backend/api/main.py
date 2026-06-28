@@ -71,12 +71,14 @@ def search(
     limit: int = 10,
     journey_date: str | None = None,
     date: str | None = None,
+    class_code: str = "SL",
 ):
     return plan_journey(
         source=source,
         destination=destination,
         limit=limit,
         journey_date=journey_date or date,
+        class_code=class_code,
     )
 
 @app.get("/direct")

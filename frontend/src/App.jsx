@@ -6,6 +6,7 @@ const API_BASE = "http://127.0.0.1:8000";
 function App() {
   const [source, setSource] = useState("PNBE");
   const [destination, setDestination] = useState("NDLS");
+  const [journeyClass, setJourneyClass] = useState("SL");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

@@ -1375,3 +1375,13 @@ li {
     color: #6b7280;
   }
 }
+
+.field select {
+  width: 100%;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 14px;
+  padding: 12px 13px;
+  font-weight: 800;
+  color: #0f172a;
+  background: #ffffff;
+}
