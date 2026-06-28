@@ -1,3 +1,4 @@
+from backend.services.official_fare_service import get_official_fare, ensure_official_fare_table
 from fastapi import FastAPI, Query, HTTPException
 from backend.routing.smart_route import plan_journey
 from backend.routing.direct import find_direct_trains
@@ -200,4 +201,31 @@ def multi_route(
         "max_transfers": max_transfers,
         "count": len(routes),
         "routes": routes,
+    }
+
+ensure_official_fare_table()
+
+
+@app.get("/fare")
+def lookup_fare(train_no: str, source: str, destination: str, class_code: str = "SL"):
+    fare = get_official_fare(
+        train_no=train_no,
+        source=source,
+        destination=destination,
+        class_code=class_code,
+    )
+
+    if not fare:
+        return {
+            "found": False,
+            "train_no": train_no.upper(),
+            "source": source.upper(),
+            "destination": destination.upper(),
+            "class_code": class_code.upper(),
+            "message": "Fare not found in local fare table",
+        }
+
+    return {
+        "found": True,
+        "fare": fare,
     }

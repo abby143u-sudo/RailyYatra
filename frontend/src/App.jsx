@@ -410,7 +410,9 @@ function App() {
 
         <p>
           After split estimate: ₹{fare.estimated_after_split} · Confidence:{" "}
-          {fare.confidence}
+          {fare.confidence} · Source:{" "}
+          {fare.fare_source === "fare_table" ? "Fare table" : "Estimate"} · Class:{" "}
+          {fare.class_code || "SL"}
         </p>
       </div>
     );
