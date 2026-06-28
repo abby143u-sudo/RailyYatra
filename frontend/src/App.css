@@ -1239,3 +1239,139 @@ li {
     width: 100%;
   }
 }
+
+.report-export-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.print-report {
+  display: none;
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+
+  .app,
+  .page,
+  .container,
+  main {
+    background: #ffffff !important;
+  }
+
+  form,
+  .fare-admin-wrapper,
+  .comparison-grid,
+  .fare-summary-box,
+  .filter-tabs,
+  .sort-tabs,
+  .report-export-box,
+  .journey-card,
+  .share-message,
+  .best-box,
+  header,
+  .hero,
+  .search-card {
+    display: none !important;
+  }
+
+  .print-report {
+    display: block !important;
+    padding: 24px;
+    color: #111827;
+    font-family: Arial, sans-serif;
+  }
+
+  .print-report-header {
+    border-bottom: 2px solid #111827;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+
+  .print-report-header h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+
+  .print-report-header p {
+    margin: 8px 0 0;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .print-report-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .print-report-summary div {
+    border: 1px solid #d1d5db;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .print-report-summary span {
+    display: block;
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .print-report-summary strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+  }
+
+  .print-route-card {
+    page-break-inside: avoid;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .print-route-card h2 {
+    margin: 0 0 10px;
+    font-size: 17px;
+  }
+
+  .print-route-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 7px 10px;
+  }
+
+  .print-route-grid span {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 700;
+  }
+
+  .print-route-grid strong {
+    font-size: 12px;
+    color: #111827;
+  }
+
+  .print-route-note {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .print-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #d1d5db;
+    font-size: 11px;
+    color: #6b7280;
+  }
+}
