@@ -1,3 +1,4 @@
+from backend.services.official_fare_service import upsert_official_fare
 from backend.services.fare_source_adapter import (
     get_fare_sources,
     lookup_best_fare,
@@ -334,3 +335,42 @@ def fare_lookup(
         destination=destination,
         class_code=class_code,
     )
+
+
+@app.post("/fare/manual")
+def add_manual_verified_fare(
+    train_no: str,
+    source: str,
+    destination: str,
+    fare: int,
+    class_code: str = "SL",
+    source_type: str = "manual_verified",
+):
+    if fare <= 0:
+        return {
+            "success": False,
+            "message": "Fare must be greater than 0",
+        }
+
+    upsert_official_fare(
+        train_no=train_no,
+        source=source,
+        destination=destination,
+        class_code=class_code,
+        fare=fare,
+        source_type=source_type,
+    )
+
+    saved_fare = get_official_fare(
+        train_no=train_no,
+        source=source,
+        destination=destination,
+        class_code=class_code,
+    )
+
+    return {
+        "success": True,
+        "message": "Manual verified fare saved",
+        "fare": saved_fare,
+        "stats": get_fare_stats(),
+    }
