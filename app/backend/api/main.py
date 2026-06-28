@@ -3,8 +3,9 @@ from backend.routing.smart_route import plan_journey
 from backend.routing.direct import find_direct_trains
 from backend.routing.transfer import find_one_transfer_routes
 from backend.database.connection import fetch_all, fetch_one
+from backend.services.station_search import search_stations
 
-app = FastAPI(title="RailYatra v2 API", version="2.0.0")
+app = FastAPI(title="RailYatra v2 API", version="2.1.0")
 
 
 @app.get("/")
@@ -12,7 +13,7 @@ def home():
     return {
         "message": "RailYatra v2 API running",
         "status": "ok",
-        "version": "2.0.0"
+        "version": "2.1.0",
     }
 
 
@@ -24,7 +25,19 @@ def health():
             "trains": fetch_one("SELECT COUNT(*) AS count FROM trains")["count"],
             "stations": fetch_one("SELECT COUNT(*) AS count FROM stations")["count"],
             "train_stops": fetch_one("SELECT COUNT(*) AS count FROM train_stops")["count"],
-        }
+        },
+    }
+
+
+@app.get("/stations")
+def stations(
+    q: str = Query(..., description="Station code or station name"),
+    limit: int = Query(10, description="Maximum station suggestions"),
+):
+    return {
+        "query": q,
+        "count": len(search_stations(q, limit)),
+        "stations": search_stations(q, limit),
     }
 
 
@@ -32,27 +45,18 @@ def health():
 def search(
     source: str = Query(...),
     destination: str = Query(...),
-    limit: int = Query(10)
+    limit: int = Query(10),
 ):
     source = source.upper().strip()
     destination = destination.upper().strip()
-
-    result = plan_journey(source, destination, limit)
-    return result
-
-    return {
-        "source": source,
-        "destination": destination,
-        "count": len(results),
-        "recommendations": results
-    }
+    return plan_journey(source, destination, limit)
 
 
 @app.get("/direct")
 def direct(
     source: str = Query(...),
     destination: str = Query(...),
-    limit: int = Query(10)
+    limit: int = Query(10),
 ):
     source = source.upper().strip()
     destination = destination.upper().strip()
@@ -63,7 +67,7 @@ def direct(
         "source": source,
         "destination": destination,
         "count": len(results[:limit]),
-        "trains": results[:limit]
+        "trains": results[:limit],
     }
 
 
@@ -71,7 +75,7 @@ def direct(
 def transfer(
     source: str = Query(...),
     destination: str = Query(...),
-    limit: int = Query(10)
+    limit: int = Query(10),
 ):
     source = source.upper().strip()
     destination = destination.upper().strip()
@@ -82,7 +86,7 @@ def transfer(
         "source": source,
         "destination": destination,
         "count": len(routes),
-        "routes": routes
+        "routes": routes,
     }
 
 
@@ -96,7 +100,7 @@ def train_detail(train_no: str):
         FROM trains
         WHERE train_no = ?
         """,
-        (train_no,)
+        (train_no,),
     )
 
     if not train:
@@ -116,13 +120,13 @@ def train_detail(train_no: str):
         WHERE ts.train_no = ?
         ORDER BY CAST(ts.stop_order AS INTEGER)
         """,
-        (train_no,)
+        (train_no,),
     )
 
     return {
         "train": train,
         "total_stops": len(route),
-        "route": route
+        "route": route,
     }
 
 
@@ -136,7 +140,7 @@ def station_detail(station_code: str):
         FROM stations
         WHERE station_code = ?
         """,
-        (station_code,)
+        (station_code,),
     )
 
     if not station:
@@ -155,11 +159,11 @@ def station_detail(station_code: str):
         WHERE ts.station_code = ?
         LIMIT 50
         """,
-        (station_code,)
+        (station_code,),
     )
 
     return {
         "station": station,
         "sample_train_count": len(trains),
-        "trains": trains
+        "trains": trains,
     }
