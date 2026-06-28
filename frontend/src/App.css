@@ -1,0 +1,385 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: linear-gradient(135deg, #eaf2ff, #f8fafc);
+  color: #0f172a;
+}
+
+button {
+  font-family: inherit;
+}
+
+.page {
+  min-height: 100vh;
+}
+
+.navbar {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-weight: 900;
+  font-size: 22px;
+}
+
+.nav-pill,
+.pill {
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.app {
+  max-width: 1050px;
+  margin: auto;
+  padding: 20px 18px 50px;
+}
+
+.hero {
+  text-align: center;
+  padding: 34px 10px;
+}
+
+.hero h1 {
+  font-size: 52px;
+  margin: 16px 0 8px;
+  letter-spacing: -1px;
+}
+
+.hero p {
+  color: #64748b;
+  font-size: 18px;
+  max-width: 650px;
+  margin: auto;
+}
+
+.search-card {
+  background: rgba(255, 255, 255, 0.92);
+  padding: 26px;
+  border-radius: 26px;
+  display: grid;
+  grid-template-columns: 1fr 54px 1fr auto;
+  gap: 16px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+  border: 1px solid #e2e8f0;
+}
+
+.field label {
+  display: block;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #334155;
+}
+
+.field input {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 15px;
+  font-size: 17px;
+  outline: none;
+  background: white;
+}
+
+.field input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.search-btn {
+  align-self: end;
+  min-width: 130px;
+  padding: 16px 28px;
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+}
+
+.swap-btn {
+  align-self: end;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: #0f172a;
+  color: white;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.search-btn:hover,
+.swap-btn:hover,
+.quick-routes button:hover {
+  transform: translateY(-1px);
+}
+
+.quick-routes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  justify-content: center;
+}
+
+.quick-routes button {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #334155;
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.error {
+  margin-top: 22px;
+  padding: 16px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 16px;
+  font-weight: 700;
+}
+
+.loading {
+  margin-top: 22px;
+  background: white;
+  padding: 18px;
+  border-radius: 18px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid #bfdbfe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.results {
+  margin-top: 36px;
+}
+
+.results h2 {
+  font-size: 32px;
+  margin-bottom: 6px;
+}
+
+.summary,
+.muted {
+  color: #64748b;
+}
+
+.highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.highlight-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+}
+
+.highlight-card span {
+  color: #64748b;
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.highlight-card strong {
+  font-size: 16px;
+}
+
+.best-box {
+  margin: 20px 0;
+  padding: 18px;
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border: 1px solid #fed7aa;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.journey-card {
+  background: white;
+  padding: 24px;
+  margin-top: 18px;
+  border-radius: 24px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.09);
+  border: 1px solid #e2e8f0;
+}
+
+.journey-card:hover {
+  transform: translateY(-2px);
+  transition: 0.2s ease;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.direct-badge {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.transfer-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.journey-card h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.journey-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.journey-meta span {
+  background: #f1f5f9;
+  color: #334155;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.section-title {
+  margin-top: 16px;
+  font-weight: 900;
+}
+
+ul {
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 7px;
+  color: #166534;
+}
+
+.timeline {
+  border-left: 3px solid #bfdbfe;
+  margin: 18px 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.timeline div {
+  position: relative;
+}
+
+.timeline div::before {
+  content: "";
+  position: absolute;
+  left: -27px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  background: #2563eb;
+  border-radius: 50%;
+  border: 3px solid white;
+}
+
+.timeline strong {
+  display: block;
+}
+
+.timeline span {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.empty-state {
+  padding: 24px;
+  background: white;
+  border-radius: 20px;
+  text-align: center;
+  color: #64748b;
+}
+
+@media (max-width: 860px) {
+  .hero h1 {
+    font-size: 38px;
+  }
+
+  .search-card {
+    grid-template-columns: 1fr;
+  }
+
+  .swap-btn {
+    width: 100%;
+    border-radius: 15px;
+  }
+
+  .search-btn {
+    width: 100%;
+  }
+
+  .highlight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .best-box {
+    flex-direction: column;
+  }
+
+  .card-top {
+    align-items: flex-start;
+    gap: 12px;
+    flex-direction: column;
+  }
+}
