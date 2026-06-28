@@ -66,14 +66,18 @@ def stations(
 
 @app.get("/search")
 def search(
-    source: str = Query(...),
-    destination: str = Query(...),
-    limit: int = Query(10),
+    source: str,
+    destination: str,
+    limit: int = 10,
+    journey_date: str | None = None,
+    date: str | None = None,
 ):
-    source = source.upper().strip()
-    destination = destination.upper().strip()
-    return plan_journey(source, destination, limit)
-
+    return plan_journey(
+        source=source,
+        destination=destination,
+        limit=limit,
+        journey_date=journey_date or date,
+    )
 
 @app.get("/direct")
 def direct(

@@ -1,3 +1,4 @@
+from backend.services.train_day_service import build_running_day_info
 from backend.services.fare_coverage_service import calculate_fare_coverage
 from backend.routing.direct import find_direct_trains
 from backend.routing.transfer import find_one_transfer_routes
@@ -8,7 +9,7 @@ from backend.services.official_fare_service import enrich_fare_with_table
 from backend.services.split_ticket_engine import build_split_ticket_plan
 
 
-def plan_journey(source, destination, limit=10):
+def plan_journey(source, destination, limit=10, journey_date=None):
     source = source.upper().strip()
     destination = destination.upper().strip()
 
@@ -48,9 +49,16 @@ def plan_journey(source, destination, limit=10):
     )
 
     all_recommendations = [
-        enrich_recommendation(item, source, destination)
+        enrich_recommendation(item, source, destination, journey_date)
         for item in all_recommendations
     ]
+
+    if journey_date:
+        all_recommendations = [
+            item for item in all_recommendations
+            if not item.get("running_day")
+            or item.get("running_day", {}).get("available", True)
+        ]
 
     all_recommendations.sort(key=lambda x: x["score"], reverse=True)
 
@@ -62,13 +70,20 @@ def plan_journey(source, destination, limit=10):
     balanced_recommendations.extend(transfer_recommendations[:3])
 
     balanced_recommendations = [
-        enrich_recommendation(item, source, destination)
+        enrich_recommendation(item, source, destination, journey_date)
         for item in balanced_recommendations
     ]
 
     balanced_recommendations = remove_duplicate_recommendations(
         balanced_recommendations
     )
+
+    if journey_date:
+        balanced_recommendations = [
+            item for item in balanced_recommendations
+            if not item.get("running_day")
+            or item.get("running_day", {}).get("available", True)
+        ]
 
     balanced_recommendations.sort(key=lambda x: x["score"], reverse=True)
 
@@ -85,7 +100,7 @@ def plan_journey(source, destination, limit=10):
     }
 
 
-def enrich_recommendation(item, source, destination):
+def enrich_recommendation(item, source, destination, journey_date=None):
     item = dict(item)
 
     item["fare"] = estimate_journey_fare(
@@ -108,6 +123,12 @@ def enrich_recommendation(item, source, destination):
         source=source,
         destination=destination,
         class_code="SL",
+    )
+
+    item["running_day"] = build_running_day_info(
+        item_type=item.get("type"),
+        data=item.get("data", {}),
+        journey_date=journey_date,
     )
 
     item["split_ticket"] = build_split_ticket_plan(
