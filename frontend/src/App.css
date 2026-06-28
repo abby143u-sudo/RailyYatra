@@ -742,3 +742,183 @@ li {
   font-size: 12px;
   font-weight: 800;
 }
+
+.fare-admin-wrapper {
+  margin-top: 18px;
+}
+
+.fare-admin-toggle {
+  border: 0;
+  background: #111827;
+  color: #ffffff;
+  padding: 11px 16px;
+  border-radius: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.fare-admin-panel {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+}
+
+.fare-admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.fare-admin-header span {
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.fare-admin-header h3 {
+  margin: 4px 0 0;
+  color: #0f172a;
+}
+
+.fare-admin-header button,
+.fare-file-row button {
+  border: 0;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 9px 13px;
+  border-radius: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.fare-admin-header button:disabled,
+.fare-file-row button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fare-admin-message {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+
+.fare-admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.fare-admin-stats div {
+  padding: 14px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.fare-admin-stats span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fare-admin-stats strong {
+  display: block;
+  color: #0f172a;
+  font-size: 22px;
+  margin-top: 4px;
+}
+
+.fare-admin-section {
+  margin-top: 18px;
+}
+
+.fare-admin-section h4 {
+  margin: 0 0 10px;
+  color: #0f172a;
+}
+
+.fare-admin-section p {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fare-file-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+  margin-bottom: 10px;
+}
+
+.fare-file-row strong {
+  display: block;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.fare-file-row span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.fare-table {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.fare-table-head,
+.fare-table-row {
+  display: grid;
+  grid-template-columns: 1fr 1.7fr 0.8fr 0.8fr;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.fare-table-head {
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.fare-table-row {
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fare-table-row strong {
+  color: #047857;
+}
+
+@media (max-width: 800px) {
+  .fare-admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .fare-table-head,
+  .fare-table-row {
+    grid-template-columns: 1fr;
+  }
+}

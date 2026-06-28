@@ -14,6 +14,12 @@ function App() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortMode, setSortMode] = useState("best");
   const [expandedCard, setExpandedCard] = useState(null);
+  const [showFareAdmin, setShowFareAdmin] = useState(false);
+  const [fareStats, setFareStats] = useState(null);
+  const [fareFiles, setFareFiles] = useState([]);
+  const [fareRows, setFareRows] = useState([]);
+  const [fareAdminLoading, setFareAdminLoading] = useState(false);
+  const [fareAdminMessage, setFareAdminMessage] = useState("");
 
   const allRecommendations = result?.recommendations || [];
 
@@ -169,6 +175,180 @@ function App() {
   function setQuickRoute(from, to) {
     setSource(from);
     setDestination(to);
+  }
+
+  async function loadFareAdminData() {
+    setFareAdminLoading(true);
+    setFareAdminMessage("");
+
+    try {
+      const statsResponse = await fetch("http://127.0.0.1:8000/fares/stats");
+      const statsData = await statsResponse.json();
+
+      const filesResponse = await fetch("http://127.0.0.1:8000/fares/import/files");
+      const filesData = await filesResponse.json();
+
+      const faresResponse = await fetch("http://127.0.0.1:8000/fares?limit=20");
+      const faresData = await faresResponse.json();
+
+      setFareStats(statsData);
+      setFareFiles(filesData.files || []);
+      setFareRows(faresData.fares || []);
+    } catch (err) {
+      setFareAdminMessage("Could not load fare admin data. Check backend server.");
+    } finally {
+      setFareAdminLoading(false);
+    }
+  }
+
+  async function toggleFareAdmin() {
+    const nextValue = !showFareAdmin;
+    setShowFareAdmin(nextValue);
+
+    if (nextValue) {
+      await loadFareAdminData();
+    }
+  }
+
+  async function importFareFile(fileName) {
+    setFareAdminLoading(true);
+    setFareAdminMessage("");
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/fares/import?csv_file=${encodeURIComponent(fileName)}`,
+        { method: "POST" }
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        setFareAdminMessage(data.message || "Import failed");
+      } else {
+        const imported = data.result?.imported ?? 0;
+        const skipped = data.result?.skipped ?? 0;
+        setFareAdminMessage(`Import completed: ${imported} imported, ${skipped} skipped`);
+      }
+
+      await loadFareAdminData();
+    } catch (err) {
+      setFareAdminMessage("Import failed. Check backend server.");
+    } finally {
+      setFareAdminLoading(false);
+    }
+  }
+
+  function renderFareAdminPanel() {
+    return (
+      <div className="fare-admin-wrapper">
+        <button
+          type="button"
+          className="fare-admin-toggle"
+          onClick={toggleFareAdmin}
+        >
+          {showFareAdmin ? "Hide fare admin" : "Open fare admin"}
+        </button>
+
+        {showFareAdmin && (
+          <div className="fare-admin-panel">
+            <div className="fare-admin-header">
+              <div>
+                <span>Fare Admin</span>
+                <h3>Real fare table manager</h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={loadFareAdminData}
+                disabled={fareAdminLoading}
+              >
+                Refresh
+              </button>
+            </div>
+
+            {fareAdminLoading && (
+              <div className="fare-admin-message">Loading fare data...</div>
+            )}
+
+            {fareAdminMessage && (
+              <div className="fare-admin-message">{fareAdminMessage}</div>
+            )}
+
+            {fareStats && (
+              <div className="fare-admin-stats">
+                <div>
+                  <span>Total fares</span>
+                  <strong>{fareStats.total_rows}</strong>
+                </div>
+
+                <div>
+                  <span>Trains</span>
+                  <strong>{fareStats.train_count}</strong>
+                </div>
+
+                <div>
+                  <span>Classes</span>
+                  <strong>{fareStats.class_count}</strong>
+                </div>
+              </div>
+            )}
+
+            <div className="fare-admin-section">
+              <h4>Importable CSV files</h4>
+
+              {fareFiles.length === 0 && (
+                <p>No CSV file found in app/data/raw.</p>
+              )}
+
+              {fareFiles.map((file) => (
+                <div className="fare-file-row" key={file.file}>
+                  <div>
+                    <strong>{file.file}</strong>
+                    <span>{file.path}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => importFareFile(file.file)}
+                    disabled={fareAdminLoading}
+                  >
+                    Import
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="fare-admin-section">
+              <h4>Recent fare rows</h4>
+
+              {fareRows.length === 0 && (
+                <p>No real fare rows loaded yet.</p>
+              )}
+
+              {fareRows.length > 0 && (
+                <div className="fare-table">
+                  <div className="fare-table-head">
+                    <span>Train</span>
+                    <span>Route</span>
+                    <span>Class</span>
+                    <span>Fare</span>
+                  </div>
+
+                  {fareRows.map((row) => (
+                    <div className="fare-table-row" key={row.id}>
+                      <span>{row.train_no}</span>
+                      <span>{row.source} → {row.destination}</span>
+                      <span>{row.class_code}</span>
+                      <strong>₹{row.fare}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
   function safeValue(value) {
@@ -809,6 +989,8 @@ function App() {
             {loading ? "Searching..." : "Search"}
           </button>
         </form>
+
+          {renderFareAdminPanel()}
 
         <div className="quick-routes">
           <button type="button" onClick={() => setQuickRoute("NDLS", "PNBE")}>
