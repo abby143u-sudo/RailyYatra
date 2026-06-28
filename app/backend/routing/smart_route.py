@@ -19,43 +19,27 @@ def plan_journey(source, destination, limit=10):
         limit=limit,
     )
 
-    direct_recommendations = []
-    transfer_recommendations = []
-    multi_recommendations = []
-
-    for route in direct_routes:
-        direct_recommendations.append({
-            "type": "direct",
-            "score": route.get("journey_score", 0) + 100,
-            "label": "Best direct train",
-            "data": route
-        })
-
-    for route in transfer_routes:
-        transfer_recommendations.append({
-            "type": "one_transfer",
-            "score": route.get("score", 0),
-            "label": "Backup transfer route",
-            "data": route
-        })
-
-    for route in multi_routes:
-        label = "Smart direct train" if route.get("transfers", 0) == 0 else "Smart multi-transfer route"
-
-        multi_recommendations.append({
-            "type": "multi_transfer",
-            "score": route.get("score", 0),
-            "label": label,
-            "data": route
-        })
+    direct_recommendations = build_direct_recommendations(direct_routes)
+    transfer_recommendations = build_transfer_recommendations(transfer_routes)
+    multi_recommendations = build_multi_recommendations(multi_routes)
 
     direct_recommendations.sort(key=lambda x: x["score"], reverse=True)
     transfer_recommendations.sort(key=lambda x: x["score"], reverse=True)
     multi_recommendations.sort(key=lambda x: x["score"], reverse=True)
 
+    used_smart_trains = get_train_numbers_from_multi(multi_recommendations)
+
+    filtered_direct = [
+        item for item in direct_recommendations
+        if str(item["data"].get("train_no")) not in used_smart_trains
+    ]
+
+    if not filtered_direct:
+        filtered_direct = direct_recommendations
+
     all_recommendations = (
         multi_recommendations +
-        direct_recommendations +
+        filtered_direct +
         transfer_recommendations
     )
 
@@ -65,8 +49,12 @@ def plan_journey(source, destination, limit=10):
 
     balanced_recommendations = []
     balanced_recommendations.extend(multi_recommendations[:4])
-    balanced_recommendations.extend(direct_recommendations[:3])
+    balanced_recommendations.extend(filtered_direct[:3])
     balanced_recommendations.extend(transfer_recommendations[:3])
+
+    balanced_recommendations = remove_duplicate_recommendations(
+        balanced_recommendations
+    )
 
     balanced_recommendations.sort(key=lambda x: x["score"], reverse=True)
 
@@ -81,3 +69,104 @@ def plan_journey(source, destination, limit=10):
         "best": best,
         "recommendations": balanced_recommendations[:limit]
     }
+
+
+def build_direct_recommendations(direct_routes):
+    recommendations = []
+
+    for route in direct_routes:
+        recommendations.append({
+            "type": "direct",
+            "score": route.get("journey_score", 0) + 100,
+            "label": "Best direct train",
+            "data": route
+        })
+
+    return recommendations
+
+
+def build_transfer_recommendations(transfer_routes):
+    recommendations = []
+
+    for route in transfer_routes:
+        recommendations.append({
+            "type": "one_transfer",
+            "score": route.get("score", 0),
+            "label": "Backup transfer route",
+            "data": route
+        })
+
+    return recommendations
+
+
+def build_multi_recommendations(multi_routes):
+    recommendations = []
+
+    for route in multi_routes:
+        label = (
+            "Smart direct train"
+            if route.get("transfers", 0) == 0
+            else "Smart multi-transfer route"
+        )
+
+        recommendations.append({
+            "type": "multi_transfer",
+            "score": route.get("score", 0),
+            "label": label,
+            "data": route
+        })
+
+    return recommendations
+
+
+def get_train_numbers_from_multi(multi_recommendations):
+    train_numbers = set()
+
+    for item in multi_recommendations:
+        legs = item.get("data", {}).get("train_legs", [])
+
+        for leg in legs:
+            train_no = leg.get("train_no")
+            if train_no:
+                train_numbers.add(str(train_no))
+
+    return train_numbers
+
+
+def recommendation_key(item):
+    item_type = item.get("type")
+    data = item.get("data", {})
+
+    if item_type == "direct":
+        return ("direct", str(data.get("train_no")))
+
+    if item_type == "multi_transfer":
+        legs = data.get("train_legs", [])
+        train_chain = tuple(str(leg.get("train_no")) for leg in legs)
+        return ("multi_transfer", train_chain)
+
+    if item_type == "one_transfer":
+        return (
+            "one_transfer",
+            str(data.get("first_train")),
+            str(data.get("transfer_station")),
+            str(data.get("second_train")),
+        )
+
+    return (item_type, str(data))
+
+
+def remove_duplicate_recommendations(recommendations):
+    seen = set()
+    unique = []
+
+    for item in recommendations:
+        key = recommendation_key(item)
+
+        if key in seen:
+            continue
+
+        seen.add(key)
+        unique.append(item)
+
+    return unique
