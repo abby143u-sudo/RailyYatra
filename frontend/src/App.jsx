@@ -250,6 +250,57 @@ function App() {
     return `${durationText} · ${transferText} · Score ${item.score}`;
   }
 
+  function getRouteTags(item) {
+    const data = item.data || {};
+    const tags = [];
+
+    const title = getRecommendationTitle(item).toUpperCase();
+    const duration = getRecommendationDuration(item);
+    const transfers = getRecommendationTransfers(item);
+
+    if (title.includes("RAJDHANI")) tags.push("Premium");
+    if (title.includes("DURONTO")) tags.push("Fast");
+    if (title.includes("SHATABDI")) tags.push("Premium");
+    if (title.includes("VANDE")) tags.push("Premium");
+
+    if (duration !== 9999 && duration <= 13) tags.push("Fast");
+    if (duration !== 9999 && duration > 13 && duration <= 18) tags.push("Overnight");
+
+    if (transfers === 0) tags.push("No transfer");
+    if (transfers === 1) tags.push("One transfer");
+
+    if (item.type === "one_transfer") {
+      if ((data.transfer_wait_hours || 999) <= 1.5) tags.push("Low wait");
+
+      const hub = data.transfer_station;
+      if (["MGS", "DDU", "BSB", "PRYJ", "CNB", "GZB", "LKO"].includes(hub)) {
+        tags.push("Transfer hub");
+      }
+    }
+
+    if (item.type === "multi_transfer") {
+      const firstLeg = data.train_legs?.[0];
+
+      if (firstLeg?.quality_bonus >= 200) tags.push("High quality train");
+    }
+
+    return [...new Set(tags)].slice(0, 4);
+  }
+
+  function renderRouteTags(item) {
+    const tags = getRouteTags(item);
+
+    if (!tags.length) return null;
+
+    return (
+      <div className="quality-tags">
+        {tags.map((tag, index) => (
+          <span key={index}>{tag}</span>
+        ))}
+      </div>
+    );
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -270,6 +321,8 @@ function App() {
           <span>{safeValue(train.duration_hours)} hrs</span>
           <span>{safeValue(train.stops)} stops</span>
         </div>
+
+        {renderRouteTags(item)}
 
         <button
           type="button"
@@ -360,6 +413,8 @@ function App() {
           <span>Wait {safeValue(route.transfer_wait_hours)} hrs</span>
         </div>
 
+        {renderRouteTags(item)}
+
         <button
           type="button"
           className="details-btn"
@@ -424,6 +479,8 @@ function App() {
           <span>{route.total_stops} stops</span>
           <span>{safeValue(route.total_duration_hours)} hrs</span>
         </div>
+
+        {renderRouteTags(item)}
 
         {firstLeg && (
           <div className="timeline">
