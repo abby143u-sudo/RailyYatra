@@ -1,3 +1,5 @@
+from backend.services.fare_csv_importer import import_fares_from_csv
+from pathlib import Path
 from backend.services.official_fare_service import (
     get_official_fare,
     ensure_official_fare_table,
@@ -260,4 +262,49 @@ def list_fares(
     return {
         "count": len(rows),
         "fares": rows,
+    }
+
+
+DATA_RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
+
+
+@app.get("/fares/import/files")
+def list_importable_fare_files():
+    DATA_RAW_DIR.mkdir(parents=True, exist_ok=True)
+
+    files = [
+        {
+            "file": file.name,
+            "path": f"data/raw/{file.name}",
+        }
+        for file in DATA_RAW_DIR.glob("*.csv")
+    ]
+
+    return {
+        "count": len(files),
+        "files": files,
+    }
+
+
+@app.post("/fares/import")
+def import_fare_csv(csv_file: str = "fares_original_format.csv"):
+    DATA_RAW_DIR.mkdir(parents=True, exist_ok=True)
+
+    safe_file_name = Path(csv_file).name
+    file_path = DATA_RAW_DIR / safe_file_name
+
+    if not file_path.exists():
+        return {
+            "success": False,
+            "message": "CSV file not found in data/raw",
+            "expected_location": f"data/raw/{safe_file_name}",
+        }
+
+    result = import_fares_from_csv(file_path)
+
+    return {
+        "success": True,
+        "message": "Fare CSV import completed",
+        "result": result,
+        "stats": get_fare_stats(),
     }
