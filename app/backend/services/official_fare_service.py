@@ -193,36 +193,6 @@ def calculate_table_fare(item_type, data, source, destination, class_code):
     return None
 
 
-def seed_sample_official_fares():
-    sample_rows = [
-        ("12303", "PNBE", "NDLS", "SL", 590),
-        ("12305", "PNBE", "NDLS", "SL", 610),
-        ("12309", "PNBE", "NDLS", "SL", 640),
-        ("12349", "PNBE", "NDLS", "SL", 620),
-        ("12393", "PNBE", "NDLS", "SL", 650),
-
-        ("12303", "NDLS", "PNBE", "SL", 590),
-        ("12305", "NDLS", "PNBE", "SL", 610),
-        ("12309", "NDLS", "PNBE", "SL", 640),
-        ("12349", "NDLS", "PNBE", "SL", 620),
-        ("12393", "NDLS", "PNBE", "SL", 650),
-
-        ("12301", "PNBE", "MGS", "SL", 160),
-        ("12302", "MGS", "NDLS", "SL", 430),
-        ("12301", "PNBE", "DDU", "SL", 170),
-        ("12302", "DDU", "NDLS", "SL", 420),
-
-        ("12301", "NDLS", "MGS", "SL", 430),
-        ("12302", "MGS", "PNBE", "SL", 160),
-        ("12301", "NDLS", "DDU", "SL", 420),
-        ("12302", "DDU", "PNBE", "SL", 170),
-    ]
-
-    for row in sample_rows:
-        upsert_official_fare(*row)
-
-    return len(sample_rows)
-
 
 def get_saving_rate(item_type):
     if item_type == "direct":
