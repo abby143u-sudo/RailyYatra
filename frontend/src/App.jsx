@@ -45,6 +45,10 @@ function App() {
       filtered = allRecommendations.filter((item) => item.type === "one_transfer");
     }
 
+    if (activeFilter === "verified_fare") {
+      filtered = allRecommendations.filter((item) => hasVerifiedFare(item));
+    }
+
     const sorted = [...filtered];
 
     if (sortMode === "best") {
@@ -829,6 +833,21 @@ function App() {
     );
   }
 
+  function hasVerifiedFare(item) {
+    const coverage = item.fare_coverage;
+    const fare = item.fare;
+
+    if (coverage && (coverage.verified_segments || 0) > 0) {
+      return true;
+    }
+
+    if (fare && fare.fare_source === "fare_table") {
+      return true;
+    }
+
+    return false;
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -1317,6 +1336,14 @@ function App() {
                 onClick={() => setActiveFilter("transfer")}
               >
                 Transfer
+              </button>
+
+              <button
+                type="button"
+                className={activeFilter === "verified_fare" ? "active" : ""}
+                onClick={() => setActiveFilter("verified_fare")}
+              >
+                Verified Fare
               </button>
             </div>
 
