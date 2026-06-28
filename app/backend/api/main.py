@@ -4,8 +4,18 @@ from backend.routing.direct import find_direct_trains
 from backend.routing.transfer import find_one_transfer_routes
 from backend.database.connection import fetch_all, fetch_one
 from backend.services.station_search import search_stations
+from fastapi.middleware.cors import CORSMiddleware
+from backend.routing.multi_transfer import find_multi_transfer_routes
+
 
 app = FastAPI(title="RailYatra v2 API", version="2.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -166,4 +176,28 @@ def station_detail(station_code: str):
         "station": station,
         "sample_train_count": len(trains),
         "trains": trains,
+    }
+@app.get("/multi-route")
+def multi_route(
+    source: str = Query(...),
+    destination: str = Query(...),
+    max_transfers: int = Query(3),
+    limit: int = Query(10),
+):
+    source = source.upper().strip()
+    destination = destination.upper().strip()
+
+    routes = find_multi_transfer_routes(
+        source=source,
+        destination=destination,
+        max_transfers=max_transfers,
+        limit=limit,
+    )
+
+    return {
+        "source": source,
+        "destination": destination,
+        "max_transfers": max_transfers,
+        "count": len(routes),
+        "routes": routes,
     }

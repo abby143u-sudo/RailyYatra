@@ -4,8 +4,8 @@ import "./App.css";
 const API_BASE = "http://127.0.0.1:8000";
 
 function App() {
-  const [source, setSource] = useState("NDLS");
-  const [destination, setDestination] = useState("PNBE");
+  const [source, setSource] = useState("PNBE");
+  const [destination, setDestination] = useState("NDLS");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,6 +19,11 @@ function App() {
 
   const bestTransfer = useMemo(
     () => recommendations.find((item) => item.type === "one_transfer"),
+    [recommendations]
+  );
+
+  const bestSmart = useMemo(
+    () => recommendations.find((item) => item.type === "multi_transfer"),
     [recommendations]
   );
 
@@ -55,7 +60,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `${API_BASE}/search?source=${from}&destination=${to}&limit=10`
+        API_BASE + "/search?source=" + from + "&destination=" + to + "&limit=10"
       );
 
       if (!res.ok) throw new Error("Search failed");
@@ -74,6 +79,13 @@ function App() {
     setDestination(to);
   }
 
+  function safeValue(value) {
+    if (value === null || value === undefined || value === "None") {
+      return "N/A";
+    }
+    return value;
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -87,10 +99,10 @@ function App() {
         <h3>{train.train_no} — {train.train_name}</h3>
 
         <div className="journey-meta">
-          <span>Dep {train.departure}</span>
-          <span>Arr {train.arrival}</span>
-          <span>{train.duration_hours} hrs</span>
-          <span>{train.stops} stops</span>
+          <span>Dep {safeValue(train.departure)}</span>
+          <span>Arr {safeValue(train.arrival)}</span>
+          <span>{safeValue(train.duration_hours)} hrs</span>
+          <span>{safeValue(train.stops)} stops</span>
         </div>
 
         <div className="section-title">Why recommended</div>
@@ -125,30 +137,107 @@ function App() {
         <div className="timeline">
           <div>
             <strong>{result.source}</strong>
-            <span>{route.source_departure}</span>
+            <span>{safeValue(route.source_departure)}</span>
           </div>
 
           <div>
             <strong>{route.transfer_station}</strong>
             <span>
-              Wait {route.transfer_wait_hours} hrs ·{" "}
+              Wait {safeValue(route.transfer_wait_hours)} hrs ·{" "}
               {route.transfer_station_name}
             </span>
           </div>
 
           <div>
             <strong>{result.destination}</strong>
-            <span>{route.destination_arrival}</span>
+            <span>{safeValue(route.destination_arrival)}</span>
           </div>
         </div>
 
         <div className="journey-meta">
-          <span>Duration {route.total_duration_hours} hrs</span>
-          <span>{route.total_stops} stops</span>
-          <span>Wait {route.transfer_wait_hours} hrs</span>
+          <span>Duration {safeValue(route.total_duration_hours)} hrs</span>
+          <span>{safeValue(route.total_stops)} stops</span>
+          <span>Wait {safeValue(route.transfer_wait_hours)} hrs</span>
         </div>
       </div>
     );
+  }
+
+  function renderSmartRouteCard(item, index) {
+    const route = item.data;
+    const firstLeg = route.train_legs?.[0];
+
+    return (
+      <div className="journey-card" key={`smart-${index}`}>
+        <div className="card-top">
+          <span className="badge direct-badge">
+            {route.transfers === 0 ? "Smart direct" : "Smart route"}
+          </span>
+          <strong>Score {item.score}</strong>
+        </div>
+
+        <h3>{route.summary}</h3>
+
+        <p className="muted">
+          {route.route_preview?.join(" → ")}
+        </p>
+
+        <div className="journey-meta">
+          <span>{route.transfers} transfers</span>
+          <span>{route.leg_count} train leg{route.leg_count > 1 ? "s" : ""}</span>
+          <span>{route.total_stops} stops</span>
+        </div>
+
+        {firstLeg && (
+          <div className="timeline">
+            <div>
+              <strong>{firstLeg.from}</strong>
+              <span>{safeValue(firstLeg.start_time)}</span>
+            </div>
+
+            <div>
+              <strong>Train {firstLeg.train_no}</strong>
+              <span>{firstLeg.stop_count} stops</span>
+            </div>
+
+            <div>
+              <strong>{firstLeg.to}</strong>
+              <span>{safeValue(firstLeg.end_time)}</span>
+            </div>
+          </div>
+        )}
+
+        {route.train_legs?.length > 1 && (
+          <>
+            <div className="section-title">Train legs</div>
+            <ul>
+              {route.train_legs.map((leg, i) => (
+                <li key={i}>
+                  ✓ {leg.from} → {leg.to} by {leg.train_no} ·{" "}
+                  {safeValue(leg.start_time)} → {safeValue(leg.end_time)}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  function renderRecommendation(item, index) {
+    if (item.type === "direct") {
+      return renderDirectCard(item, index);
+    }
+
+    if (item.type === "one_transfer") {
+      return renderTransferCard(item, index);
+    }
+
+    if (item.type === "multi_transfer") {
+      return renderSmartRouteCard(item, index);
+    }
+
+    return null;
   }
 
   return (
@@ -174,7 +263,7 @@ function App() {
             <input
               value={source}
               onChange={(e) => setSource(e.target.value.toUpperCase())}
-              placeholder="NDLS"
+              placeholder="PNBE"
             />
           </div>
 
@@ -187,7 +276,7 @@ function App() {
             <input
               value={destination}
               onChange={(e) => setDestination(e.target.value.toUpperCase())}
-              placeholder="PNBE"
+              placeholder="NDLS"
             />
           </div>
 
@@ -225,10 +314,20 @@ function App() {
 
             <p className="summary">
               Route exists: {result.route_exists ? "Yes" : "No"} · Direct:{" "}
-              {result.direct_count} · Transfers: {result.transfer_count}
+              {result.direct_count} · One-transfer: {result.transfer_count} ·
+              Smart routes: {result.multi_route_count || 0}
             </p>
 
             <div className="highlight-grid">
+              <div className="highlight-card">
+                <span>Best smart</span>
+                <strong>
+                  {bestSmart
+                    ? bestSmart.data.summary
+                    : "Not available"}
+                </strong>
+              </div>
+
               <div className="highlight-card">
                 <span>Best direct</span>
                 <strong>
@@ -249,7 +348,7 @@ function App() {
 
               <div className="highlight-card">
                 <span>Total options</span>
-                <strong>{recommendations.length}</strong>
+                <strong>{result.total_recommendations || recommendations.length}</strong>
               </div>
             </div>
 
@@ -265,9 +364,7 @@ function App() {
             )}
 
             {recommendations.map((item, index) =>
-              item.type === "direct"
-                ? renderDirectCard(item, index)
-                : renderTransferCard(item, index)
+              renderRecommendation(item, index)
             )}
           </section>
         )}
