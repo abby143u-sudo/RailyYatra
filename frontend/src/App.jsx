@@ -9,6 +9,8 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [sourceSuggestions, setSourceSuggestions] = useState([]);
+  const [destinationSuggestions, setDestinationSuggestions] = useState([]);
 
   const recommendations = result?.recommendations || [];
 
@@ -34,6 +36,34 @@ function App() {
   function swapStations() {
     setSource(destination);
     setDestination(source);
+  }
+
+  async function fetchStationSuggestions(value, setter) {
+    const query = value.trim();
+
+    if (query.length < 2) {
+      setter([]);
+      return;
+    }
+
+    try {
+      const res = await fetch(API_BASE + "/stations?q=" + query + "&limit=8");
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setter(data.stations || []);
+    } catch {
+      setter([]);
+    }
+  }
+
+  function getStationCode(station) {
+    return station.station_code || station.code || station.id || "";
+  }
+
+  function getStationName(station) {
+    return station.station_name || station.name || station.city || "";
   }
 
   async function searchJourney(e) {
@@ -277,9 +307,24 @@ function App() {
             <label>From</label>
             <input
               value={source}
-              onChange={(e) => setSource(e.target.value.toUpperCase())}
-              placeholder="PNBE"
+              list="source-stations"
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase();
+                setSource(value);
+                fetchStationSuggestions(value, setSourceSuggestions);
+              }}
+              placeholder="PNBE or Patna"
             />
+            <datalist id="source-stations">
+              {sourceSuggestions.map((station, index) => (
+                <option
+                  key={index}
+                  value={getStationCode(station)}
+                >
+                  {getStationCode(station)} - {getStationName(station)}
+                </option>
+              ))}
+            </datalist>
           </div>
 
           <button type="button" className="swap-btn" onClick={swapStations}>
@@ -290,9 +335,24 @@ function App() {
             <label>To</label>
             <input
               value={destination}
-              onChange={(e) => setDestination(e.target.value.toUpperCase())}
-              placeholder="NDLS"
+              list="destination-stations"
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase();
+                setDestination(value);
+                fetchStationSuggestions(value, setDestinationSuggestions);
+              }}
+              placeholder="NDLS or Delhi"
             />
+            <datalist id="destination-stations">
+              {destinationSuggestions.map((station, index) => (
+                <option
+                  key={index}
+                  value={getStationCode(station)}
+                >
+                  {getStationCode(station)} - {getStationName(station)}
+                </option>
+              ))}
+            </datalist>
           </div>
 
           <button type="submit" className="search-btn">
