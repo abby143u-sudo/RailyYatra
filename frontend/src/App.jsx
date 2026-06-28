@@ -112,6 +112,44 @@ function App() {
     )[0];
   }, [allRecommendations]);
 
+  const fareVerificationSummary = useMemo(() => {
+    const total = allRecommendations.length;
+
+    if (!total) {
+      return {
+        total: 0,
+        verified: 0,
+        partial: 0,
+        estimated: 0,
+        coveragePercent: 0,
+      };
+    }
+
+    const verified = allRecommendations.filter((item) => {
+      const coverage = item.fare_coverage;
+      return coverage?.status === "full";
+    }).length;
+
+    const partial = allRecommendations.filter((item) => {
+      const coverage = item.fare_coverage;
+      return coverage?.status === "partial";
+    }).length;
+
+    const estimated = total - verified - partial;
+
+    const coveragePercent = Math.round(
+      ((verified + partial * 0.5) / total) * 100
+    );
+
+    return {
+      total,
+      verified,
+      partial,
+      estimated,
+      coveragePercent,
+    };
+  }, [allRecommendations]);
+
   function cleanStation(value) {
     return value.trim().toUpperCase();
   }
@@ -973,6 +1011,35 @@ function App() {
     return false;
   }
 
+  function renderFareVerificationSummary() {
+    if (!fareVerificationSummary.total) return null;
+
+    return (
+      <div className="fare-summary-box">
+        <div>
+          <span>Fare verification</span>
+          <strong>
+            {fareVerificationSummary.verified} verified journeys out of{" "}
+            {fareVerificationSummary.total}
+          </strong>
+        </div>
+
+        <div className="fare-summary-meter">
+          <div
+            className="fare-summary-fill"
+            style={{ width: `${fareVerificationSummary.coveragePercent}%` }}
+          />
+        </div>
+
+        <p>
+          {fareVerificationSummary.coveragePercent}% fare coverage ·{" "}
+          {fareVerificationSummary.partial} partial ·{" "}
+          {fareVerificationSummary.estimated} estimated
+        </p>
+      </div>
+    );
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -1399,6 +1466,8 @@ function App() {
                 <strong>{result.total_recommendations || recommendations.length}</strong>
               </div>
             </div>
+
+            {renderFareVerificationSummary()}
 
             <div className="comparison-grid">
               <div className="comparison-card">
