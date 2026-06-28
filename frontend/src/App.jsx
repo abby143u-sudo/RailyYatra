@@ -27,6 +27,13 @@ function App() {
     class_code: "SL",
     fare: "",
   });
+  const [fareTest, setFareTest] = useState({
+    train_no: "",
+    source: "",
+    destination: "",
+    class_code: "SL",
+  });
+  const [fareTestResult, setFareTestResult] = useState(null);
 
   const allRecommendations = result?.recommendations || [];
 
@@ -310,6 +317,46 @@ function App() {
     }
   }
 
+  function updateFareTestField(field, value) {
+    setFareTest((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  async function checkFareCoverage(event) {
+    event.preventDefault();
+
+    if (!fareTest.train_no || !fareTest.source || !fareTest.destination) {
+      setFareAdminMessage("Please fill train no, source and destination for fare check.");
+      return;
+    }
+
+    setFareAdminLoading(true);
+    setFareAdminMessage("");
+    setFareTestResult(null);
+
+    try {
+      const params = new URLSearchParams({
+        train_no: fareTest.train_no,
+        source: fareTest.source,
+        destination: fareTest.destination,
+        class_code: fareTest.class_code || "SL",
+      });
+
+      const response = await fetch(
+        `http://127.0.0.1:8000/fare/lookup?${params.toString()}`
+      );
+
+      const data = await response.json();
+      setFareTestResult(data);
+    } catch (err) {
+      setFareAdminMessage("Fare check failed. Check backend server.");
+    } finally {
+      setFareAdminLoading(false);
+    }
+  }
+
   function renderFareAdminPanel() {
     return (
       <div className="fare-admin-wrapper">
@@ -457,6 +504,84 @@ function App() {
                   </button>
                 </div>
               ))}
+            </div>
+
+            <div className="fare-admin-section">
+              <h4>Quick fare coverage test</h4>
+
+              <form className="fare-test-form" onSubmit={checkFareCoverage}>
+                <div className="manual-fare-grid">
+                  <label>
+                    <span>Train no</span>
+                    <input
+                      value={fareTest.train_no}
+                      onChange={(e) =>
+                        updateFareTestField("train_no", e.target.value.toUpperCase())
+                      }
+                      placeholder="12309"
+                    />
+                  </label>
+
+                  <label>
+                    <span>Source</span>
+                    <input
+                      value={fareTest.source}
+                      onChange={(e) =>
+                        updateFareTestField("source", e.target.value.toUpperCase())
+                      }
+                      placeholder="PNBE"
+                    />
+                  </label>
+
+                  <label>
+                    <span>Destination</span>
+                    <input
+                      value={fareTest.destination}
+                      onChange={(e) =>
+                        updateFareTestField("destination", e.target.value.toUpperCase())
+                      }
+                      placeholder="NDLS"
+                    />
+                  </label>
+
+                  <label>
+                    <span>Class</span>
+                    <input
+                      value={fareTest.class_code}
+                      onChange={(e) =>
+                        updateFareTestField("class_code", e.target.value.toUpperCase())
+                      }
+                      placeholder="SL"
+                    />
+                  </label>
+                </div>
+
+                <button type="submit" disabled={fareAdminLoading}>
+                  Check fare
+                </button>
+              </form>
+
+              {fareTestResult && (
+                <div
+                  className={
+                    fareTestResult.found
+                      ? "fare-test-result found"
+                      : "fare-test-result not-found"
+                  }
+                >
+                  <strong>
+                    {fareTestResult.found
+                      ? `Verified fare found ₹${fareTestResult.fare}`
+                      : "Fare not found"}
+                  </strong>
+
+                  <span>
+                    {fareTestResult.found
+                      ? `${fareTestResult.train_no} · ${fareTestResult.source} → ${fareTestResult.destination} · ${fareTestResult.class_code} · ${fareTestResult.provider}`
+                      : fareTestResult.message}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="fare-admin-section">
