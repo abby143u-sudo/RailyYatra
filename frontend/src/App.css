@@ -594,3 +594,41 @@ li {
   font-weight: 900;
   border: 1px solid rgba(37, 99, 235, 0.12);
 }
+
+.risk-badge {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid transparent;
+}
+
+.risk-badge strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.risk-badge span {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.risk-low {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #047857;
+}
+
+.risk-medium {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #92400e;
+}
+
+.risk-high {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.22);
+  color: #991b1b;
+}

@@ -301,6 +301,96 @@ function App() {
     );
   }
 
+  function getRouteRisk(item) {
+    const data = item.data || {};
+    const transfers = getRecommendationTransfers(item);
+
+    if (transfers === 0) {
+      return {
+        level: "low",
+        label: "Low risk",
+        reason: "No train change required",
+      };
+    }
+
+    if (item.type === "one_transfer") {
+      const wait = data.transfer_wait_hours || 0;
+      const hub = data.transfer_station;
+      const strongHubs = ["MGS", "DDU", "BSB", "PRYJ", "CNB", "GZB", "LKO", "NDLS"];
+
+      if (wait < 0.5) {
+        return {
+          level: "high",
+          label: "High risk",
+          reason: "Transfer wait is too short",
+        };
+      }
+
+      if (!strongHubs.includes(hub)) {
+        return {
+          level: "medium",
+          label: "Medium risk",
+          reason: "Transfer station is not a preferred hub",
+        };
+      }
+
+      if (wait >= 0.75 && wait <= 3) {
+        return {
+          level: "low",
+          label: "Low risk",
+          reason: "Healthy wait time at major transfer hub",
+        };
+      }
+
+      if (wait > 5) {
+        return {
+          level: "medium",
+          label: "Medium risk",
+          reason: "Long transfer wait",
+        };
+      }
+
+      return {
+        level: "medium",
+        label: "Medium risk",
+        reason: "Transfer timing needs attention",
+      };
+    }
+
+    if (item.type === "multi_transfer") {
+      if (transfers === 1) {
+        return {
+          level: "medium",
+          label: "Medium risk",
+          reason: "One smart train change required",
+        };
+      }
+
+      return {
+        level: "high",
+        label: "High risk",
+        reason: "Multiple train changes required",
+      };
+    }
+
+    return {
+      level: "medium",
+      label: "Medium risk",
+      reason: "Journey risk not fully known",
+    };
+  }
+
+  function renderRiskBadge(item) {
+    const risk = getRouteRisk(item);
+
+    return (
+      <div className={`risk-badge risk-${risk.level}`}>
+        <strong>{risk.label}</strong>
+        <span>{risk.reason}</span>
+      </div>
+    );
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -323,6 +413,7 @@ function App() {
         </div>
 
         {renderRouteTags(item)}
+        {renderRiskBadge(item)}
 
         <button
           type="button"
@@ -414,6 +505,7 @@ function App() {
         </div>
 
         {renderRouteTags(item)}
+        {renderRiskBadge(item)}
 
         <button
           type="button"
@@ -481,6 +573,7 @@ function App() {
         </div>
 
         {renderRouteTags(item)}
+        {renderRiskBadge(item)}
 
         {firstLeg && (
           <div className="timeline">
