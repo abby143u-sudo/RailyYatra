@@ -11,22 +11,41 @@ function App() {
   const [error, setError] = useState("");
   const [sourceSuggestions, setSourceSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("all");
 
-  const recommendations = result?.recommendations || [];
+  const allRecommendations = result?.recommendations || [];
+
+  const recommendations = useMemo(() => {
+    if (activeFilter === "all") return allRecommendations;
+
+    if (activeFilter === "smart") {
+      return allRecommendations.filter((item) => item.type === "multi_transfer");
+    }
+
+    if (activeFilter === "direct") {
+      return allRecommendations.filter((item) => item.type === "direct");
+    }
+
+    if (activeFilter === "transfer") {
+      return allRecommendations.filter((item) => item.type === "one_transfer");
+    }
+
+    return allRecommendations;
+  }, [allRecommendations, activeFilter]);
 
   const bestDirect = useMemo(
-    () => recommendations.find((item) => item.type === "direct"),
-    [recommendations]
+    () => allRecommendations.find((item) => item.type === "direct"),
+    [allRecommendations]
   );
 
   const bestTransfer = useMemo(
-    () => recommendations.find((item) => item.type === "one_transfer"),
-    [recommendations]
+    () => allRecommendations.find((item) => item.type === "one_transfer"),
+    [allRecommendations]
   );
 
   const bestSmart = useMemo(
-    () => recommendations.find((item) => item.type === "multi_transfer"),
-    [recommendations]
+    () => allRecommendations.find((item) => item.type === "multi_transfer"),
+    [allRecommendations]
   );
 
   function cleanStation(value) {
@@ -87,6 +106,7 @@ function App() {
     setLoading(true);
     setError("");
     setResult(null);
+    setActiveFilter("all");
 
     try {
       const res = await fetch(
@@ -450,8 +470,42 @@ function App() {
               </div>
             )}
 
+            <div className="filter-tabs">
+              <button
+                type="button"
+                className={activeFilter === "all" ? "active" : ""}
+                onClick={() => setActiveFilter("all")}
+              >
+                All
+              </button>
+
+              <button
+                type="button"
+                className={activeFilter === "smart" ? "active" : ""}
+                onClick={() => setActiveFilter("smart")}
+              >
+                Smart
+              </button>
+
+              <button
+                type="button"
+                className={activeFilter === "direct" ? "active" : ""}
+                onClick={() => setActiveFilter("direct")}
+              >
+                Direct
+              </button>
+
+              <button
+                type="button"
+                className={activeFilter === "transfer" ? "active" : ""}
+                onClick={() => setActiveFilter("transfer")}
+              >
+                Transfer
+              </button>
+            </div>
+
             {recommendations.length === 0 && (
-              <div className="empty-state">No journey found.</div>
+              <div className="empty-state">No journey found for this filter.</div>
             )}
 
             {recommendations.map((item, index) =>
