@@ -213,3 +213,98 @@ def normalize(value):
 
 def round_to_nearest_10(value):
     return int(round(float(value) / 10.0) * 10)
+
+
+def get_fare_stats():
+    ensure_official_fare_table()
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) AS total_rows FROM official_fares")
+    total_rows = cursor.fetchone()["total_rows"]
+
+    cursor.execute("SELECT COUNT(DISTINCT train_no) AS train_count FROM official_fares")
+    train_count = cursor.fetchone()["train_count"]
+
+    cursor.execute("SELECT COUNT(DISTINCT class_code) AS class_count FROM official_fares")
+    class_count = cursor.fetchone()["class_count"]
+
+    cursor.execute("""
+        SELECT class_code, COUNT(*) AS count
+        FROM official_fares
+        GROUP BY class_code
+        ORDER BY count DESC
+    """)
+    by_class = [dict(row) for row in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT source_type, COUNT(*) AS count
+        FROM official_fares
+        GROUP BY source_type
+        ORDER BY count DESC
+    """)
+    by_source_type = [dict(row) for row in cursor.fetchall()]
+
+    conn.close()
+
+    return {
+        "total_rows": total_rows,
+        "train_count": train_count,
+        "class_count": class_count,
+        "by_class": by_class,
+        "by_source_type": by_source_type,
+    }
+
+
+def search_official_fares(
+    train_no=None,
+    source=None,
+    destination=None,
+    class_code=None,
+    limit=50,
+):
+    ensure_official_fare_table()
+
+    filters = []
+    values = []
+
+    if train_no:
+        filters.append("train_no = ?")
+        values.append(normalize(train_no))
+
+    if source:
+        filters.append("source = ?")
+        values.append(normalize(source))
+
+    if destination:
+        filters.append("destination = ?")
+        values.append(normalize(destination))
+
+    if class_code:
+        filters.append("class_code = ?")
+        values.append(normalize(class_code))
+
+    where_clause = ""
+    if filters:
+        where_clause = "WHERE " + " AND ".join(filters)
+
+    limit = min(max(int(limit), 1), 100)
+
+    query = f"""
+        SELECT id, train_no, source, destination, class_code, fare, source_type, updated_at
+        FROM official_fares
+        {where_clause}
+        ORDER BY updated_at DESC, train_no ASC
+        LIMIT ?
+    """
+
+    values.append(limit)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, values)
+    rows = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return rows

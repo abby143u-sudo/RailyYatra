@@ -1,4 +1,9 @@
-from backend.services.official_fare_service import get_official_fare, ensure_official_fare_table
+from backend.services.official_fare_service import (
+    get_official_fare,
+    ensure_official_fare_table,
+    get_fare_stats,
+    search_official_fares,
+)
 from fastapi import FastAPI, Query, HTTPException
 from backend.routing.smart_route import plan_journey
 from backend.routing.direct import find_direct_trains
@@ -228,4 +233,31 @@ def lookup_fare(train_no: str, source: str, destination: str, class_code: str = 
     return {
         "found": True,
         "fare": fare,
+    }
+
+
+@app.get("/fares/stats")
+def fare_stats():
+    return get_fare_stats()
+
+
+@app.get("/fares")
+def list_fares(
+    train_no: str | None = None,
+    source: str | None = None,
+    destination: str | None = None,
+    class_code: str | None = None,
+    limit: int = 50,
+):
+    rows = search_official_fares(
+        train_no=train_no,
+        source=source,
+        destination=destination,
+        class_code=class_code,
+        limit=limit,
+    )
+
+    return {
+        "count": len(rows),
+        "fares": rows,
     }
