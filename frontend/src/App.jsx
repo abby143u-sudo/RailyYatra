@@ -258,13 +258,8 @@ function App() {
     }
   }
 
-  async function toggleFareAdmin() {
-    const nextValue = !showFareAdmin;
-    setShowFareAdmin(nextValue);
-
-    if (nextValue) {
-      await loadFareAdminData();
-    }
+  function toggleFareAdmin() {
+    setShowFareAdmin((current) => !current);
   }
 
   async function importFareFile(fileName) {
@@ -514,7 +509,22 @@ function App() {
                   </label>
                 </div>
 
-                <button type="submit" disabled={fareAdminLoading}>
+                <div className="field">
+              <label>Class</label>
+              <select
+                value={journeyClass}
+                onChange={(e) => setJourneyClass(e.target.value)}
+              >
+                <option value="SL">Sleeper - SL</option>
+                <option value="3A">AC 3 Tier - 3A</option>
+                <option value="2A">AC 2 Tier - 2A</option>
+                <option value="1A">AC First Class - 1A</option>
+                <option value="CC">Chair Car - CC</option>
+                <option value="2S">Second Sitting - 2S</option>
+              </select>
+            </div>
+
+            <button type="submit" disabled={fareAdminLoading}>
                   Save verified fare
                 </button>
               </form>
@@ -1056,6 +1066,7 @@ function App() {
     lines.push("RailYatra Journey Option");
     lines.push("------------------------");
     lines.push(`Route: ${source} → ${destination}`);
+    lines.push(`Class: ${journeyClass}`);
     lines.push(`Option: ${title}`);
     lines.push(`Type: ${item.label || item.type}`);
     lines.push(
@@ -1153,6 +1164,7 @@ function App() {
     lines.push("RailYatra Route Comparison Report");
     lines.push("=================================");
     lines.push(`Route: ${source} → ${destination}`);
+    lines.push(`Class: ${journeyClass}`);
     lines.push(`Filter: ${activeFilter}`);
     lines.push(`Sort: ${sortMode}`);
     lines.push(`Total visible options: ${recommendations.length}`);
