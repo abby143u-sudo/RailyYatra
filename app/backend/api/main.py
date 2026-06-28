@@ -1,3 +1,7 @@
+from backend.services.fare_source_adapter import (
+    get_fare_sources,
+    lookup_best_fare,
+)
 from backend.services.fare_csv_importer import import_fares_from_csv
 from pathlib import Path
 from backend.services.official_fare_service import (
@@ -308,3 +312,25 @@ def import_fare_csv(csv_file: str = "fares_original_format.csv"):
         "result": result,
         "stats": get_fare_stats(),
     }
+
+
+@app.get("/fare/sources")
+def fare_sources():
+    return {
+        "sources": get_fare_sources(),
+    }
+
+
+@app.get("/fare/lookup")
+def fare_lookup(
+    train_no: str,
+    source: str,
+    destination: str,
+    class_code: str = "SL",
+):
+    return lookup_best_fare(
+        train_no=train_no,
+        source=source,
+        destination=destination,
+        class_code=class_code,
+    )
