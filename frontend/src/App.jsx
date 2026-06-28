@@ -70,6 +70,24 @@ function App() {
     [allRecommendations]
   );
 
+  const fastestOption = useMemo(() => {
+    if (!allRecommendations.length) return null;
+
+    return [...allRecommendations].sort(
+      (a, b) => getRecommendationDuration(a) - getRecommendationDuration(b)
+    )[0];
+  }, [allRecommendations]);
+
+  const leastTransferOption = useMemo(() => {
+    if (!allRecommendations.length) return null;
+
+    return [...allRecommendations].sort(
+      (a, b) =>
+        getRecommendationTransfers(a) - getRecommendationTransfers(b) ||
+        b.score - a.score
+    )[0];
+  }, [allRecommendations]);
+
   function cleanStation(value) {
     return value.trim().toUpperCase();
   }
@@ -198,6 +216,38 @@ function App() {
 
   function toggleDetails(cardId) {
     setExpandedCard(expandedCard === cardId ? null : cardId);
+  }
+
+  function getRecommendationTitle(item) {
+    if (!item) return "Not available";
+
+    const data = item.data || {};
+
+    if (item.type === "multi_transfer") {
+      return data.summary || item.label;
+    }
+
+    if (item.type === "direct") {
+      return `${data.train_no} ${data.train_name}`;
+    }
+
+    if (item.type === "one_transfer") {
+      return `${data.first_train} + ${data.second_train}`;
+    }
+
+    return item.label || "Journey option";
+  }
+
+  function getRecommendationSubtext(item) {
+    if (!item) return "";
+
+    const duration = getRecommendationDuration(item);
+    const transfers = getRecommendationTransfers(item);
+
+    const durationText = duration === 9999 ? "Duration N/A" : `${duration} hrs`;
+    const transferText = transfers === 0 ? "No transfer" : `${transfers} transfer`;
+
+    return `${durationText} · ${transferText} · Score ${item.score}`;
   }
 
   function renderDirectCard(item, index) {
@@ -604,6 +654,26 @@ function App() {
               <div className="highlight-card">
                 <span>Total options</span>
                 <strong>{result.total_recommendations || recommendations.length}</strong>
+              </div>
+            </div>
+
+            <div className="comparison-grid">
+              <div className="comparison-card">
+                <span>🏆 Best overall</span>
+                <strong>{getRecommendationTitle(result.best)}</strong>
+                <p>{getRecommendationSubtext(result.best)}</p>
+              </div>
+
+              <div className="comparison-card">
+                <span>⚡ Fastest</span>
+                <strong>{getRecommendationTitle(fastestOption)}</strong>
+                <p>{getRecommendationSubtext(fastestOption)}</p>
+              </div>
+
+              <div className="comparison-card">
+                <span>🔁 Least transfers</span>
+                <strong>{getRecommendationTitle(leastTransferOption)}</strong>
+                <p>{getRecommendationSubtext(leastTransferOption)}</p>
               </div>
             </div>
 
