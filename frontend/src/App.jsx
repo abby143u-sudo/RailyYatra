@@ -210,6 +210,17 @@ function App() {
           </div>
         )}
 
+        {route.reasons?.length > 0 && (
+          <>
+            <div className="section-title">Why recommended</div>
+            <ul>
+              {route.reasons.map((reason, i) => (
+                <li key={i}>✓ {reason}</li>
+              ))}
+            </ul>
+          </>
+        )}
+
         {route.train_legs?.length > 1 && (
           <>
             <div className="section-title">Train legs</div>

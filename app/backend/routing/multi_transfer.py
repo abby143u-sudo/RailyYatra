@@ -305,6 +305,7 @@ def build_route(source, destination, legs):
         "summary": build_summary(legs),
         "route_preview": route_preview,
         "train_legs": clean_legs(legs),
+        "reasons": build_reasons(legs, transfers, total_duration_hours),
     }
 
 
@@ -439,6 +440,45 @@ def duration_between(start_time, start_day, end_time, end_day):
         duration += 24
 
     return round(duration, 2)
+
+
+
+
+def build_reasons(legs, transfers, total_duration_hours):
+    reasons = []
+
+    if transfers == 0:
+        reasons.append("Direct train with no transfer")
+
+    if total_duration_hours and total_duration_hours <= 13:
+        reasons.append("Fast journey duration")
+    elif total_duration_hours and total_duration_hours <= 18:
+        reasons.append("Reasonable overnight journey")
+
+    for leg in legs:
+        name = str(leg.get("train_name") or "").upper()
+        train_type = str(leg.get("train_type") or "").upper()
+        text = name + " " + train_type
+
+        if "RAJDHANI" in text:
+            reasons.append("Premium Rajdhani service")
+            break
+
+        if "DURONTO" in text:
+            reasons.append("Fast Duronto service")
+            break
+
+        if "SUPERFAST" in text or " SF " in f" {text} ":
+            reasons.append("Superfast train option")
+            break
+
+    if transfers > 0:
+        reasons.append(f"{transfers} transfer smart route")
+
+    if not reasons:
+        reasons.append("Available railway route found")
+
+    return reasons[:4]
 
 
 def build_summary(legs):
