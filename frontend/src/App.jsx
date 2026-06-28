@@ -20,6 +20,13 @@ function App() {
   const [fareRows, setFareRows] = useState([]);
   const [fareAdminLoading, setFareAdminLoading] = useState(false);
   const [fareAdminMessage, setFareAdminMessage] = useState("");
+  const [manualFare, setManualFare] = useState({
+    train_no: "",
+    source: "",
+    destination: "",
+    class_code: "SL",
+    fare: "",
+  });
 
   const allRecommendations = result?.recommendations || [];
 
@@ -238,6 +245,67 @@ function App() {
     }
   }
 
+  function updateManualFareField(field, value) {
+    setManualFare((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  async function submitManualFare(event) {
+    event.preventDefault();
+
+    if (
+      !manualFare.train_no ||
+      !manualFare.source ||
+      !manualFare.destination ||
+      !manualFare.fare
+    ) {
+      setFareAdminMessage("Please fill train no, source, destination and fare.");
+      return;
+    }
+
+    setFareAdminLoading(true);
+    setFareAdminMessage("");
+
+    try {
+      const params = new URLSearchParams({
+        train_no: manualFare.train_no,
+        source: manualFare.source,
+        destination: manualFare.destination,
+        class_code: manualFare.class_code || "SL",
+        fare: manualFare.fare,
+      });
+
+      const response = await fetch(
+        `http://127.0.0.1:8000/fare/manual?${params.toString()}`,
+        { method: "POST" }
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        setFareAdminMessage(data.message || "Manual fare save failed");
+      } else {
+        setFareAdminMessage("Manual verified fare saved successfully.");
+
+        setManualFare({
+          train_no: "",
+          source: "",
+          destination: "",
+          class_code: "SL",
+          fare: "",
+        });
+
+        await loadFareAdminData();
+      }
+    } catch (err) {
+      setFareAdminMessage("Manual fare save failed. Check backend server.");
+    } finally {
+      setFareAdminLoading(false);
+    }
+  }
+
   function renderFareAdminPanel() {
     return (
       <div className="fare-admin-wrapper">
@@ -292,6 +360,75 @@ function App() {
                 </div>
               </div>
             )}
+
+            <div className="fare-admin-section">
+              <h4>Add manual verified fare</h4>
+
+              <form className="manual-fare-form" onSubmit={submitManualFare}>
+                <div className="manual-fare-grid">
+                  <label>
+                    <span>Train no</span>
+                    <input
+                      value={manualFare.train_no}
+                      onChange={(e) =>
+                        updateManualFareField("train_no", e.target.value.toUpperCase())
+                      }
+                      placeholder="12303"
+                    />
+                  </label>
+
+                  <label>
+                    <span>Source</span>
+                    <input
+                      value={manualFare.source}
+                      onChange={(e) =>
+                        updateManualFareField("source", e.target.value.toUpperCase())
+                      }
+                      placeholder="PNBE"
+                    />
+                  </label>
+
+                  <label>
+                    <span>Destination</span>
+                    <input
+                      value={manualFare.destination}
+                      onChange={(e) =>
+                        updateManualFareField("destination", e.target.value.toUpperCase())
+                      }
+                      placeholder="NDLS"
+                    />
+                  </label>
+
+                  <label>
+                    <span>Class</span>
+                    <input
+                      value={manualFare.class_code}
+                      onChange={(e) =>
+                        updateManualFareField("class_code", e.target.value.toUpperCase())
+                      }
+                      placeholder="SL"
+                    />
+                  </label>
+
+                  <label>
+                    <span>Fare</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={manualFare.fare}
+                      onChange={(e) =>
+                        updateManualFareField("fare", e.target.value)
+                      }
+                      placeholder="590"
+                    />
+                  </label>
+                </div>
+
+                <button type="submit" disabled={fareAdminLoading}>
+                  Save verified fare
+                </button>
+              </form>
+            </div>
 
             <div className="fare-admin-section">
               <h4>Importable CSV files</h4>
