@@ -1159,3 +1159,29 @@ li {
   font-size: 12px;
   font-weight: 800;
 }
+
+.share-journey-btn {
+  margin-top: 14px;
+  border: 0;
+  background: #7c3aed;
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.share-journey-btn:hover {
+  background: #6d28d9;
+}
+
+.share-message {
+  margin: 18px 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #5b21b6;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  font-size: 13px;
+  font-weight: 900;
+}
