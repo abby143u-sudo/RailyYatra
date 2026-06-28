@@ -803,6 +803,32 @@ function App() {
     );
   }
 
+  function renderFareCoverageMeter(item) {
+    const coverage = item.fare_coverage;
+
+    if (!coverage || coverage.total_segments === 0) return null;
+
+    return (
+      <div className={`fare-coverage-box coverage-${coverage.status}`}>
+        <div className="fare-coverage-head">
+          <span>{coverage.label}</span>
+          <strong>{coverage.coverage_percent}%</strong>
+        </div>
+
+        <div className="fare-coverage-track">
+          <div
+            className="fare-coverage-fill"
+            style={{ width: `${coverage.coverage_percent}%` }}
+          />
+        </div>
+
+        <p>
+          {coverage.verified_segments}/{coverage.total_segments} fare segments verified
+        </p>
+      </div>
+    );
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -827,6 +853,7 @@ function App() {
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
         {renderFareBox(item)}
+        {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
 
         <button
@@ -921,6 +948,7 @@ function App() {
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
         {renderFareBox(item)}
+        {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
 
         <button
@@ -991,6 +1019,7 @@ function App() {
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
         {renderFareBox(item)}
+        {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
 
         {firstLeg && (

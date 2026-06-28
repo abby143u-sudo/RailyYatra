@@ -1,3 +1,4 @@
+from backend.services.fare_coverage_service import calculate_fare_coverage
 from backend.routing.direct import find_direct_trains
 from backend.routing.transfer import find_one_transfer_routes
 from backend.routing.multi_transfer import find_multi_transfer_routes
@@ -96,6 +97,14 @@ def enrich_recommendation(item, source, destination):
         item_type=item.get("type"),
         data=item.get("data", {}),
         fare=item.get("fare", {}),
+        source=source,
+        destination=destination,
+        class_code="SL",
+    )
+
+    item["fare_coverage"] = calculate_fare_coverage(
+        item_type=item.get("type"),
+        data=item.get("data", {}),
         source=source,
         destination=destination,
         class_code="SL",
