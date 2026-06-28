@@ -772,6 +772,37 @@ function App() {
     );
   }
 
+  function getFareSourceInfo(item) {
+    if (!item || !item.fare) {
+      return {
+        label: "Fare unavailable",
+        className: "unknown",
+      };
+    }
+
+    if (item.fare.fare_source === "fare_table") {
+      return {
+        label: "Verified fare",
+        className: "verified",
+      };
+    }
+
+    return {
+      label: "Estimated fare",
+      className: "estimate",
+    };
+  }
+
+  function renderComparisonFareIndicator(item) {
+    const info = getFareSourceInfo(item);
+
+    return (
+      <div className={`comparison-fare-source ${info.className}`}>
+        {info.label}
+      </div>
+    );
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -1201,18 +1232,21 @@ function App() {
                 <span>🏆 Best overall</span>
                 <strong>{getRecommendationTitle(result.best)}</strong>
                 <p>{getRecommendationSubtext(result.best)}</p>
+                {renderComparisonFareIndicator(result.best)}
               </div>
 
               <div className="comparison-card">
                 <span>⚡ Fastest</span>
                 <strong>{getRecommendationTitle(fastestOption)}</strong>
                 <p>{getRecommendationSubtext(fastestOption)}</p>
+                {renderComparisonFareIndicator(fastestOption)}
               </div>
 
               <div className="comparison-card">
                 <span>🔁 Least transfers</span>
                 <strong>{getRecommendationTitle(leastTransferOption)}</strong>
                 <p>{getRecommendationSubtext(leastTransferOption)}</p>
+                {renderComparisonFareIndicator(leastTransferOption)}
               </div>
             </div>
 
