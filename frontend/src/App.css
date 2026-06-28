@@ -666,3 +666,79 @@ li {
   font-size: 12px;
   font-weight: 700;
 }
+
+.split-ticket-box {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.16), rgba(16, 185, 129, 0.1));
+  border: 1px solid rgba(202, 138, 4, 0.22);
+}
+
+.split-ticket-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.split-ticket-header span {
+  color: #854d0e;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.split-ticket-header strong {
+  color: #047857;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.split-ticket-box p {
+  margin: 8px 0 10px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.split-ticket-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.split-ticket-meta span {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #334155;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.split-segments {
+  margin-top: 12px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.split-segments li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.split-segments strong {
+  color: #0f172a;
+  font-size: 12px;
+}
+
+.split-segments span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}

@@ -3,6 +3,7 @@ from backend.routing.transfer import find_one_transfer_routes
 from backend.routing.multi_transfer import find_multi_transfer_routes
 from backend.graph.algorithms import has_route
 from backend.services.fare_estimator import estimate_journey_fare
+from backend.services.split_ticket_engine import build_split_ticket_plan
 
 
 def plan_journey(source, destination, limit=10):
@@ -45,7 +46,7 @@ def plan_journey(source, destination, limit=10):
     )
 
     all_recommendations = [
-        enrich_recommendation(item)
+        enrich_recommendation(item, source, destination)
         for item in all_recommendations
     ]
 
@@ -59,7 +60,7 @@ def plan_journey(source, destination, limit=10):
     balanced_recommendations.extend(transfer_recommendations[:3])
 
     balanced_recommendations = [
-        enrich_recommendation(item)
+        enrich_recommendation(item, source, destination)
         for item in balanced_recommendations
     ]
 
@@ -82,12 +83,20 @@ def plan_journey(source, destination, limit=10):
     }
 
 
-def enrich_recommendation(item):
+def enrich_recommendation(item, source, destination):
     item = dict(item)
 
     item["fare"] = estimate_journey_fare(
         item_type=item.get("type"),
         data=item.get("data", {}),
+    )
+
+    item["split_ticket"] = build_split_ticket_plan(
+        item_type=item.get("type"),
+        data=item.get("data", {}),
+        fare=item.get("fare", {}),
+        source=source,
+        destination=destination,
     )
 
     return item

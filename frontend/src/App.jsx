@@ -416,6 +416,43 @@ function App() {
     );
   }
 
+  function renderSplitTicketBox(item) {
+    const split = item.split_ticket;
+
+    if (!split || !split.recommended) return null;
+
+    return (
+      <div className="split-ticket-box">
+        <div className="split-ticket-header">
+          <span>Split-ticket intelligence</span>
+          <strong>Save ₹{split.estimated_saving}</strong>
+        </div>
+
+        <p>{split.reason}</p>
+
+        <div className="split-ticket-meta">
+          <span>Original ₹{split.estimated_original_fare}</span>
+          <span>After split ₹{split.estimated_split_fare}</span>
+          <span>{split.ticket_count} tickets</span>
+          <span>{split.confidence} confidence</span>
+        </div>
+
+        {split.segments?.length > 0 && (
+          <ul className="split-segments">
+            {split.segments.map((segment, index) => (
+              <li key={index}>
+                <strong>{segment.from} → {segment.to}</strong>
+                <span>
+                  {segment.train_no} · ₹{segment.estimated_fare}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -440,6 +477,7 @@ function App() {
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
         {renderFareBox(item)}
+        {renderSplitTicketBox(item)}
 
         <button
           type="button"
@@ -533,6 +571,7 @@ function App() {
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
         {renderFareBox(item)}
+        {renderSplitTicketBox(item)}
 
         <button
           type="button"
@@ -602,6 +641,7 @@ function App() {
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
         {renderFareBox(item)}
+        {renderSplitTicketBox(item)}
 
         {firstLeg && (
           <div className="timeline">
