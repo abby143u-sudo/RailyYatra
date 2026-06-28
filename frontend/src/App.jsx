@@ -12,26 +12,47 @@ function App() {
   const [sourceSuggestions, setSourceSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [sortMode, setSortMode] = useState("best");
 
   const allRecommendations = result?.recommendations || [];
 
   const recommendations = useMemo(() => {
-    if (activeFilter === "all") return allRecommendations;
+    let filtered = allRecommendations;
 
     if (activeFilter === "smart") {
-      return allRecommendations.filter((item) => item.type === "multi_transfer");
+      filtered = allRecommendations.filter((item) => item.type === "multi_transfer");
     }
 
     if (activeFilter === "direct") {
-      return allRecommendations.filter((item) => item.type === "direct");
+      filtered = allRecommendations.filter((item) => item.type === "direct");
     }
 
     if (activeFilter === "transfer") {
-      return allRecommendations.filter((item) => item.type === "one_transfer");
+      filtered = allRecommendations.filter((item) => item.type === "one_transfer");
     }
 
-    return allRecommendations;
-  }, [allRecommendations, activeFilter]);
+    const sorted = [...filtered];
+
+    if (sortMode === "best") {
+      sorted.sort((a, b) => b.score - a.score);
+    }
+
+    if (sortMode === "fastest") {
+      sorted.sort(
+        (a, b) =>
+          getRecommendationDuration(a) - getRecommendationDuration(b)
+      );
+    }
+
+    if (sortMode === "least_transfers") {
+      sorted.sort(
+        (a, b) =>
+          getRecommendationTransfers(a) - getRecommendationTransfers(b)
+      );
+    }
+
+    return sorted;
+  }, [allRecommendations, activeFilter, sortMode]);
 
   const bestDirect = useMemo(
     () => allRecommendations.find((item) => item.type === "direct"),
@@ -107,6 +128,7 @@ function App() {
     setError("");
     setResult(null);
     setActiveFilter("all");
+    setSortMode("best");
 
     try {
       const res = await fetch(
@@ -134,6 +156,42 @@ function App() {
       return "N/A";
     }
     return value;
+  }
+
+  function getRecommendationDuration(item) {
+    const data = item.data || {};
+
+    if (item.type === "multi_transfer") {
+      return data.total_duration_hours || 9999;
+    }
+
+    if (item.type === "direct") {
+      return data.duration_hours || 9999;
+    }
+
+    if (item.type === "one_transfer") {
+      return data.total_duration_hours || 9999;
+    }
+
+    return 9999;
+  }
+
+  function getRecommendationTransfers(item) {
+    const data = item.data || {};
+
+    if (item.type === "multi_transfer") {
+      return data.transfers || 0;
+    }
+
+    if (item.type === "direct") {
+      return 0;
+    }
+
+    if (item.type === "one_transfer") {
+      return 1;
+    }
+
+    return 99;
   }
 
   function renderDirectCard(item, index) {
@@ -501,6 +559,34 @@ function App() {
                 onClick={() => setActiveFilter("transfer")}
               >
                 Transfer
+              </button>
+            </div>
+
+            <div className="sort-tabs">
+              <span>Sort by</span>
+
+              <button
+                type="button"
+                className={sortMode === "best" ? "active" : ""}
+                onClick={() => setSortMode("best")}
+              >
+                Best
+              </button>
+
+              <button
+                type="button"
+                className={sortMode === "fastest" ? "active" : ""}
+                onClick={() => setSortMode("fastest")}
+              >
+                Fastest
+              </button>
+
+              <button
+                type="button"
+                className={sortMode === "least_transfers" ? "active" : ""}
+                onClick={() => setSortMode("least_transfers")}
+              >
+                Least Transfers
               </button>
             </div>
 
