@@ -186,6 +186,7 @@ function App() {
           <span>{route.transfers} transfers</span>
           <span>{route.leg_count} train leg{route.leg_count > 1 ? "s" : ""}</span>
           <span>{route.total_stops} stops</span>
+          <span>{safeValue(route.total_duration_hours)} hrs</span>
         </div>
 
         {firstLeg && (
@@ -196,8 +197,10 @@ function App() {
             </div>
 
             <div>
-              <strong>Train {firstLeg.train_no}</strong>
-              <span>{firstLeg.stop_count} stops</span>
+              <strong>{firstLeg.train_no}</strong>
+              <span>
+                {firstLeg.train_name || "Train"} · {firstLeg.stop_count} stops
+              </span>
             </div>
 
             <div>
@@ -214,7 +217,8 @@ function App() {
               {route.train_legs.map((leg, i) => (
                 <li key={i}>
                   ✓ {leg.from} → {leg.to} by {leg.train_no} ·{" "}
-                  {safeValue(leg.start_time)} → {safeValue(leg.end_time)}
+                  {leg.train_name || "Train"} · {safeValue(leg.start_time)} →{" "}
+                  {safeValue(leg.end_time)} · {safeValue(leg.duration_hours)} hrs
                 </li>
               ))}
             </ul>

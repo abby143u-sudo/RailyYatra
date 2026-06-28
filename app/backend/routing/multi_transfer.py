@@ -11,16 +11,32 @@ def load_train_data():
     if _data_cache is not None:
         return _data_cache
 
-    rows = fetch_all("""
+    stop_rows = fetch_all("""
         SELECT train_no, station_code, stop_order, arrival_time, departure_time, day
         FROM train_stops
         ORDER BY train_no, CAST(stop_order AS INTEGER)
     """)
 
+    train_rows = fetch_all("""
+        SELECT train_no, train_name, train_type
+        FROM trains
+    """)
+
+    train_info = {}
+
+    for row in train_rows:
+        train_no = str(row["train_no"])
+        train_info[train_no] = {
+            "train_name": row.get("train_name"),
+            "train_type": row.get("train_type"),
+        }
+
     train_routes = defaultdict(list)
 
-    for row in rows:
-        train_routes[row["train_no"]].append({
+    for row in stop_rows:
+        train_no = str(row["train_no"])
+
+        train_routes[train_no].append({
             "station_code": row["station_code"],
             "stop_order": int(row["stop_order"]),
             "arrival_time": row.get("arrival_time"),
@@ -46,6 +62,7 @@ def load_train_data():
         "train_routes": dict(train_routes),
         "station_to_positions": dict(station_to_positions),
         "station_train_count": station_train_count,
+        "train_info": train_info,
     }
 
     return _data_cache
@@ -59,6 +76,7 @@ def find_multi_transfer_routes(source, destination, max_transfers=3, limit=10):
     train_routes = data["train_routes"]
     station_to_positions = data["station_to_positions"]
     station_train_count = data["station_train_count"]
+    train_info = data["train_info"]
 
     if source not in station_to_positions or destination not in station_to_positions:
         return []
@@ -95,6 +113,7 @@ def find_multi_transfer_routes(source, destination, max_transfers=3, limit=10):
             train_routes=train_routes,
             station_to_positions=station_to_positions,
             station_train_count=station_train_count,
+            train_info=train_info,
             used_trains=used_trains,
             visited_stations=visited_stations,
         )
@@ -126,6 +145,7 @@ def find_forward_train_legs(
     train_routes,
     station_to_positions,
     station_train_count,
+    train_info,
     used_trains,
     visited_stations,
 ):
@@ -137,8 +157,8 @@ def find_forward_train_legs(
         "PRYJ", "CNB", "LKO", "GZB", "NDLS", "ANVT", "DLI"
     }
 
-    for pos in positions[:80]:
-        train_no = pos["train_no"]
+    for pos in positions[:100]:
+        train_no = str(pos["train_no"])
 
         if train_no in used_trains:
             continue
@@ -165,6 +185,7 @@ def find_forward_train_legs(
                 stop_count=destination_stop["stop_order"] - route[start_index]["stop_order"] + 1,
                 is_destination=True,
                 transfer_strength=9999,
+                train_info=train_info,
             ))
             continue
 
@@ -201,13 +222,15 @@ def find_forward_train_legs(
                 stop_count=stop["stop_order"] - route[start_index]["stop_order"] + 1,
                 is_destination=False,
                 transfer_strength=candidate["transfer_strength"],
+                train_info=train_info,
             ))
 
     options.sort(
         key=lambda leg: (
             leg["is_destination"],
+            leg["leg_score"],
             leg["transfer_strength"],
-            leg["stop_count"]
+            -leg["stop_count"],
         ),
         reverse=True
     )
@@ -224,28 +247,51 @@ def make_leg(
     stop_count,
     is_destination,
     transfer_strength,
+    train_info,
 ):
-    return {
-        "train_no": train_no,
+    info = train_info.get(str(train_no), {})
+
+    train_name = info.get("train_name")
+    train_type = info.get("train_type")
+
+    duration_hours = duration_between(
+        from_stop.get("departure_time"),
+        from_stop.get("day"),
+        to_stop.get("arrival_time"),
+        to_stop.get("day"),
+    )
+
+    leg = {
+        "train_no": str(train_no),
+        "train_name": train_name,
+        "train_type": train_type,
         "from": from_station,
         "to": to_station,
         "start_time": from_stop.get("departure_time"),
         "end_time": to_stop.get("arrival_time"),
         "start_day": from_stop.get("day"),
         "end_day": to_stop.get("day"),
+        "duration_hours": duration_hours,
         "stop_count": stop_count,
         "is_destination": is_destination,
         "transfer_strength": transfer_strength,
     }
 
+    leg["leg_score"] = calculate_leg_score(leg)
+
+    return leg
+
 
 def build_route(source, destination, legs):
     transfers = max(len(legs) - 1, 0)
     total_stops = sum(leg["stop_count"] for leg in legs)
+    total_duration_hours = calculate_total_duration(legs)
 
     route_preview = [source]
     for leg in legs:
         route_preview.append(leg["to"])
+
+    score = calculate_score(legs)
 
     return {
         "type": "multi_transfer",
@@ -254,25 +300,145 @@ def build_route(source, destination, legs):
         "transfers": transfers,
         "leg_count": len(legs),
         "total_stops": total_stops,
-        "score": calculate_score(legs),
+        "total_duration_hours": total_duration_hours,
+        "score": score,
         "summary": build_summary(legs),
         "route_preview": route_preview,
         "train_legs": clean_legs(legs),
     }
 
 
+def calculate_total_duration(legs):
+    total = 0
+
+    for leg in legs:
+        duration = leg.get("duration_hours")
+        if duration is not None:
+            total += duration
+
+    return round(total, 2)
+
+
 def calculate_score(legs):
     transfers = max(len(legs) - 1, 0)
     total_stops = sum(leg["stop_count"] for leg in legs)
+    total_duration = calculate_total_duration(legs)
 
-    score = 1200
+    score = 1000
+
     score -= transfers * 250
-    score -= total_stops * 2
+    score -= int(total_stops * 0.6)
+
+    if total_duration:
+        score -= int(total_duration * 14)
+
+    score += sum(train_quality_bonus(leg) for leg in legs)
 
     if transfers == 0:
-        score += 300
+        score += 120
 
     return max(score, 0)
+
+
+def calculate_leg_score(leg):
+    score = 500
+
+    duration = leg.get("duration_hours")
+    if duration:
+        score -= int(duration * 10)
+
+    score -= int(leg.get("stop_count", 0) * 0.5)
+    score += train_quality_bonus(leg)
+
+    if leg.get("is_destination"):
+        score += 200
+
+    return max(score, 0)
+
+
+def train_quality_bonus(leg):
+    name = str(leg.get("train_name") or "").upper()
+    train_type = str(leg.get("train_type") or "").upper()
+    text = name + " " + train_type
+
+    bonus = 0
+
+    if "VANDE" in text or "TEJAS" in text:
+        bonus += 260
+
+    if "RAJDHANI" in text:
+        bonus += 250
+
+    if "DURONTO" in text:
+        bonus += 220
+
+    if "SHATABDI" in text:
+        bonus += 220
+
+    if "GARIB RATH" in text:
+        bonus += 120
+
+    if "SUPERFAST" in text or " SF " in f" {text} ":
+        bonus += 100
+
+    if "EXPRESS" in text:
+        bonus += 40
+
+    if "PASSENGER" in text:
+        bonus -= 80
+
+    if "MEMU" in text or "DEMU" in text:
+        bonus -= 60
+
+    return bonus
+
+
+def parse_day(day_value):
+    try:
+        if day_value is None:
+            return 1
+        return int(day_value)
+    except Exception:
+        return 1
+
+
+def parse_time_to_hours(time_value):
+    if not time_value or time_value == "None":
+        return None
+
+    try:
+        parts = str(time_value).split(":")
+        hour = int(parts[0])
+        minute = int(parts[1])
+        second = int(parts[2]) if len(parts) > 2 else 0
+        return hour + minute / 60 + second / 3600
+    except Exception:
+        return None
+
+
+def absolute_hours(time_value, day_value):
+    time_hours = parse_time_to_hours(time_value)
+
+    if time_hours is None:
+        return None
+
+    day = parse_day(day_value)
+    return (day - 1) * 24 + time_hours
+
+
+def duration_between(start_time, start_day, end_time, end_day):
+    start = absolute_hours(start_time, start_day)
+    end = absolute_hours(end_time, end_day)
+
+    if start is None or end is None:
+        return None
+
+    duration = end - start
+
+    while duration < 0:
+        duration += 24
+
+    return round(duration, 2)
 
 
 def build_summary(legs):
@@ -288,13 +454,17 @@ def clean_legs(legs):
     for leg in legs:
         cleaned.append({
             "train_no": leg["train_no"],
+            "train_name": leg["train_name"],
+            "train_type": leg["train_type"],
             "from": leg["from"],
             "to": leg["to"],
             "start_time": leg["start_time"],
             "end_time": leg["end_time"],
             "start_day": leg["start_day"],
             "end_day": leg["end_day"],
+            "duration_hours": leg["duration_hours"],
             "stop_count": leg["stop_count"],
+            "quality_bonus": train_quality_bonus(leg),
         })
 
     return cleaned
