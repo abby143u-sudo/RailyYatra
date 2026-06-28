@@ -632,3 +632,37 @@ li {
   border-color: rgba(239, 68, 68, 0.22);
   color: #991b1b;
 }
+
+.fare-box {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(37, 99, 235, 0.08));
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+.fare-box > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.fare-box span {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fare-box strong {
+  color: #047857;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.fare-box p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}

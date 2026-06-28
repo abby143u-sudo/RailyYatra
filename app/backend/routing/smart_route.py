@@ -2,6 +2,7 @@ from backend.routing.direct import find_direct_trains
 from backend.routing.transfer import find_one_transfer_routes
 from backend.routing.multi_transfer import find_multi_transfer_routes
 from backend.graph.algorithms import has_route
+from backend.services.fare_estimator import estimate_journey_fare
 
 
 def plan_journey(source, destination, limit=10):
@@ -43,6 +44,11 @@ def plan_journey(source, destination, limit=10):
         transfer_recommendations
     )
 
+    all_recommendations = [
+        enrich_recommendation(item)
+        for item in all_recommendations
+    ]
+
     all_recommendations.sort(key=lambda x: x["score"], reverse=True)
 
     best = all_recommendations[0] if all_recommendations else None
@@ -51,6 +57,11 @@ def plan_journey(source, destination, limit=10):
     balanced_recommendations.extend(multi_recommendations[:4])
     balanced_recommendations.extend(filtered_direct[:3])
     balanced_recommendations.extend(transfer_recommendations[:3])
+
+    balanced_recommendations = [
+        enrich_recommendation(item)
+        for item in balanced_recommendations
+    ]
 
     balanced_recommendations = remove_duplicate_recommendations(
         balanced_recommendations
@@ -69,6 +80,17 @@ def plan_journey(source, destination, limit=10):
         "best": best,
         "recommendations": balanced_recommendations[:limit]
     }
+
+
+def enrich_recommendation(item):
+    item = dict(item)
+
+    item["fare"] = estimate_journey_fare(
+        item_type=item.get("type"),
+        data=item.get("data", {}),
+    )
+
+    return item
 
 
 def build_direct_recommendations(direct_routes):

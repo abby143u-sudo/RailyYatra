@@ -391,6 +391,31 @@ function App() {
     );
   }
 
+  function renderFareBox(item) {
+    const fare = item.fare;
+
+    if (!fare) return null;
+
+    return (
+      <div className="fare-box">
+        <div>
+          <span>Estimated fare</span>
+          <strong>₹{fare.estimated_fare}</strong>
+        </div>
+
+        <div>
+          <span>Possible saving</span>
+          <strong>₹{fare.split_saving_estimate}</strong>
+        </div>
+
+        <p>
+          After split estimate: ₹{fare.estimated_after_split} · Confidence:{" "}
+          {fare.confidence}
+        </p>
+      </div>
+    );
+  }
+
   function renderDirectCard(item, index) {
     const train = item.data;
 
@@ -414,6 +439,7 @@ function App() {
 
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
+        {renderFareBox(item)}
 
         <button
           type="button"
@@ -506,6 +532,7 @@ function App() {
 
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
+        {renderFareBox(item)}
 
         <button
           type="button"
@@ -574,6 +601,7 @@ function App() {
 
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
+        {renderFareBox(item)}
 
         {firstLeg && (
           <div className="timeline">
