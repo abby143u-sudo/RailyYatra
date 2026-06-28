@@ -1185,3 +1185,57 @@ li {
   font-size: 13px;
   font-weight: 900;
 }
+
+.report-export-box {
+  margin: 18px 0 22px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(37, 99, 235, 0.08));
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.report-export-box span {
+  display: block;
+  color: #6d28d9;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.report-export-box strong {
+  display: block;
+  color: #0f172a;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.report-export-box button {
+  border: 0;
+  background: #7c3aed;
+  color: #ffffff;
+  padding: 11px 15px;
+  border-radius: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.report-export-box button:hover {
+  background: #6d28d9;
+}
+
+@media (max-width: 800px) {
+  .report-export-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-export-box button {
+    width: 100%;
+  }
+}
