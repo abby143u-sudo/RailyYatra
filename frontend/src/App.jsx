@@ -2755,6 +2755,87 @@ function App() {
     );
   }
 
+  function hasSearchResultPayload() {
+    return Boolean(result);
+  }
+
+  function applyNoResultsSampleRoute() {
+    setSource("PNBE");
+    setDestination("NDLS");
+
+    if (typeof setSearchValidation === "function") {
+      setSearchValidation(null);
+    }
+
+    if (typeof setSearchErrorDetails === "function") {
+      setSearchErrorDetails(null);
+    }
+
+    if (typeof setError === "function") {
+      setError("");
+    }
+
+    if (typeof setShowAdvancedFilters === "function") {
+      setShowAdvancedFilters(false);
+    }
+
+    if (typeof resetSearchFilters === "function") {
+      resetSearchFilters();
+    }
+  }
+
+  function renderCleanNoResultsCard() {
+    const baseList = Array.isArray(allRecommendations) ? allRecommendations : [];
+    const visibleList = Array.isArray(recommendations) ? recommendations : [];
+    const loadingActive =
+      (typeof loading !== "undefined" && loading) ||
+      (typeof isLoading !== "undefined" && isLoading);
+
+    if (loadingActive) return null;
+    if (typeof searchValidation !== "undefined" && searchValidation) return null;
+    if (typeof searchErrorDetails !== "undefined" && searchErrorDetails) return null;
+    if (!hasSearchResultPayload()) return null;
+    if (baseList.length || visibleList.length) return null;
+
+    return (
+      <div className="clean-no-results-card">
+        <div className="clean-no-results-icon">🚆</div>
+
+        <div>
+          <span>No routes found</span>
+          <strong>RailYatra could not find a route for this search</strong>
+          <p>
+            Try a popular test route, reset filters, or check if the backend data
+            contains both station codes.
+          </p>
+
+          <div className="clean-no-results-tips">
+            <small>Good test route: PNBE → NDLS</small>
+            <small>Check station spellings and railway codes</small>
+            <small>Try All train type and General quota</small>
+          </div>
+        </div>
+
+        <div className="clean-no-results-actions">
+          <button type="button" onClick={applyNoResultsSampleRoute}>
+            Use PNBE → NDLS
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof resetSearchFilters === "function") {
+                resetSearchFilters();
+              }
+            }}
+          >
+            Reset filters
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   function renderRouteSkeletonLoader() {
     if (!isRouteSearchLoading()) return null;
 
@@ -4136,6 +4217,8 @@ function App() {
         {renderSearchSummaryStatsBar()}
 
         {renderRouteSkeletonLoader()}
+
+        {renderCleanNoResultsCard()}
 
         {renderSmartWarningsPanel()}
 
