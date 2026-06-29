@@ -184,6 +184,17 @@ function App() {
     return value.trim().toUpperCase();
   }
 
+  function resetSearchFilters() {
+    setJourneyClass("SL");
+    setTrainType("All");
+    setJourneyDate("");
+    setQuota("GN");
+    setMaxFare("");
+    setActiveFilter("all");
+    setSortMode("best");
+    setExpandedCard(null);
+  }
+
   function swapStations() {
     setSource(destination);
     setDestination(source);
@@ -1884,6 +1895,14 @@ function App() {
               placeholder="Max ₹"
             />
           </div>
+
+          <button
+            type="button"
+            className="search-btn secondary"
+            onClick={resetSearchFilters}
+          >
+            Reset Filters
+          </button>
 
           <button type="submit" className="search-btn">
             {loading ? "Searching..." : "Search"}
