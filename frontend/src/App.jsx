@@ -17,6 +17,7 @@ function App() {
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortMode, setSortMode] = useState("best");
+  const [maxTransferWait, setMaxTransferWait] = useState("");
   const [departureWindow, setDepartureWindow] = useState("all");
   const [maxFare, setMaxFare] = useState("");
   const [expandedCard, setExpandedCard] = useState(null);
@@ -85,6 +86,19 @@ function App() {
       );
     }
 
+    if (maxTransferWait) {
+      const waitLimit = Number(maxTransferWait);
+
+      if (!Number.isNaN(waitLimit) && waitLimit >= 0) {
+        filtered = filtered.filter((item) => {
+          const wait = getTransferWaitHours(item);
+          return wait === null || wait <= waitLimit;
+        });
+      }
+    }
+
+    const maxTransferWaitFilterNote = "max transfer wait filter active";
+
     const sorted = [...filtered];
 
     if (sortMode === "best") {
@@ -114,7 +128,7 @@ function App() {
     }
 
     return sorted;
-  }, [allRecommendations, activeFilter, sortMode, maxFare, departureWindow]);
+  }, [allRecommendations, activeFilter, sortMode, maxFare, departureWindow, maxTransferWait]);
 
   const bestDirect = useMemo(
     () => allRecommendations.find((item) => item.type === "direct"),
@@ -248,6 +262,7 @@ function App() {
     setMaxFare("");
     setActiveFilter("all");
     setSortMode("best");
+    setMaxTransferWait("");
     setDepartureWindow("all");
     setExpandedCard(null);
   }
@@ -781,6 +796,29 @@ function App() {
     return 999999;
   }
 
+  function getTransferWaitHours(item) {
+    const data = item.data || {};
+
+    if (item.type === "direct") return 0;
+
+    const values = [
+      data.transfer_wait_hours,
+      data.max_transfer_wait_hours,
+      data.total_wait_hours,
+      data.wait_hours,
+    ];
+
+    for (const value of values) {
+      const numeric = Number(value);
+
+      if (!Number.isNaN(numeric) && numeric >= 0) {
+        return numeric;
+      }
+    }
+
+    return null;
+  }
+
   function getRecommendationDuration(item) {
     const data = item.data || {};
 
@@ -1284,6 +1322,7 @@ function App() {
     lines.push(`Filter: ${activeFilter}`);
     if (activeFilter === "low_risk") lines.push("Low risk journeys only");
     lines.push(`Sort: ${sortMode}`);
+    if (maxTransferWait) lines.push(`Max transfer wait: ${maxTransferWait} hrs`);
     lines.push(`Departure window: ${departureWindow}`);
     if (sortMode === "cheapest") lines.push("Lowest fare sort enabled");
     lines.push(`Total visible options: ${recommendations.length}`);
@@ -1974,6 +2013,18 @@ function App() {
               <option value="evening">Evening: 5 PM - 9 PM</option>
               <option value="night">Night: 9 PM - 5 AM</option>
             </select>
+          </div>
+
+          <div className="field">
+            <label>Max Transfer Wait</label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value={maxTransferWait}
+              onChange={(e) => setMaxTransferWait(e.target.value)}
+              placeholder="Hours"
+            />
           </div>
 
           <button type="submit" className="search-btn">
