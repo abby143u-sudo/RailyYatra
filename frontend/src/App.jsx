@@ -3,6 +3,7 @@ import "./App.css";
 
 const API_BASE = "http://127.0.0.1:8000";
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
+const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
 
 function App() {
   const [source, setSource] = useState("PNBE");
@@ -26,6 +27,14 @@ function App() {
   const [expandedCard, setExpandedCard] = useState(null);
   const [compareRoutes, setCompareRoutes] = useState([]);
   const [shareMessage, setShareMessage] = useState("");
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      if (typeof window === "undefined") return [];
+      return JSON.parse(localStorage.getItem(RECENT_SEARCHES_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  });
   const [favoriteRoutes, setFavoriteRoutes] = useState(() => {
     try {
       if (typeof window === "undefined") return [];
@@ -376,6 +385,7 @@ function App() {
 
       const data = await res.json();
       setResult(data);
+      addRecentSearch(from, to);
     } catch {
       setError("Backend not connected. Start FastAPI on port 8000.");
     } finally {
@@ -543,6 +553,115 @@ function App() {
     } finally {
       setFareAdminLoading(false);
     }
+  }
+
+  function saveRecentSearches(nextSearches) {
+    setRecentSearches(nextSearches);
+
+    try {
+      localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(nextSearches));
+    } catch {
+      setShareMessage("Could not save recent search.");
+      setTimeout(() => setShareMessage(""), 2200);
+    }
+  }
+
+  function addRecentSearch(from, to) {
+    const search = {
+      key: [
+        from,
+        to,
+        journeyClass,
+        trainType,
+        typeof journeyDate !== "undefined" ? journeyDate : "",
+        typeof quota !== "undefined" ? quota : "",
+        typeof maxFare !== "undefined" ? maxFare : "",
+      ].join("|"),
+      source: from,
+      destination: to,
+      journeyClass,
+      trainType,
+      journeyDate: typeof journeyDate !== "undefined" ? journeyDate : "",
+      quota: typeof quota !== "undefined" ? quota : "GN",
+      maxFare: typeof maxFare !== "undefined" ? maxFare : "",
+      savedAt: new Date().toISOString(),
+    };
+
+    const withoutDuplicate = recentSearches.filter((item) => item.key !== search.key);
+    const nextSearches = [search, ...withoutDuplicate].slice(0, 8);
+
+    saveRecentSearches(nextSearches);
+  }
+
+  function loadRecentSearch(search) {
+    setSource(search.source);
+    setDestination(search.destination);
+    setJourneyClass(search.journeyClass || "SL");
+    setTrainType(search.trainType || "All");
+
+    if (typeof setJourneyDate !== "undefined") {
+      setJourneyDate(search.journeyDate || "");
+    }
+
+    if (typeof setQuota !== "undefined") {
+      setQuota(search.quota || "GN");
+    }
+
+    if (typeof setMaxFare !== "undefined") {
+      setMaxFare(search.maxFare || "");
+    }
+
+    setActiveFilter("all");
+    setSortMode("best");
+    setExpandedCard(null);
+  }
+
+  function clearRecentSearches() {
+    saveRecentSearches([]);
+    setShareMessage("Recent searches cleared.");
+    setTimeout(() => setShareMessage(""), 2200);
+  }
+
+  function renderRecentSearchesPanel() {
+    if (!recentSearches.length) return null;
+
+    return (
+      <div className="recent-searches-panel">
+        <div className="recent-searches-header">
+          <div>
+            <span>Recent searches</span>
+            <strong>
+              {recentSearches.length} saved search
+              {recentSearches.length > 1 ? "es" : ""}
+            </strong>
+          </div>
+
+          <button type="button" onClick={clearRecentSearches}>
+            Clear
+          </button>
+        </div>
+
+        <div className="recent-searches-list">
+          {recentSearches.map((search) => (
+            <button
+              type="button"
+              className="recent-search-row"
+              key={search.key}
+              onClick={() => loadRecentSearch(search)}
+            >
+              <strong>{search.source} → {search.destination}</strong>
+              <span>
+                {(search.journeyClass || "SL") + " · " +
+                  (search.trainType || "All") + " · " +
+                  (search.journeyDate || "No date") + " · " +
+                  (search.quota || "GN") + " · " +
+                  (search.maxFare ? `Max ₹${search.maxFare}` : "No fare limit")}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   function renderFareAdminPanel() {
@@ -2358,6 +2477,8 @@ function App() {
         {renderFavoritesPanel()}
 
         {renderComparePanel()}
+
+        {renderRecentSearchesPanel()}
 
         <div className="quick-routes">
           <button type="button" onClick={() => setQuickRoute("NDLS", "PNBE")}>
