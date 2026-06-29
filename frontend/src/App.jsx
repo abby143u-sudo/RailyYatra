@@ -2170,6 +2170,137 @@ function App() {
     return suggestions.slice(0, 5);
   }
 
+  function getSummaryFareValue(item) {
+    if (typeof getRecommendationFare === "function") {
+      const fare = getRecommendationFare(item);
+
+      if (!Number.isNaN(Number(fare)) && Number(fare) > 0 && Number(fare) < 999999) {
+        return Number(fare);
+      }
+    }
+
+    const fare = item.fare || {};
+    const data = item.data || {};
+    const values = [
+      fare.estimated_after_split,
+      fare.estimated_fare,
+      fare.total_fare,
+      fare.fare,
+      fare.amount,
+      data.estimated_fare,
+      data.fare,
+    ];
+
+    for (const value of values) {
+      const numeric = Number(value);
+
+      if (!Number.isNaN(numeric) && numeric > 0) {
+        return numeric;
+      }
+    }
+
+    return null;
+  }
+
+  function getSearchSummaryStats() {
+    const baseList = Array.isArray(allRecommendations) ? allRecommendations : [];
+    const visibleList = Array.isArray(recommendations) ? recommendations : [];
+
+    if (!baseList.length) return null;
+
+    const scoreValues = visibleList
+      .map((item) => Number(item.score || 0))
+      .filter((score) => score > 0);
+
+    const fareValues = visibleList
+      .map((item) => getSummaryFareValue(item))
+      .filter((fare) => fare !== null);
+
+    const durationValues = visibleList
+      .map((item) =>
+        typeof getRecommendationDuration === "function"
+          ? getRecommendationDuration(item)
+          : 9999
+      )
+      .filter((duration) => duration > 0 && duration < 9999);
+
+    const directCount = visibleList.filter((item) =>
+      typeof getRecommendationTransfers === "function"
+        ? getRecommendationTransfers(item) === 0
+        : item.type === "direct"
+    ).length;
+
+    const transferCount = visibleList.length - directCount;
+
+    const averageScore = scoreValues.length
+      ? Math.round(scoreValues.reduce((sum, score) => sum + score, 0) / scoreValues.length)
+      : "N/A";
+
+    const bestFare = fareValues.length ? Math.min(...fareValues) : null;
+    const fastestDuration = durationValues.length ? Math.min(...durationValues) : null;
+
+    return {
+      total: baseList.length,
+      visible: visibleList.length,
+      hidden: Math.max(baseList.length - visibleList.length, 0),
+      averageScore,
+      bestFare,
+      fastestDuration,
+      directCount,
+      transferCount,
+    };
+  }
+
+  function renderSearchSummaryStatsBar() {
+    const stats = getSearchSummaryStats();
+
+    if (!stats) return null;
+
+    return (
+      <div className="search-summary-stats">
+        <div>
+          <span>Total routes</span>
+          <strong>{stats.total}</strong>
+        </div>
+
+        <div>
+          <span>Visible</span>
+          <strong>{stats.visible}</strong>
+        </div>
+
+        <div>
+          <span>Hidden by filters</span>
+          <strong>{stats.hidden}</strong>
+        </div>
+
+        <div>
+          <span>Avg score</span>
+          <strong>{stats.averageScore}</strong>
+        </div>
+
+        <div>
+          <span>Best fare</span>
+          <strong>{stats.bestFare ? `₹${stats.bestFare}` : "N/A"}</strong>
+        </div>
+
+        <div>
+          <span>Fastest</span>
+          <strong>{stats.fastestDuration ? `${stats.fastestDuration} hrs` : "N/A"}</strong>
+        </div>
+
+        <div>
+          <span>Direct</span>
+          <strong>{stats.directCount}</strong>
+        </div>
+
+        <div>
+          <span>Transfer</span>
+          <strong>{stats.transferCount}</strong>
+        </div>
+      </div>
+    );
+  }
+
   function renderEmptyResultsSuggestionPanel() {
     const suggestions = getEmptyResultSuggestions();
 
@@ -3084,6 +3215,8 @@ function App() {
         {renderSearchErrorPanel()}
 
         {renderEmptyResultsSuggestionPanel()}
+
+        {renderSearchSummaryStatsBar()}
 
         {renderSmartWarningsPanel()}
 
