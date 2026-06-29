@@ -6,6 +6,7 @@ const API_BASE = "http://127.0.0.1:8000";
 function App() {
   const [source, setSource] = useState("PNBE");
   const [destination, setDestination] = useState("NDLS");
+  const [trainType, setTrainType] = useState("All");
   const [journeyClass, setJourneyClass] = useState("SL");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -216,7 +217,16 @@ function App() {
 
     try {
       const res = await fetch(
-        API_BASE + "/search?source=" + from + "&destination=" + to + "&limit=10"
+      API_BASE +
+        "/search?source=" +
+        from +
+        "&destination=" +
+        to +
+        "&limit=10" +
+        "&class_code=" +
+        journeyClass +
+        "&train_type=" +
+        encodeURIComponent(trainType)
       );
 
       if (!res.ok) throw new Error("Search failed");
@@ -510,33 +520,10 @@ function App() {
                   </label>
                 </div>
 
-                <div className="field">
-              <label>Class</label>
-              <select
-                value={journeyClass}
-                onChange={(e) => setJourneyClass(e.target.value)}
-              >
-                <option value="SL">Sleeper - SL</option>
-                <option value="3A">AC 3 Tier - 3A</option>
-                <option value="2A">AC 2 Tier - 2A</option>
-                <option value="1A">AC First Class - 1A</option>
-                <option value="CC">Chair Car - CC</option>
-                <option value="2S">Second Sitting - 2S</option>
-              </select>
-            </div>
-
-            <button type="submit" disabled={fareAdminLoading}>
-                  Save verified fare
+                <button type="submit" disabled={fareAdminLoading}>
+                  Save manual fare
                 </button>
               </form>
-            </div>
-
-            <div className="fare-admin-section">
-              <h4>Importable CSV files</h4>
-
-              {fareFiles.length === 0 && (
-                <p>No CSV file found in app/data/raw.</p>
-              )}
 
               {fareFiles.map((file) => (
                 <div className="fare-file-row" key={file.file}>
@@ -1765,6 +1752,35 @@ function App() {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="field">
+            <label>Class</label>
+            <select
+              value={journeyClass}
+              onChange={(e) => setJourneyClass(e.target.value)}
+            >
+              <option value="SL">Sleeper - SL</option>
+              <option value="3A">AC 3 Tier - 3A</option>
+              <option value="2A">AC 2 Tier - 2A</option>
+              <option value="1A">AC First Class - 1A</option>
+              <option value="CC">Chair Car - CC</option>
+              <option value="2S">Second Sitting - 2S</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Train Type</label>
+            <select
+              value={trainType}
+              onChange={(e) => setTrainType(e.target.value)}
+            >
+              <option value="All">All</option>
+              <option value="Rajdhani">Rajdhani</option>
+              <option value="Superfast">Superfast</option>
+              <option value="Express">Express</option>
+              <option value="Direct only">Direct only</option>
+            </select>
           </div>
 
           <button type="submit" className="search-btn">
