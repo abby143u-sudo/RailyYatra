@@ -76,20 +76,10 @@ function App() {
 
     async function checkBackendHealth() {
       try {
-        const response = await fetch(`${API_BASE}/`);
+        const nextStatus = await fetchBackendHealthStatus();
 
-        if (!cancelled && response.ok) {
-          setApiStatus({
-            state: "online",
-            label: "Backend online",
-            detail: "RailYatra API is connected.",
-          });
-        } else if (!cancelled) {
-          setApiStatus({
-            state: "warning",
-            label: "Backend responded with issue",
-            detail: `API returned status ${response.status}.`,
-          });
+        if (!cancelled) {
+          setApiStatus(nextStatus);
         }
       } catch {
         if (!cancelled) {
@@ -97,6 +87,7 @@ function App() {
             state: "offline",
             label: "Backend offline",
             detail: "Start backend with uvicorn backend.api.main:app --reload",
+            meta: "Then click Recheck.",
           });
         }
       }
@@ -110,6 +101,8 @@ function App() {
       clearInterval(timer);
     };
   }, []);
+
+
 
   const recommendations = useMemo(() => {
     let filtered = allRecommendations;
@@ -2015,15 +2008,64 @@ function App() {
     return warnings.slice(0, 4);
   }
 
+  function mapHealthPayloadToApiStatus(payload, statusCode = 200) {
+    const graph = payload?.graph || {};
+    const routing = payload?.routing || {};
+    const api = payload?.api || {};
+    const graphMeta =
+      graph.nodes !== null && graph.nodes !== undefined && graph.edges !== null && graph.edges !== undefined
+        ? `Graph: ${graph.nodes} stations/nodes, ${graph.edges} connections/edges`
+        : graph.message || "Graph status not exposed";
+
+    if (payload?.status === "ok") {
+      return {
+        state: "online",
+        label: "Backend healthy",
+        detail: routing.message || api.message || "RailYatra API and routing engine are connected.",
+        meta: graphMeta,
+      };
+    }
+
+    return {
+      state: "warning",
+      label: "Backend partially ready",
+      detail: routing.message || `Health endpoint returned status ${statusCode}.`,
+      meta: graphMeta,
+    };
+  }
+
+  async function fetchBackendHealthStatus() {
+    const response = await fetch(`${API_BASE}/health`);
+    let payload = {};
+
+    try {
+      payload = await response.json();
+    } catch {
+      payload = {};
+    }
+
+    if (!response.ok) {
+      return {
+        state: "warning",
+        label: "Backend health issue",
+        detail: `Health endpoint returned status ${response.status}.`,
+        meta: "Check backend terminal logs.",
+      };
+    }
+
+    return mapHealthPayloadToApiStatus(payload, response.status);
+  }
+
   function renderBackendHealthCard() {
     const statusClass = `backend-health-card backend-health-${apiStatus.state}`;
 
     return (
       <div className={statusClass}>
         <div>
-          <span>API status</span>
+          <span>API health</span>
           <strong>{apiStatus.label}</strong>
           <p>{apiStatus.detail}</p>
+          {apiStatus.meta ? <small>{apiStatus.meta}</small> : null}
         </div>
 
         <button
@@ -2031,31 +2073,20 @@ function App() {
           onClick={async () => {
             setApiStatus({
               state: "checking",
-              label: "Checking backend",
-              detail: "Testing RailYatra API connection...",
+              label: "Checking /health",
+              detail: "Testing RailYatra health endpoint...",
+              meta: "",
             });
 
             try {
-              const response = await fetch(`${API_BASE}/`);
-
-              if (response.ok) {
-                setApiStatus({
-                  state: "online",
-                  label: "Backend online",
-                  detail: "RailYatra API is connected.",
-                });
-              } else {
-                setApiStatus({
-                  state: "warning",
-                  label: "Backend responded with issue",
-                  detail: `API returned status ${response.status}.`,
-                });
-              }
+              const nextStatus = await fetchBackendHealthStatus();
+              setApiStatus(nextStatus);
             } catch {
               setApiStatus({
                 state: "offline",
                 label: "Backend offline",
                 detail: "Start backend with uvicorn backend.api.main:app --reload",
+                meta: "Then click Recheck.",
               });
             }
           }}

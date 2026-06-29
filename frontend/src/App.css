@@ -1734,3 +1734,10 @@ li {
   background: #fef2f2;
   border-color: #fecaca;
 }
+
+.backend-health-card small {
+  display: block;
+  margin-top: 6px;
+  color: #475569;
+  font-size: 12px;
+}
