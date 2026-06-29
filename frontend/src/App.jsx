@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import "./App.css";
 
 const API_BASE = "http://127.0.0.1:8000";
+const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 
 function App() {
   const [source, setSource] = useState("PNBE");
@@ -24,6 +25,14 @@ function App() {
   const [maxFare, setMaxFare] = useState("");
   const [expandedCard, setExpandedCard] = useState(null);
   const [shareMessage, setShareMessage] = useState("");
+  const [favoriteRoutes, setFavoriteRoutes] = useState(() => {
+    try {
+      if (typeof window === "undefined") return [];
+      return JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  });
   const [showFareAdmin, setShowFareAdmin] = useState(false);
   const [fareStats, setFareStats] = useState(null);
   const [fareFiles, setFareFiles] = useState([]);
@@ -1316,6 +1325,119 @@ function App() {
     }
   }
 
+  function saveFavoriteRoutes(nextFavorites) {
+    setFavoriteRoutes(nextFavorites);
+
+    try {
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextFavorites));
+    } catch {
+      setShareMessage("Could not save favorite route.");
+      setTimeout(() => setShareMessage(""), 2200);
+    }
+  }
+
+  function getFavoriteRouteKey(item) {
+    const data = item.data || {};
+
+    if (item.type === "direct") {
+      return `direct-${source}-${destination}-${data.train_no}`;
+    }
+
+    if (item.type === "one_transfer") {
+      return `transfer-${source}-${destination}-${data.first_train}-${data.transfer_station}-${data.second_train}`;
+    }
+
+    if (item.type === "multi_transfer") {
+      const preview = data.route_preview?.join("-") || data.summary || "";
+      const legs = data.train_legs?.map((leg) => leg.train_no).join("-") || "";
+      return `smart-${source}-${destination}-${preview}-${legs}`;
+    }
+
+    return `${source}-${destination}-${getRecommendationTitle(item)}`;
+  }
+
+  function isFavoriteRoute(item) {
+    const key = getFavoriteRouteKey(item);
+    return favoriteRoutes.some((route) => route.key === key);
+  }
+
+  function toggleFavoriteRoute(item) {
+    const key = getFavoriteRouteKey(item);
+    const alreadySaved = favoriteRoutes.some((route) => route.key === key);
+
+    if (alreadySaved) {
+      const nextFavorites = favoriteRoutes.filter((route) => route.key !== key);
+      saveFavoriteRoutes(nextFavorites);
+      setShareMessage("Favorite route removed.");
+      setTimeout(() => setShareMessage(""), 2200);
+      return;
+    }
+
+    const favorite = {
+      key,
+      title: getRecommendationTitle(item),
+      subtext: getRecommendationSubtext(item),
+      source,
+      destination,
+      type: item.label || item.type,
+      savedAt: new Date().toISOString(),
+    };
+
+    const nextFavorites = [favorite, ...favoriteRoutes].slice(0, 20);
+    saveFavoriteRoutes(nextFavorites);
+    setShareMessage("Route saved to favorites.");
+    setTimeout(() => setShareMessage(""), 2200);
+  }
+
+  function clearFavoriteRoutes() {
+    saveFavoriteRoutes([]);
+    setShareMessage("Favorite routes cleared.");
+    setTimeout(() => setShareMessage(""), 2200);
+  }
+
+  function renderFavoriteButton(item) {
+    const saved = isFavoriteRoute(item);
+
+    return (
+      <button
+        type="button"
+        className={saved ? "share-journey-btn favorite-active" : "share-journey-btn"}
+        onClick={() => toggleFavoriteRoute(item)}
+      >
+        {saved ? "★ Saved" : "☆ Save route"}
+      </button>
+    );
+  }
+
+  function renderFavoritesPanel() {
+    if (!favoriteRoutes.length) return null;
+
+    return (
+      <div className="favorites-panel">
+        <div className="favorites-header">
+          <div>
+            <span>Saved routes</span>
+            <strong>{favoriteRoutes.length} favorite route{favoriteRoutes.length > 1 ? "s" : ""}</strong>
+          </div>
+
+          <button type="button" onClick={clearFavoriteRoutes}>
+            Clear
+          </button>
+        </div>
+
+        <div className="favorites-list">
+          {favoriteRoutes.slice(0, 5).map((route) => (
+            <div className="favorite-row" key={route.key}>
+              <strong>{route.title}</strong>
+              <span>{route.source} → {route.destination} · {route.type}</span>
+              <small>{route.subtext}</small>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderShareButton(item) {
     return (
       <button
@@ -1623,6 +1745,7 @@ function App() {
         {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
         {renderShareButton(item)}
+        {renderFavoriteButton(item)}
 
         <button
           type="button"
@@ -1719,6 +1842,7 @@ function App() {
         {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
         {renderShareButton(item)}
+        {renderFavoriteButton(item)}
 
         <button
           type="button"
@@ -1791,6 +1915,7 @@ function App() {
         {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
         {renderShareButton(item)}
+        {renderFavoriteButton(item)}
 
         {firstLeg && (
           <div className="timeline">
@@ -2078,6 +2203,8 @@ function App() {
         </form>
 
           {renderFareAdminPanel()}
+
+        {renderFavoritesPanel()}
 
         <div className="quick-routes">
           <button type="button" onClick={() => setQuickRoute("NDLS", "PNBE")}>
