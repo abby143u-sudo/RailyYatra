@@ -4,9 +4,10 @@ Checkpoint date: 30 June 2026
 
 ## Repository status
 
-The stabilization baseline is clean. The combined check now validates the API, read-only ingestion workflow, dry-run import CLI, and frontend build:
+The stabilization baseline is clean. The combined check now validates the API, migration safety, read-only ingestion workflow, dry-run import CLI, and frontend build:
 
 - Backend smoke test: 4 passed, 0 skipped
+- Migration safety check: passed in in-memory SQLite
 - Ingestion smoke test: passed
 - Dry-run railway data import: passed with database writes skipped
 - Frontend production build: passed
@@ -20,6 +21,8 @@ Recent stabilization work on `main`:
 
 | Commit | Change |
 | --- | --- |
+| `c3ddaf6` | Include migration smoke in combined check |
+| `86731f4` | Add non-destructive migration scaffold |
 | `e8f3626` | Include ingestion checks in combined smoke test |
 | `b285f81` | Add dry-run railway data import CLI |
 | `8ab9323` | Add dry-run railway data ingestion scaffold |
@@ -43,13 +46,23 @@ Run the checks separately when diagnosing a failure:
 
 ```bash
 python3 scripts/smoke_backend.py
+python3 scripts/smoke_migrations.py
 python3 scripts/smoke_ingestion.py
 python3 scripts/import_railway_data.py --dry-run
 python3 scripts/import_railway_data.py --dry-run --report-json
 scripts/smoke_frontend.sh
 ```
 
-The ingestion implementation is `app/backend/ingestion/railway_data.py`. It reads the existing raw JSON files and reports counts and missing fields without opening SQLite. The backend smoke test requires FastAPI `TestClient` dependencies, including `httpx`, in the active Python environment. The frontend smoke test builds the application and removes `frontend/dist/` afterward.
+The ingestion implementation is `app/backend/ingestion/railway_data.py`. It reads the existing raw JSON files and reports counts and missing fields without opening SQLite. Migration files live in `app/backend/database/migrations/`, and `001_ingestion_metadata.sql` is validated only against in-memory SQLite by `scripts/smoke_migrations.py`. The backend smoke test requires FastAPI `TestClient` dependencies, including `httpx`, in the active Python environment. The frontend smoke test builds the application and removes `frontend/dist/` afterward.
+
+## Migration safety workflow
+
+The current migration scaffold creates only `ingestion_runs`, `ingestion_source_files`, and `ingestion_issues` with `CREATE TABLE IF NOT EXISTS`. It has not been applied to `app/railyatra.db`.
+
+- Migrations must remain non-destructive unless a destructive change is explicitly approved.
+- Never alter `stations`, `trains`, `train_stops`, or `official_fares` without a database backup and reviewed dry-run report.
+- Treat `archive_legacy/` as historical reference only; do not edit it.
+- Run `python3 scripts/smoke_migrations.py` and `scripts/check_all.sh` before considering any apply step.
 
 ## Current railway data gaps
 
@@ -82,7 +95,7 @@ The backend defaults to `http://127.0.0.1:8000`; health information is available
 
 ## Next phase: backend data ingestion and real railway data
 
-The dry-run inspection foundation is complete. The next development phase should introduce a non-destructive migration and an idempotent, transactional importer before adding more route-search UI features.
+The dry-run inspection and non-destructive migration scaffolds are complete. The next development phase should add an explicitly approved migration apply workflow and an idempotent, transactional importer before adding more route-search UI features.
 
 1. Define the target data model for stations, trains, stops, service calendars, route timings, classes, and fares. Document required fields, identifiers, relationships, and update frequency.
 2. Evaluate railway data sources for accuracy, coverage, update cadence, licensing, terms of use, and redistribution constraints. Keep source selection explicit; do not treat scraped or unofficial data as authoritative without provenance.
@@ -95,13 +108,15 @@ The dry-run inspection foundation is complete. The next development phase should
 9. Define incremental refresh and rollback procedures. Keep the last known-good dataset available when a new import fails validation.
 10. Track freshness and provenance in API responses where useful, especially for schedules and fares. Present estimates and official values distinctly.
 
-The next implementation milestone should be a documented ingestion contract, a small licensed fixture dataset, and a non-destructive migration that supports repeated transactional imports with deterministic results and safe rollback.
+The next implementation milestone should be an idempotent transactional importer that records an ingestion run and source-file metadata first, then imports normalized railway data only after dry-run approval. It must support deterministic re-runs and safe rollback.
 
 ## Safety rules for the next phase
 
 - Keep imports out of request handlers; use dedicated scripts or services.
 - Back up the local database before schema migrations or large imports.
 - Keep the current ingestion workflow read-only until the migration and transactional import design are reviewed.
+- Keep migrations non-destructive unless a destructive change is explicitly approved.
+- Never change core railway or verified-fare tables without a backup and reviewed dry-run report.
 - Never commit local databases, raw restricted datasets, credentials, `frontend/dist/`, or backup files.
 - Review `git status --short` and run `./scripts/check_all.sh` before each commit.
-- Continue to leave `archive_legacy/api.py` untouched.
+- Continue to leave all of `archive_legacy/` untouched.

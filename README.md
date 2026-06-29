@@ -50,7 +50,7 @@ Run the complete project check:
 scripts/check_all.sh
 ```
 
-The combined check runs the backend smoke test, ingestion smoke test, dry-run railway data import, and frontend smoke test.
+The combined check runs the backend smoke test, migration safety check, ingestion smoke test, dry-run railway data import, and frontend smoke test.
 
 ## Railway data ingestion (dry-run)
 
@@ -85,6 +85,20 @@ Current known data gaps:
 
 The ingestion workflow is currently read-only and must not write to `app/railyatra.db`. The next phase is a non-destructive migration followed by an idempotent, transactional import process.
 
+## Database migration safety
+
+Migration files live in `app/backend/database/migrations/`. The current scaffold is `001_ingestion_metadata.sql`, which defines only ingestion metadata/support tables with `CREATE TABLE IF NOT EXISTS`.
+
+Validate migration safety without opening the project database:
+
+```bash
+python3 scripts/smoke_migrations.py
+```
+
+The smoke test rejects destructive or data-writing statements and executes the migration only against in-memory SQLite. Migrations must remain non-destructive unless a destructive change is explicitly approved.
+
+Never alter `stations`, `trains`, `train_stops`, or `official_fares` without first creating a database backup and reviewing a dry-run report. The next importer phase must be idempotent and transactional: it should write an ingestion run and source-file metadata first, then import normalized railway data only after dry-run approval.
+
 ## Health endpoint
 
 With the backend running, open:
@@ -97,8 +111,9 @@ http://127.0.0.1:8000/health
 
 ## Important project rules
 
-- Do not edit `archive_legacy/api.py`; it is an inactive legacy backend file.
+- Treat all of `archive_legacy/` as historical reference only; do not edit it.
 - Do not commit `frontend/dist/` or temporary backup files.
 - Do not enable database writes in the current ingestion workflow.
+- Keep migrations non-destructive unless a destructive operation is explicitly approved.
 - Check `git status --short` before and after making changes.
 - Run `scripts/check_all.sh` before committing.

@@ -99,6 +99,7 @@ python3 scripts/smoke_backend.py
 Ingestion smoke test and dry-run import:
 
 ```bash
+python3 scripts/smoke_migrations.py
 python3 scripts/smoke_ingestion.py
 python3 scripts/import_railway_data.py --dry-run
 python3 scripts/import_railway_data.py --dry-run --report-json
@@ -110,7 +111,7 @@ Combined project check:
 scripts/check_all.sh
 ```
 
-The combined check covers the backend API, railway data inspection, dry-run import CLI, and frontend production build. It removes `frontend/dist/` after validation.
+The combined check covers the backend API, migration safety, railway data inspection, dry-run import CLI, and frontend production build. It removes `frontend/dist/` after validation.
 
 ## Railway data ingestion status
 
@@ -127,6 +128,20 @@ Current known data gaps:
 
 This ingestion version is strictly read-only. It must not create tables, migrate schemas, or write to `app/railyatra.db`. The next phase is a non-destructive migration plus an idempotent, transactional importer with validation, provenance, dry-run summaries, and rollback safety.
 
+## Database migration scaffold
+
+Migration files live in `app/backend/database/migrations/`. The current migration, `001_ingestion_metadata.sql`, is a non-destructive scaffold for `ingestion_runs`, `ingestion_source_files`, and `ingestion_issues`. It uses only `CREATE TABLE IF NOT EXISTS` and has not been applied to `app/railyatra.db`.
+
+Run the migration safety check:
+
+```bash
+python3 scripts/smoke_migrations.py
+```
+
+The check rejects destructive/data-writing SQL and validates the migration against in-memory SQLite without opening the target database. Future migrations must remain non-destructive unless a destructive change is explicitly approved.
+
+Never alter `stations`, `trains`, `train_stops`, or `official_fares` without a database backup and reviewed dry-run report. The planned importer must be idempotent and transactional: create ingestion-run and source-file metadata first, then import normalized railway records only after dry-run approval.
+
 ## Git safety rules
 
 - Check `git status --short` before editing and again after validation.
@@ -137,13 +152,15 @@ This ingestion version is strictly read-only. It must not create tables, migrate
 - Keep commits focused and review `git diff` before committing.
 - Do not modify unrelated user changes in a dirty working tree.
 - Do not blindly remove `=======` from `frontend/src/App.jsx`; first confirm it is a standalone merge marker rather than valid text.
-- Do not edit `archive_legacy/api.py`.
+- Treat `archive_legacy/` as historical reference only; do not edit it.
 - Keep the current ingestion workflow read-only; do not write to `app/railyatra.db` yet.
+- Keep migrations non-destructive unless a destructive operation is explicitly approved.
+- Back up the database and review a dry-run report before changing core railway or fare tables.
 
 ## Recommended next tasks
 
-1. Design a non-destructive schema migration for ingestion metadata and missing railway fields.
+1. Review and safely apply the ingestion metadata migration only when an explicit apply workflow and backup step exist.
 2. Add fixture-based validation for the station, train, and schedule normalizers.
-3. Implement idempotent, transactional imports with explicit dry-run and rollback behavior.
+3. Implement an idempotent, transactional importer that writes ingestion metadata first and normalized railway data only after dry-run approval.
 4. Record source provenance, checksums, import timestamps, and accepted/rejected row counts.
 5. Keep API and frontend behavior unchanged until imported data is validated against the existing smoke suite.
