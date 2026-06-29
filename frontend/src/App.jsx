@@ -8,6 +8,7 @@ function App() {
   const [destination, setDestination] = useState("NDLS");
   const [trainType, setTrainType] = useState("All");
   const [journeyClass, setJourneyClass] = useState("SL");
+  const [journeyDate, setJourneyDate] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -226,7 +227,8 @@ function App() {
         "&class_code=" +
         journeyClass +
         "&train_type=" +
-        encodeURIComponent(trainType)
+        encodeURIComponent(trainType) +
+        (journeyDate ? "&journey_date=" + encodeURIComponent(journeyDate) : "")
       );
 
       if (!res.ok) throw new Error("Search failed");
@@ -1055,6 +1057,8 @@ function App() {
     lines.push("------------------------");
     lines.push(`Route: ${source} → ${destination}`);
     lines.push(`Class: ${journeyClass}`);
+    lines.push(`Journey date: ${journeyDate || "Not selected"}`);
+    lines.push(`Train type: ${trainType}`);
     lines.push(`Option: ${title}`);
     lines.push(`Type: ${item.label || item.type}`);
     lines.push(
@@ -1153,6 +1157,8 @@ function App() {
     lines.push("=================================");
     lines.push(`Route: ${source} → ${destination}`);
     lines.push(`Class: ${journeyClass}`);
+    lines.push(`Journey date: ${journeyDate || "Not selected"}`);
+    lines.push(`Train type: ${trainType}`);
     lines.push(`Filter: ${activeFilter}`);
     lines.push(`Sort: ${sortMode}`);
     lines.push(`Total visible options: ${recommendations.length}`);
@@ -1781,6 +1787,15 @@ function App() {
               <option value="Express">Express</option>
               <option value="Direct only">Direct only</option>
             </select>
+          </div>
+
+          <div className="field">
+            <label>Journey Date</label>
+            <input
+              type="date"
+              value={journeyDate}
+              onChange={(e) => setJourneyDate(e.target.value)}
+            />
           </div>
 
           <button type="submit" className="search-btn">
