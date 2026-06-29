@@ -4,9 +4,11 @@ Checkpoint date: 30 June 2026
 
 ## Repository status
 
-The `main` branch was clean at the start of this checkpoint. Frontend and backend source code were not changed. The combined smoke suite passed before this document was created:
+The stabilization baseline is clean. The combined check now validates the API, read-only ingestion workflow, dry-run import CLI, and frontend build:
 
 - Backend smoke test: 4 passed, 0 skipped
+- Ingestion smoke test: passed
+- Dry-run railway data import: passed with database writes skipped
 - Frontend production build: passed
 - Generated `frontend/dist/`: removed after validation
 
@@ -18,16 +20,16 @@ Recent stabilization work on `main`:
 
 | Commit | Change |
 | --- | --- |
+| `e8f3626` | Include ingestion checks in combined smoke test |
+| `b285f81` | Add dry-run railway data import CLI |
+| `8ab9323` | Add dry-run railway data ingestion scaffold |
+| `792ec97` | Use deterministic database path |
 | `5e141b6` | Add project gitignore rules |
 | `48c8c51` | Add combined smoke check |
 | `98ff637` | Add project run and test instructions |
 | `bcaa193` | Add frontend smoke test |
 | `d8c17aa` | Add backend smoke test |
 | `88c5bb0` | Add project status documentation |
-| `b6ce9ba` | Add clean no results card |
-| `1c47bc8` | Add route skeleton loader |
-| `a587fb4` | Add station code helper panel |
-| `901a01e` | Add search form validation |
 
 ## Smoke test commands
 
@@ -41,10 +43,24 @@ Run the checks separately when diagnosing a failure:
 
 ```bash
 python3 scripts/smoke_backend.py
-./scripts/smoke_frontend.sh
+python3 scripts/smoke_ingestion.py
+python3 scripts/import_railway_data.py --dry-run
+python3 scripts/import_railway_data.py --dry-run --report-json
+scripts/smoke_frontend.sh
 ```
 
-The backend smoke test requires FastAPI `TestClient` dependencies, including `httpx`, in the active Python environment. The frontend smoke test builds the application and removes `frontend/dist/` afterward.
+The ingestion implementation is `app/backend/ingestion/railway_data.py`. It reads the existing raw JSON files and reports counts and missing fields without opening SQLite. The backend smoke test requires FastAPI `TestClient` dependencies, including `httpx`, in the active Python environment. The frontend smoke test builds the application and removes `frontend/dist/` afterward.
+
+## Current railway data gaps
+
+- Current SQLite train rows lack source and destination values, although the raw train JSON provides them.
+- Station state coverage is incomplete in raw JSON and absent from current SQLite station rows.
+- Some raw station records lack coordinates.
+- The `schedules` and legacy `fares` tables are empty.
+- Only limited manually verified fare data is available.
+- Running-day data is unavailable in the current train schema.
+
+The ingestion scaffold and CLI are read-only. They must not write to `app/railyatra.db` yet.
 
 ## Development run commands
 
@@ -66,7 +82,7 @@ The backend defaults to `http://127.0.0.1:8000`; health information is available
 
 ## Next phase: backend data ingestion and real railway data
 
-The next development phase should strengthen the data foundation before adding more route-search UI features.
+The dry-run inspection foundation is complete. The next development phase should introduce a non-destructive migration and an idempotent, transactional importer before adding more route-search UI features.
 
 1. Define the target data model for stations, trains, stops, service calendars, route timings, classes, and fares. Document required fields, identifiers, relationships, and update frequency.
 2. Evaluate railway data sources for accuracy, coverage, update cadence, licensing, terms of use, and redistribution constraints. Keep source selection explicit; do not treat scraped or unofficial data as authoritative without provenance.
@@ -79,12 +95,13 @@ The next development phase should strengthen the data foundation before adding m
 9. Define incremental refresh and rollback procedures. Keep the last known-good dataset available when a new import fails validation.
 10. Track freshness and provenance in API responses where useful, especially for schedules and fares. Present estimates and official values distinctly.
 
-The first implementation milestone should be a documented ingestion contract plus a small, licensed fixture dataset that can be imported repeatedly with deterministic results.
+The next implementation milestone should be a documented ingestion contract, a small licensed fixture dataset, and a non-destructive migration that supports repeated transactional imports with deterministic results and safe rollback.
 
 ## Safety rules for the next phase
 
 - Keep imports out of request handlers; use dedicated scripts or services.
 - Back up the local database before schema migrations or large imports.
+- Keep the current ingestion workflow read-only until the migration and transactional import design are reviewed.
 - Never commit local databases, raw restricted datasets, credentials, `frontend/dist/`, or backup files.
 - Review `git status --short` and run `./scripts/check_all.sh` before each commit.
 - Continue to leave `archive_legacy/api.py` untouched.

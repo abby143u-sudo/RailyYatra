@@ -44,6 +44,47 @@ Run the frontend build smoke test from the repository root:
 
 The frontend smoke test runs the production build, reports `PASS` or `FAIL`, removes `frontend/dist`, and returns a non-zero exit status when the build fails.
 
+Run the complete project check:
+
+```bash
+scripts/check_all.sh
+```
+
+The combined check runs the backend smoke test, ingestion smoke test, dry-run railway data import, and frontend smoke test.
+
+## Railway data ingestion (dry-run)
+
+The read-only ingestion inspector is implemented in `app/backend/ingestion/railway_data.py`. It examines the existing station, train, and schedule JSON files without connecting to or writing to SQLite.
+
+Print the dry-run report:
+
+```bash
+python3 scripts/import_railway_data.py --dry-run
+```
+
+Print the same report as JSON:
+
+```bash
+python3 scripts/import_railway_data.py --dry-run --report-json
+```
+
+Run the ingestion smoke test:
+
+```bash
+python3 scripts/smoke_ingestion.py
+```
+
+Current known data gaps:
+
+- The current SQLite train records are missing source and destination values, although these fields exist in the raw train JSON.
+- Station state coverage is incomplete in the raw data and absent from the current SQLite station records.
+- Some stations are missing coordinates.
+- The `schedules` and legacy `fares` tables are empty.
+- Only a limited number of verified fares are available.
+- Running-day data is unavailable in the current train schema.
+
+The ingestion workflow is currently read-only and must not write to `app/railyatra.db`. The next phase is a non-destructive migration followed by an idempotent, transactional import process.
+
 ## Health endpoint
 
 With the backend running, open:
@@ -58,5 +99,6 @@ http://127.0.0.1:8000/health
 
 - Do not edit `archive_legacy/api.py`; it is an inactive legacy backend file.
 - Do not commit `frontend/dist/` or temporary backup files.
+- Do not enable database writes in the current ingestion workflow.
 - Check `git status --short` before and after making changes.
-- Run the relevant smoke tests before committing.
+- Run `scripts/check_all.sh` before committing.
