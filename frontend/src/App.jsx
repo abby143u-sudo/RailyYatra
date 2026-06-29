@@ -1888,6 +1888,115 @@ function App() {
     );
   }
 
+  function getSmartRouteWarnings() {
+    const sourceList = Array.isArray(recommendations) ? recommendations : [];
+    const baseList = Array.isArray(allRecommendations) ? allRecommendations : [];
+    const warnings = [];
+
+    if (!baseList.length) {
+      return warnings;
+    }
+
+    if (!sourceList.length && baseList.length) {
+      warnings.push({
+        level: "high",
+        title: "No route matches current filters",
+        detail: "Try resetting filters, increasing max fare, lowering minimum score, or selecting All day departure.",
+      });
+
+      return warnings;
+    }
+
+    const unknownFareCount = sourceList.filter((item) =>
+      typeof hasVerifiedFare === "function" ? !hasVerifiedFare(item) : false
+    ).length;
+
+    const highRiskCount = sourceList.filter((item) => {
+      if (typeof getRouteRisk !== "function") return false;
+      return getRouteRisk(item).level === "high";
+    }).length;
+
+    const multiTransferCount = sourceList.filter((item) => {
+      if (typeof getRecommendationTransfers !== "function") return false;
+      return getRecommendationTransfers(item) >= 2;
+    }).length;
+
+    const longWaitCount = sourceList.filter((item) => {
+      if (typeof getTransferWaitHours !== "function") return false;
+      const wait = getTransferWaitHours(item);
+      return wait !== null && wait >= 4;
+    }).length;
+
+    if (unknownFareCount) {
+      warnings.push({
+        level: "medium",
+        title: `${unknownFareCount} route${unknownFareCount > 1 ? "s" : ""} need fare verification`,
+        detail: "Fare estimate may be missing or approximate. Verify on IRCTC before booking.",
+      });
+    }
+
+    if (highRiskCount) {
+      warnings.push({
+        level: "high",
+        title: `${highRiskCount} high-risk route${highRiskCount > 1 ? "s" : ""} found`,
+        detail: "Check transfer buffer, delay risk, and train running status carefully.",
+      });
+    }
+
+    if (multiTransferCount) {
+      warnings.push({
+        level: "medium",
+        title: `${multiTransferCount} route${multiTransferCount > 1 ? "s have" : " has"} multiple transfers`,
+        detail: "Multiple transfers can increase missed-connection risk.",
+      });
+    }
+
+    if (longWaitCount) {
+      warnings.push({
+        level: "medium",
+        title: `${longWaitCount} route${longWaitCount > 1 ? "s have" : " has"} long transfer wait`,
+        detail: "Long waits can make the journey uncomfortable. Compare alternatives before choosing.",
+      });
+    }
+
+    if (!warnings.length && sourceList.length) {
+      warnings.push({
+        level: "low",
+        title: "Routes look stable",
+        detail: "No major warning detected for the currently visible recommendations.",
+      });
+    }
+
+    return warnings.slice(0, 4);
+  }
+
+  function renderSmartWarningsPanel() {
+    const warnings = getSmartRouteWarnings();
+
+    if (!warnings.length) return null;
+
+    return (
+      <div className="smart-warnings-panel">
+        <div className="smart-warnings-heading">
+          <span>Smart alerts</span>
+          <strong>Before you book</strong>
+        </div>
+
+        <div className="smart-warnings-list">
+          {warnings.map((warning, index) => (
+            <div
+              className={`smart-warning-card smart-warning-${warning.level}`}
+              key={`${warning.title}-${index}`}
+            >
+              <strong>{warning.title}</strong>
+              <span>{warning.detail}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderShareButton(item) {
     return (
       <button
@@ -2663,6 +2772,8 @@ function App() {
         {renderFavoritesPanel()}
 
         {renderComparePanel()}
+
+        {renderSmartWarningsPanel()}
 
         {renderRecentSearchesPanel()}
 

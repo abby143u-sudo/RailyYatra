@@ -1617,3 +1617,59 @@ li {
   background: #fef2f2;
   border-color: #fecaca;
 }
+
+
+.smart-warnings-panel {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.smart-warnings-heading {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.smart-warnings-heading span {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.smart-warnings-list {
+  display: grid;
+  gap: 10px;
+}
+
+.smart-warning-card {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.smart-warning-card span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.smart-warning-high {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.smart-warning-medium {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.smart-warning-low {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
