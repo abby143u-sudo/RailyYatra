@@ -2154,3 +2154,57 @@ li {
 .advanced-filter-hidden {
   display: none !important;
 }
+
+
+.active-filter-chips-bar {
+  margin: 18px 0;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.active-filter-chips-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.active-filter-chips-heading span {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.active-filter-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.active-filter-chip {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 11px;
+  cursor: pointer;
+  background: #e0f2fe;
+  color: #075985;
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.active-filter-chip span {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.clear-all-filter-chip {
+  background: #f1f5f9;
+  color: #334155;
+}

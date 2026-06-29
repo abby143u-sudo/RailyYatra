@@ -2771,6 +2771,147 @@ function App() {
     );
   }
 
+  function getActiveFilterChips() {
+    const chips = [];
+
+    if (typeof journeyClass !== "undefined" && journeyClass !== "SL") {
+      chips.push({
+        key: "journeyClass",
+        label: `Class: ${journeyClass}`,
+        clear: () => setJourneyClass("SL"),
+      });
+    }
+
+    if (typeof trainType !== "undefined" && trainType !== "All") {
+      chips.push({
+        key: "trainType",
+        label: `Train: ${trainType}`,
+        clear: () => setTrainType("All"),
+      });
+    }
+
+    if (typeof journeyDate !== "undefined" && journeyDate) {
+      chips.push({
+        key: "journeyDate",
+        label: `Date: ${journeyDate}`,
+        clear: () => setJourneyDate(""),
+      });
+    }
+
+    if (typeof quota !== "undefined" && quota !== "GN") {
+      chips.push({
+        key: "quota",
+        label: `Quota: ${quota}`,
+        clear: () => setQuota("GN"),
+      });
+    }
+
+    if (typeof maxFare !== "undefined" && maxFare) {
+      chips.push({
+        key: "maxFare",
+        label: `Max fare: ₹${maxFare}`,
+        clear: () => setMaxFare(""),
+      });
+    }
+
+    if (typeof departureWindow !== "undefined" && departureWindow !== "all") {
+      chips.push({
+        key: "departureWindow",
+        label: `Departure: ${departureWindow}`,
+        clear: () => setDepartureWindow("all"),
+      });
+    }
+
+    if (typeof maxTransferWait !== "undefined" && maxTransferWait) {
+      chips.push({
+        key: "maxTransferWait",
+        label: `Wait ≤ ${maxTransferWait} hrs`,
+        clear: () => setMaxTransferWait(""),
+      });
+    }
+
+    if (typeof minScore !== "undefined" && minScore) {
+      chips.push({
+        key: "minScore",
+        label: `Score ≥ ${minScore}`,
+        clear: () => setMinScore(""),
+      });
+    }
+
+    if (typeof hideUnknownFare !== "undefined" && hideUnknownFare) {
+      chips.push({
+        key: "hideUnknownFare",
+        label: "Verified fare only",
+        clear: () => setHideUnknownFare(false),
+      });
+    }
+
+    if (typeof activeFilter !== "undefined" && activeFilter !== "all") {
+      chips.push({
+        key: "activeFilter",
+        label: `Route filter: ${activeFilter}`,
+        clear: () => setActiveFilter("all"),
+      });
+    }
+
+    if (typeof sortMode !== "undefined" && sortMode !== "best") {
+      chips.push({
+        key: "sortMode",
+        label: `Sort: ${sortMode}`,
+        clear: () => setSortMode("best"),
+      });
+    }
+
+    return chips;
+  }
+
+  function clearAllActiveFilterChips() {
+    const chips = getActiveFilterChips();
+    chips.forEach((chip) => chip.clear());
+
+    if (typeof setExpandedCard !== "undefined") {
+      setExpandedCard(null);
+    }
+  }
+
+  function renderActiveFilterChipsBar() {
+    const chips = getActiveFilterChips();
+
+    if (!chips.length) return null;
+
+    return (
+      <div className="active-filter-chips-bar">
+        <div className="active-filter-chips-heading">
+          <span>Active filters</span>
+          <strong>{chips.length} active</strong>
+        </div>
+
+        <div className="active-filter-chips-list">
+          {chips.map((chip) => (
+            <button
+              type="button"
+              className="active-filter-chip"
+              key={chip.key}
+              onClick={chip.clear}
+              title="Click to clear this filter"
+            >
+              {chip.label}
+              <span>×</span>
+            </button>
+          ))}
+
+          <button
+            type="button"
+            className="active-filter-chip clear-all-filter-chip"
+            onClick={clearAllActiveFilterChips}
+          >
+            Clear all
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   function renderEmptyResultsSuggestionPanel() {
     const suggestions = getEmptyResultSuggestions();
 
@@ -3697,6 +3838,8 @@ function App() {
         {renderComparePanel()}
 
         {renderBackendHealthCard()}
+
+        {renderActiveFilterChipsBar()}
 
         {renderSearchErrorPanel()}
 
