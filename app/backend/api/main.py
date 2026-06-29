@@ -20,6 +20,122 @@ from backend.services.station_search import search_stations
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routing.multi_transfer import find_multi_transfer_routes
 
+def infer_train_type(train):
+    train_name = str(train.get("train_name", "")).lower()
+    train_no = str(train.get("train_no", ""))
+    existing_type = str(train.get("train_type", "")).lower()
+
+    if "rajdhani" in existing_type or "rajdhani" in train_name:
+        return "Rajdhani"
+
+    if "superfast" in existing_type or "superfast" in train_name:
+        return "Superfast"
+
+    if train_no.startswith("12") or train_no.startswith("22"):
+        return "Superfast"
+
+    if "express" in existing_type or "express" in train_name:
+        return "Express"
+
+    return "Express"
+
+
+def get_route_data(item):
+    """
+    Handles both shapes:
+    1. {"route": {"route": [...], "trains": [...]}}
+    2. {"route": [...], "trains": [...]}
+    """
+    if isinstance(item, dict) and isinstance(item.get("route"), dict):
+        return item["route"]
+
+    return item
+
+
+def enrich_route_with_train_types(route_data):
+    if not isinstance(route_data, dict):
+        return route_data
+
+    trains = route_data.get("trains", [])
+
+    for train in trains:
+        if isinstance(train, dict):
+            train["train_type"] = infer_train_type(train)
+
+    return route_data
+
+
+def matches_train_type_filter(item, train_type_filter):
+    selected = str(train_type_filter).lower().strip()
+
+    if selected == "all":
+        return True
+
+    route_data = get_route_data(item)
+
+    if not isinstance(route_data, dict):
+        return True
+
+    trains = route_data.get("trains", [])
+    stations = route_data.get("route", [])
+
+    hops = route_data.get("hops")
+    if hops is None:
+        hops = max(len(stations) - 1, 0)
+
+    if selected == "direct only":
+        return hops == 1 or len(trains) == 1
+
+    for train in trains:
+        if not isinstance(train, dict):
+            continue
+
+        train_type = train.get("train_type", infer_train_type(train)).lower()
+
+        if train_type == selected:
+            return True
+
+    return False
+
+
+def apply_train_type_filter_to_list(items, train_type):
+    filtered_items = []
+
+    for item in items:
+        route_data = get_route_data(item)
+        enrich_route_with_train_types(route_data)
+
+        if matches_train_type_filter(item, train_type):
+            filtered_items.append(item)
+
+    return filtered_items
+
+
+def apply_train_type_filter_to_response(response, train_type):
+    """
+    plan_journey ka response dict bhi ho sakta hai.
+    Isliye common keys: recommendations/routes/trains ko safely filter karta hai.
+    """
+    if isinstance(response, list):
+        return apply_train_type_filter_to_list(response, train_type)
+
+    if not isinstance(response, dict):
+        return response
+
+    response["selected_filter"] = train_type
+
+    for key in ["recommendations", "routes", "trains"]:
+        if key in response and isinstance(response[key], list):
+            response[key] = apply_train_type_filter_to_list(response[key], train_type)
+            response[f"{key}_count"] = len(response[key])
+
+    if "count" in response:
+        for key in ["recommendations", "routes", "trains"]:
+            if key in response and isinstance(response[key], list):
+                response["count"] = len(response[key])
+                break
+
+    return response
 
 app = FastAPI(title="RailYatra v2 API", version="2.1.0")
 app.add_middleware(
@@ -72,8 +188,9 @@ def search(
     journey_date: str | None = None,
     date: str | None = None,
     class_code: str = "SL",
+    train_type: str = "All",
 ):
-    return plan_journey(
+    result = plan_journey(
         source=source,
         destination=destination,
         limit=limit,
@@ -81,6 +198,10 @@ def search(
         class_code=class_code,
     )
 
+    result = apply_train_type_filter_to_response(result, train_type)
+
+    return result
+    
 @app.get("/direct")
 def direct(
     source: str = Query(...),
