@@ -2748,6 +2748,56 @@ function App() {
     };
   }
 
+  function isRouteSearchLoading() {
+    return (
+      (typeof loading !== "undefined" && loading) ||
+      (typeof isLoading !== "undefined" && isLoading)
+    );
+  }
+
+  function renderRouteSkeletonLoader() {
+    if (!isRouteSearchLoading()) return null;
+
+    return (
+      <div className="route-skeleton-panel">
+        <div className="route-skeleton-heading">
+          <span>Searching routes</span>
+          <strong>Finding smart RailYatra options...</strong>
+        </div>
+
+        <div className="route-skeleton-grid">
+          {[1, 2, 3].map((item) => (
+            <div className="route-skeleton-card" key={item}>
+              <div className="skeleton-line skeleton-title"></div>
+              <div className="skeleton-line skeleton-short"></div>
+
+              <div className="skeleton-meta-row">
+                <div className="skeleton-pill"></div>
+                <div className="skeleton-pill"></div>
+                <div className="skeleton-pill"></div>
+              </div>
+
+              <div className="skeleton-timeline">
+                <div className="skeleton-dot"></div>
+                <div className="skeleton-line"></div>
+              </div>
+
+              <div className="skeleton-timeline">
+                <div className="skeleton-dot"></div>
+                <div className="skeleton-line"></div>
+              </div>
+
+              <div className="skeleton-action-row">
+                <div className="skeleton-button"></div>
+                <div className="skeleton-button"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderSearchSummaryStatsBar() {
     const stats = getSearchSummaryStats();
 
@@ -4084,6 +4134,8 @@ function App() {
         {renderEmptyResultsSuggestionPanel()}
 
         {renderSearchSummaryStatsBar()}
+
+        {renderRouteSkeletonLoader()}
 
         {renderSmartWarningsPanel()}
 

@@ -2346,3 +2346,116 @@ li {
   color: #075985;
   font-weight: 800;
 }
+
+
+.route-skeleton-panel {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.route-skeleton-heading {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.route-skeleton-heading span {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.route-skeleton-heading strong {
+  color: #0f172a;
+}
+
+.route-skeleton-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.route-skeleton-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.skeleton-line,
+.skeleton-pill,
+.skeleton-dot,
+.skeleton-button {
+  background: linear-gradient(90deg, #e2e8f0, #f8fafc, #e2e8f0);
+  background-size: 200% 100%;
+  animation: railyatraSkeleton 1.15s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 999px;
+  width: 100%;
+}
+
+.skeleton-title {
+  height: 18px;
+  width: 62%;
+}
+
+.skeleton-short {
+  width: 38%;
+}
+
+.skeleton-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skeleton-pill {
+  height: 28px;
+  width: 110px;
+  border-radius: 999px;
+}
+
+.skeleton-timeline {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeleton-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+}
+
+.skeleton-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skeleton-button {
+  height: 36px;
+  width: 145px;
+  border-radius: 999px;
+}
+
+@keyframes railyatraSkeleton {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
