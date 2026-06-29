@@ -1898,3 +1898,25 @@ li {
   font-size: 18px;
   color: #0f172a;
 }
+
+
+.best-pick-badge {
+  margin: 8px 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fef3c7, #fff7ed);
+  border: 1px solid #fbbf24;
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.16);
+  display: grid;
+  gap: 4px;
+}
+
+.best-pick-badge strong {
+  color: #78350f;
+  font-size: 14px;
+}
+
+.best-pick-badge span {
+  color: #92400e;
+  font-size: 12px;
+}

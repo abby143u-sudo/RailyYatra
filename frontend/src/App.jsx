@@ -1931,6 +1931,88 @@ function App() {
     };
   }
 
+  function getBestPickRouteKey(item) {
+    if (typeof getCompareRouteKey === "function") {
+      return getCompareRouteKey(item);
+    }
+
+    if (typeof getFavoriteRouteKey === "function") {
+      return getFavoriteRouteKey(item);
+    }
+
+    const data = item.data || {};
+
+    if (item.type === "direct") {
+      return `best-direct-${source}-${destination}-${data.train_no}`;
+    }
+
+    if (item.type === "one_transfer") {
+      return `best-transfer-${source}-${destination}-${data.first_train}-${data.transfer_station}-${data.second_train}`;
+    }
+
+    if (item.type === "multi_transfer") {
+      const preview = data.route_preview?.join("-") || data.summary || "";
+      const legs = data.train_legs?.map((leg) => leg.train_no).join("-") || "";
+      return `best-smart-${source}-${destination}-${preview}-${legs}`;
+    }
+
+    return `best-${source}-${destination}-${getRecommendationTitle(item)}-${item.score || 0}`;
+  }
+
+  function getBestPickRoute() {
+    const visibleList = Array.isArray(recommendations) ? recommendations : [];
+
+    if (!visibleList.length) return null;
+
+    return visibleList.reduce((best, item) => {
+      const bestScore = Number(best?.score || 0);
+      const itemScore = Number(item?.score || 0);
+
+      if (itemScore > bestScore) return item;
+
+      if (itemScore === bestScore) {
+        const bestDuration = typeof getRecommendationDuration === "function"
+          ? getRecommendationDuration(best)
+          : 9999;
+
+        const itemDuration = typeof getRecommendationDuration === "function"
+          ? getRecommendationDuration(item)
+          : 9999;
+
+        if (itemDuration < bestDuration) return item;
+      }
+
+      return best;
+    }, visibleList[0]);
+  }
+
+  function isBestPickRoute(item) {
+    const bestPick = getBestPickRoute();
+
+    if (!bestPick) return false;
+
+    return getBestPickRouteKey(bestPick) === getBestPickRouteKey(item);
+  }
+
+  function renderBestPickBadge(item) {
+    if (!isBestPickRoute(item)) return null;
+
+    const confidence = typeof getJourneyConfidence === "function"
+      ? getJourneyConfidence(item)
+      : null;
+
+    return (
+      <div className="best-pick-badge">
+        <strong>🏆 Best Pick</strong>
+        <span>
+          {confidence?.label
+            ? `${confidence.label} · highest visible route score`
+            : "Highest visible route score"}
+        </span>
+      </div>
+    );
+  }
+
   function renderConfidenceBadge(item) {
     const confidence = getJourneyConfidence(item);
 
@@ -2737,6 +2819,7 @@ function App() {
 
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
+        {renderBestPickBadge(item)}
         {renderConfidenceBadge(item)}
         {renderFareBox(item)}
         {renderFareCoverageMeter(item)}
