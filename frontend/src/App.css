@@ -2271,3 +2271,78 @@ li {
     flex-wrap: wrap;
   }
 }
+
+
+.station-code-helper-panel {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.station-code-helper-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.station-code-helper-heading span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.station-code-helper-heading strong {
+  display: block;
+  margin-top: 3px;
+  color: #0f172a;
+}
+
+.station-code-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.station-code-chip {
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+  display: grid;
+  gap: 4px;
+}
+
+.station-code-chip strong {
+  color: #075985;
+  font-size: 15px;
+}
+
+.station-code-chip span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.popular-route-row {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.popular-route-row button {
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 13px;
+  cursor: pointer;
+  background: #e0f2fe;
+  color: #075985;
+  font-weight: 800;
+}

@@ -3077,6 +3077,87 @@ function App() {
     setSearchValidation(null);
   }
 
+  function applyStationHelperRoute(from, to) {
+    setSource(from);
+    setDestination(to);
+
+    if (typeof setSearchValidation === "function") {
+      setSearchValidation(null);
+    }
+
+    if (typeof setSearchErrorDetails === "function") {
+      setSearchErrorDetails(null);
+    }
+
+    if (typeof setError === "function") {
+      setError("");
+    }
+  }
+
+  function renderStationCodeHelperPanel() {
+    const popularStations = [
+      { code: "PNBE", name: "Patna Junction" },
+      { code: "NDLS", name: "New Delhi" },
+      { code: "DDU", name: "Pt. Deen Dayal Upadhyaya" },
+      { code: "MGS", name: "Mughalsarai legacy code" },
+      { code: "CNB", name: "Kanpur Central" },
+      { code: "PRYJ", name: "Prayagraj Junction" },
+      { code: "BSB", name: "Varanasi Junction" },
+      { code: "GAYA", name: "Gaya Junction" },
+    ];
+
+    const popularRoutes = [
+      { from: "PNBE", to: "NDLS", label: "Patna → Delhi" },
+      { from: "NDLS", to: "PNBE", label: "Delhi → Patna" },
+      { from: "PNBE", to: "DDU", label: "Patna → DDU" },
+      { from: "CNB", to: "PNBE", label: "Kanpur → Patna" },
+    ];
+
+    return (
+      <div className="station-code-helper-panel">
+        <div className="station-code-helper-heading">
+          <div>
+            <span>Station code helper</span>
+            <strong>Common RailYatra test codes</strong>
+          </div>
+        </div>
+
+        <div className="station-code-grid">
+          {popularStations.map((station) => (
+            <button
+              type="button"
+              className="station-code-chip"
+              key={station.code}
+              onClick={() => {
+                if (!source) {
+                  setSource(station.code);
+                } else {
+                  setDestination(station.code);
+                }
+              }}
+              title={station.name}
+            >
+              <strong>{station.code}</strong>
+              <span>{station.name}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="popular-route-row">
+          {popularRoutes.map((route) => (
+            <button
+              type="button"
+              key={`${route.from}-${route.to}`}
+              onClick={() => applyStationHelperRoute(route.from, route.to)}
+            >
+              {route.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderSearchValidationPanel() {
     if (!searchValidation) return null;
 
@@ -3993,6 +4074,8 @@ function App() {
         {renderBackendHealthCard()}
 
         {renderActiveFilterChipsBar()}
+
+        {renderStationCodeHelperPanel()}
 
         {renderSearchValidationPanel()}
 
