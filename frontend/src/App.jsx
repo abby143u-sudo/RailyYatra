@@ -1822,6 +1822,72 @@ function App() {
     setTimeout(() => setShareMessage(""), 2400);
   }
 
+  function getJourneyConfidence(item) {
+    const score = Number(item.score || 0);
+    const transfers = typeof getRecommendationTransfers === "function"
+      ? getRecommendationTransfers(item)
+      : 0;
+
+    const verifiedFare = typeof hasVerifiedFare === "function"
+      ? hasVerifiedFare(item)
+      : Boolean(item.fare?.estimated_fare || item.fare?.estimated_after_split);
+
+    const risk = typeof getRouteRisk === "function"
+      ? getRouteRisk(item)
+      : { level: "medium" };
+
+    let points = 0;
+
+    if (score >= 850) points += 35;
+    else if (score >= 750) points += 25;
+    else if (score >= 650) points += 15;
+    else points += 5;
+
+    if (verifiedFare) points += 25;
+    else points += 5;
+
+    if (risk.level === "low") points += 25;
+    else if (risk.level === "medium") points += 12;
+    else points += 3;
+
+    if (transfers === 0) points += 15;
+    else if (transfers === 1) points += 10;
+    else points += 4;
+
+    if (points >= 80) {
+      return {
+        level: "high",
+        label: "High confidence",
+        reason: "Strong score, safer route, better fare coverage",
+      };
+    }
+
+    if (points >= 55) {
+      return {
+        level: "medium",
+        label: "Medium confidence",
+        reason: "Good route but needs manual checking",
+      };
+    }
+
+    return {
+      level: "low",
+      label: "Low confidence",
+      reason: "Check timing, fare and transfer risk before booking",
+    };
+  }
+
+  function renderConfidenceBadge(item) {
+    const confidence = getJourneyConfidence(item);
+
+    return (
+      <div className={`confidence-badge confidence-${confidence.level}`}>
+        <strong>{confidence.label}</strong>
+        <span>{confidence.reason}</span>
+      </div>
+    );
+  }
+
   function renderShareButton(item) {
     return (
       <button
@@ -2125,6 +2191,7 @@ function App() {
 
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
+        {renderConfidenceBadge(item)}
         {renderFareBox(item)}
         {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
@@ -2223,6 +2290,7 @@ function App() {
 
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
+        {renderConfidenceBadge(item)}
         {renderFareBox(item)}
         {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
@@ -2297,6 +2365,7 @@ function App() {
 
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
+        {renderConfidenceBadge(item)}
         {renderFareBox(item)}
         {renderFareCoverageMeter(item)}
         {renderSplitTicketBox(item)}
