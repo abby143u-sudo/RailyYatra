@@ -117,3 +117,38 @@ http://127.0.0.1:8000/health
 - Keep migrations non-destructive unless a destructive operation is explicitly approved.
 - Check `git status --short` before and after making changes.
 - Run `scripts/check_all.sh` before committing.
+
+## Database Backup and Migration Safety
+
+Before any database write, create a SQLite backup:
+
+    python3 scripts/backup_database.py
+
+Check migration safety without touching the database:
+
+    python3 scripts/run_migrations.py --dry-run
+
+Apply approved non-destructive migrations only when explicitly needed:
+
+    python3 scripts/run_migrations.py --apply
+
+Run the full project check:
+
+    scripts/check_all.sh
+
+Safety rules:
+
+- Backup before any database write.
+- Migration default mode must stay dry-run.
+- Actual migration apply must require explicit --apply.
+- Never edit archive_legacy/.
+- Never modify app/railyatra.db manually.
+- Do not commit backups/.
+- Do not commit frontend/dist.
+- Do not alter existing railway tables such as stations, trains, train_stops, or official_fares without explicit approval, backup, and dry-run report.
+
+Current migration status:
+
+- Ingestion metadata migration scaffold exists.
+- Existing train, station, route, and fare tables are protected.
+- Future ingestion work should write metadata first, then import normalized railway data only after dry-run approval.

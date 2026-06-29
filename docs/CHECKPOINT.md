@@ -120,3 +120,27 @@ The next implementation milestone should be an idempotent transactional importer
 - Never commit local databases, raw restricted datasets, credentials, `frontend/dist/`, or backup files.
 - Review `git status --short` and run `./scripts/check_all.sh` before each commit.
 - Continue to leave all of `archive_legacy/` untouched.
+
+## Backup and Migration Checkpoint
+
+Current safe workflow:
+
+    python3 scripts/backup_database.py
+    python3 scripts/run_migrations.py --dry-run
+    python3 scripts/run_migrations.py --apply
+    scripts/check_all.sh
+
+Safety checkpoint:
+
+- Backup utility exists.
+- Safe migration runner exists.
+- Combined smoke check includes migration dry-run.
+- Frontend build remains clean.
+- Backend smoke remains clean.
+- Ingestion dry-run remains read-only.
+- app/railyatra.db should not be manually edited.
+- archive_legacy/ should not be edited.
+
+Next phase:
+
+Build an idempotent transactional importer that writes ingestion metadata first, validates raw JSON, then imports normalized railway data only after dry-run approval.

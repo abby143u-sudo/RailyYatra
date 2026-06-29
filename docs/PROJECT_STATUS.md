@@ -164,3 +164,31 @@ Never alter `stations`, `trains`, `train_stops`, or `official_fares` without a d
 3. Implement an idempotent, transactional importer that writes ingestion metadata first and normalized railway data only after dry-run approval.
 4. Record source provenance, checksums, import timestamps, and accepted/rejected row counts.
 5. Keep API and frontend behavior unchanged until imported data is validated against the existing smoke suite.
+
+## Backup and Migration Workflow
+
+RailYatra now has a safe database backup and migration workflow.
+
+Commands:
+
+    python3 scripts/backup_database.py
+    python3 scripts/run_migrations.py --dry-run
+    python3 scripts/run_migrations.py --apply
+    scripts/check_all.sh
+
+Rules:
+
+- Always create a backup before any database write.
+- Migration runner must default to dry-run.
+- Database writes require explicit --apply.
+- Backups must not be committed.
+- frontend/dist must not be committed.
+- archive_legacy/ is historical and must not be edited.
+- Existing railway data tables must not be altered without explicit approval.
+
+Current status:
+
+- Non-destructive ingestion metadata migration scaffold exists.
+- Migration smoke test is included in combined checks.
+- Migration runner dry-run is included in combined checks.
+- Existing train/station/route/fare data remains untouched.
