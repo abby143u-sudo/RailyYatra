@@ -1,10 +1,15 @@
 import sqlite3
+from pathlib import Path
 
 DB_NAME = "railyatra.db"
 
 
+def get_database_path():
+    return Path(__file__).resolve().parents[2] / DB_NAME
+
+
 def get_connection():
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(get_database_path())
     conn.row_factory = sqlite3.Row
     return conn
 
