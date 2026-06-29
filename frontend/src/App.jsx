@@ -81,6 +81,14 @@ function App() {
       );
     }
 
+    if (sortMode === "cheapest") {
+      sorted.sort(
+        (a, b) =>
+          getRecommendationFare(a) - getRecommendationFare(b) ||
+          b.score - a.score
+      );
+    }
+
     return sorted;
   }, [allRecommendations, activeFilter, sortMode]);
 
@@ -666,6 +674,28 @@ function App() {
     return value;
   }
 
+  function getRecommendationFare(item) {
+    const fare = item.fare || {};
+    const data = item.data || {};
+
+    const values = [
+      fare.estimated_after_split,
+      fare.estimated_fare,
+      fare.total_fare,
+      fare.fare,
+      fare.amount,
+      data.estimated_fare,
+      data.fare,
+    ];
+
+    for (const value of values) {
+      const numeric = Number(value);
+      if (!Number.isNaN(numeric) && numeric > 0) return numeric;
+    }
+
+    return 999999;
+  }
+
   function getRecommendationDuration(item) {
     const data = item.data || {};
 
@@ -1166,6 +1196,7 @@ function App() {
     lines.push(`Train type: ${trainType}`);
     lines.push(`Filter: ${activeFilter}`);
     lines.push(`Sort: ${sortMode}`);
+    if (sortMode === "cheapest") lines.push("Lowest fare sort enabled");
     lines.push(`Total visible options: ${recommendations.length}`);
 
     if (fareVerificationSummary?.total) {
@@ -2000,6 +2031,14 @@ function App() {
                 onClick={() => setSortMode("least_transfers")}
               >
                 Least Transfers
+              </button>
+
+              <button
+                type="button"
+                className={sortMode === "cheapest" ? "active" : ""}
+                onClick={() => setSortMode("cheapest")}
+              >
+                Lowest Fare
               </button>
             </div>
 
