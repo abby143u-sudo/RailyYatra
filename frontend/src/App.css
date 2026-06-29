@@ -1673,3 +1673,64 @@ li {
   background: #ecfdf5;
   border-color: #bbf7d0;
 }
+
+
+.backend-health-card {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.backend-health-card span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.backend-health-card strong {
+  display: block;
+  font-size: 16px;
+}
+
+.backend-health-card p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.backend-health-card button {
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.backend-health-online {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+
+.backend-health-checking {
+  background: #f8fafc;
+}
+
+.backend-health-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.backend-health-offline {
+  background: #fef2f2;
+  border-color: #fecaca;
+}

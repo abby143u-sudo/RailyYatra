@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import "./App.css";
 
 const API_BASE = "http://127.0.0.1:8000";
@@ -27,6 +27,11 @@ function App() {
   const [expandedCard, setExpandedCard] = useState(null);
   const [compareRoutes, setCompareRoutes] = useState([]);
   const [shareMessage, setShareMessage] = useState("");
+  const [apiStatus, setApiStatus] = useState({
+    state: "checking",
+    label: "Checking backend",
+    detail: "Testing RailYatra API connection...",
+  });
   const [recentSearches, setRecentSearches] = useState(() => {
     try {
       if (typeof window === "undefined") return [];
@@ -65,6 +70,46 @@ function App() {
   const [fareTestResult, setFareTestResult] = useState(null);
 
   const allRecommendations = result?.recommendations || [];
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkBackendHealth() {
+      try {
+        const response = await fetch(`${API_BASE}/`);
+
+        if (!cancelled && response.ok) {
+          setApiStatus({
+            state: "online",
+            label: "Backend online",
+            detail: "RailYatra API is connected.",
+          });
+        } else if (!cancelled) {
+          setApiStatus({
+            state: "warning",
+            label: "Backend responded with issue",
+            detail: `API returned status ${response.status}.`,
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setApiStatus({
+            state: "offline",
+            label: "Backend offline",
+            detail: "Start backend with uvicorn backend.api.main:app --reload",
+          });
+        }
+      }
+    }
+
+    checkBackendHealth();
+    const timer = setInterval(checkBackendHealth, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, []);
 
   const recommendations = useMemo(() => {
     let filtered = allRecommendations;
@@ -1970,6 +2015,57 @@ function App() {
     return warnings.slice(0, 4);
   }
 
+  function renderBackendHealthCard() {
+    const statusClass = `backend-health-card backend-health-${apiStatus.state}`;
+
+    return (
+      <div className={statusClass}>
+        <div>
+          <span>API status</span>
+          <strong>{apiStatus.label}</strong>
+          <p>{apiStatus.detail}</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            setApiStatus({
+              state: "checking",
+              label: "Checking backend",
+              detail: "Testing RailYatra API connection...",
+            });
+
+            try {
+              const response = await fetch(`${API_BASE}/`);
+
+              if (response.ok) {
+                setApiStatus({
+                  state: "online",
+                  label: "Backend online",
+                  detail: "RailYatra API is connected.",
+                });
+              } else {
+                setApiStatus({
+                  state: "warning",
+                  label: "Backend responded with issue",
+                  detail: `API returned status ${response.status}.`,
+                });
+              }
+            } catch {
+              setApiStatus({
+                state: "offline",
+                label: "Backend offline",
+                detail: "Start backend with uvicorn backend.api.main:app --reload",
+              });
+            }
+          }}
+        >
+          Recheck
+        </button>
+      </div>
+    );
+  }
+
   function renderSmartWarningsPanel() {
     const warnings = getSmartRouteWarnings();
 
@@ -2772,6 +2868,8 @@ function App() {
         {renderFavoritesPanel()}
 
         {renderComparePanel()}
+
+        {renderBackendHealthCard()}
 
         {renderSmartWarningsPanel()}
 
