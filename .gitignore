@@ -1,0 +1,8 @@
+frontend/dist/
+frontend/src/App.jsx.backup.*
+*.backup.*
+__pycache__/
+*.pyc
+.env
+.DS_Store
+node_modules/
