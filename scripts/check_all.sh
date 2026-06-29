@@ -24,11 +24,12 @@ cleanup() {
 trap cleanup EXIT
 
 backend_status=0
+migration_status=0
 ingestion_status=0
 import_status=0
 frontend_status=0
 
-printf '%s\n' '' '=== 1/4 Backend smoke test ==='
+printf '%s\n' '' '=== 1/5 Backend smoke test ==='
 python3 scripts/smoke_backend.py || backend_status=$?
 if [ "$backend_status" -eq 0 ]; then
   printf '%s\n' 'PASS: backend smoke test'
@@ -36,7 +37,16 @@ else
   printf 'FAIL: backend smoke test exited with status %s\n' "$backend_status" >&2
 fi
 
-printf '%s\n' '' '=== 2/4 Ingestion smoke test ==='
+printf '%s\n' '' '=== 2/5 Migration safety check ==='
+python3 scripts/smoke_migrations.py || migration_status=$?
+if [ "$migration_status" -eq 0 ]; then
+  printf '%s\n' 'PASS: migration safety check'
+else
+  printf 'FAIL: migration safety check exited with status %s\n' \
+    "$migration_status" >&2
+fi
+
+printf '%s\n' '' '=== 3/5 Ingestion smoke test ==='
 python3 scripts/smoke_ingestion.py || ingestion_status=$?
 if [ "$ingestion_status" -eq 0 ]; then
   printf '%s\n' 'PASS: ingestion smoke test'
@@ -45,7 +55,7 @@ else
     "$ingestion_status" >&2
 fi
 
-printf '%s\n' '' '=== 3/4 Dry-run railway data import ==='
+printf '%s\n' '' '=== 4/5 Dry-run railway data import ==='
 python3 scripts/import_railway_data.py --dry-run || import_status=$?
 if [ "$import_status" -eq 0 ]; then
   printf '%s\n' 'PASS: dry-run railway data import'
@@ -54,7 +64,7 @@ else
     "$import_status" >&2
 fi
 
-printf '%s\n' '' '=== 4/4 Frontend smoke test ==='
+printf '%s\n' '' '=== 5/5 Frontend smoke test ==='
 scripts/smoke_frontend.sh || frontend_status=$?
 if [ "$frontend_status" -eq 0 ]; then
   printf '%s\n' 'PASS: frontend smoke test'
@@ -68,6 +78,7 @@ cleanup
 printf '%s\n' '' '=== Final result ==='
 
 if [ "$backend_status" -eq 0 ] \
+  && [ "$migration_status" -eq 0 ] \
   && [ "$ingestion_status" -eq 0 ] \
   && [ "$import_status" -eq 0 ] \
   && [ "$frontend_status" -eq 0 ]; then
@@ -75,6 +86,7 @@ if [ "$backend_status" -eq 0 ] \
   exit 0
 fi
 
-printf 'FAIL: backend=%s, ingestion=%s, import=%s, frontend=%s\n' \
-  "$backend_status" "$ingestion_status" "$import_status" "$frontend_status" >&2
+printf 'FAIL: backend=%s, migration=%s, ingestion=%s, import=%s, frontend=%s\n' \
+  "$backend_status" "$migration_status" "$ingestion_status" "$import_status" \
+  "$frontend_status" >&2
 exit 1
