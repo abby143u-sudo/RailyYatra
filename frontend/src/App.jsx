@@ -34,6 +34,7 @@ function App() {
     detail: "Testing RailYatra API connection...",
   });
   const [searchErrorDetails, setSearchErrorDetails] = useState(null);
+  const [searchValidation, setSearchValidation] = useState(null);
   const [recentSearches, setRecentSearches] = useState(() => {
     try {
       if (typeof window === "undefined") return [];
@@ -391,6 +392,32 @@ function App() {
   }
 
   function getStationName(station) {
+    const validationIssue = validateSearchFormValues();
+
+    if (validationIssue) {
+      setSearchValidation(validationIssue);
+
+      if (typeof setSearchErrorDetails === "function") {
+        setSearchErrorDetails(null);
+      }
+
+      if (typeof setError === "function") {
+        setError("");
+      }
+
+      if (typeof setLoading === "function") {
+        setLoading(false);
+      }
+
+      if (typeof setIsLoading === "function") {
+        setIsLoading(false);
+      }
+
+      return;
+    }
+
+    setSearchValidation(null);
+
     return station.station_name || station.name || station.city || "";
   }
 
@@ -2953,6 +2980,132 @@ function App() {
     );
   }
 
+  function getStationInputCode(value) {
+    const raw = String(value || "").trim();
+
+    if (!raw) return "";
+
+    if (typeof cleanStation === "function") {
+      const cleaned = cleanStation(raw);
+
+      if (cleaned) {
+        return String(cleaned).trim().toUpperCase();
+      }
+    }
+
+    const bracketMatch = raw.match(/\(([A-Z]{2,5})\)/i);
+
+    if (bracketMatch) {
+      return bracketMatch[1].toUpperCase();
+    }
+
+    const dashParts = raw.split("-");
+    const firstPart = dashParts[0]?.trim();
+
+    if (/^[A-Z]{2,5}$/i.test(firstPart)) {
+      return firstPart.toUpperCase();
+    }
+
+    return raw.toUpperCase();
+  }
+
+  function validateSearchFormValues() {
+    const fromCode = getStationInputCode(source);
+    const toCode = getStationInputCode(destination);
+
+    if (!fromCode && !toCode) {
+      return {
+        title: "Enter source and destination",
+        detail: "Please add both station codes before searching.",
+        action: "Example: PNBE to NDLS",
+      };
+    }
+
+    if (!fromCode) {
+      return {
+        title: "Source station missing",
+        detail: "Please enter the starting station.",
+        action: "Example source: PNBE",
+      };
+    }
+
+    if (!toCode) {
+      return {
+        title: "Destination station missing",
+        detail: "Please enter the destination station.",
+        action: "Example destination: NDLS",
+      };
+    }
+
+    if (fromCode === toCode) {
+      return {
+        title: "Source and destination are same",
+        detail: "Choose two different stations for route search.",
+        action: "Example: PNBE to NDLS",
+      };
+    }
+
+    if (!/^[A-Z]{2,5}$/.test(fromCode)) {
+      return {
+        title: "Source station format looks wrong",
+        detail: "Use Indian Railway station code format with 2 to 5 letters.",
+        action: `Current source: ${source}`,
+      };
+    }
+
+    if (!/^[A-Z]{2,5}$/.test(toCode)) {
+      return {
+        title: "Destination station format looks wrong",
+        detail: "Use Indian Railway station code format with 2 to 5 letters.",
+        action: `Current destination: ${destination}`,
+      };
+    }
+
+    return null;
+  }
+
+  function applySampleSearch() {
+    setSource("PNBE");
+    setDestination("NDLS");
+    setSearchValidation(null);
+  }
+
+  function swapValidationStations() {
+    const oldSource = source;
+    setSource(destination);
+    setDestination(oldSource);
+    setSearchValidation(null);
+  }
+
+  function renderSearchValidationPanel() {
+    if (!searchValidation) return null;
+
+    return (
+      <div className="search-validation-panel">
+        <div>
+          <span>Search validation</span>
+          <strong>{searchValidation.title}</strong>
+          <p>{searchValidation.detail}</p>
+          <small>{searchValidation.action}</small>
+        </div>
+
+        <div className="search-validation-actions">
+          <button type="button" onClick={applySampleSearch}>
+            Use PNBE → NDLS
+          </button>
+
+          <button type="button" onClick={swapValidationStations}>
+            Swap stations
+          </button>
+
+          <button type="button" onClick={() => setSearchValidation(null)}>
+            Dismiss
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   function renderSearchErrorPanel() {
     if (!searchErrorDetails) return null;
 
@@ -3840,6 +3993,8 @@ function App() {
         {renderBackendHealthCard()}
 
         {renderActiveFilterChipsBar()}
+
+        {renderSearchValidationPanel()}
 
         {renderSearchErrorPanel()}
 

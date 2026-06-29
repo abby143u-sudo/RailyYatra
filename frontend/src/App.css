@@ -2208,3 +2208,66 @@ li {
   background: #f1f5f9;
   color: #334155;
 }
+
+
+.search-validation-panel {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 18px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.search-validation-panel span {
+  display: block;
+  font-size: 12px;
+  color: #1d4ed8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.search-validation-panel strong {
+  display: block;
+  color: #1e3a8a;
+}
+
+.search-validation-panel p {
+  margin: 6px 0;
+  color: #1e40af;
+}
+
+.search-validation-panel small {
+  display: block;
+  color: #475569;
+}
+
+.search-validation-actions {
+  display: grid;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.search-validation-actions button {
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .search-validation-panel {
+    display: grid;
+  }
+
+  .search-validation-actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
