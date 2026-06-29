@@ -1994,6 +1994,165 @@ function App() {
     return getBestPickRouteKey(bestPick) === getBestPickRouteKey(item);
   }
 
+  function formatTimelineTime(value) {
+    if (!value || value === "None" || value === "N/A") return "Time not available";
+    return String(value);
+  }
+
+  function getRouteTimelineSteps(item) {
+    const data = item.data || {};
+    const steps = [];
+
+    if (item.type === "direct") {
+      steps.push({
+        type: "start",
+        title: source,
+        meta: `Board ${data.train_no || "train"}${data.train_name ? " - " + data.train_name : ""}`,
+        time: formatTimelineTime(data.departure || data.source_departure),
+      });
+
+      steps.push({
+        type: "end",
+        title: destination,
+        meta: "Arrive at destination",
+        time: formatTimelineTime(data.arrival || data.destination_arrival),
+      });
+
+      return steps;
+    }
+
+    if (item.type === "one_transfer") {
+      const transfer = data.transfer_station || "Transfer station";
+
+      steps.push({
+        type: "start",
+        title: source,
+        meta: `Board ${data.first_train || "first train"}`,
+        time: formatTimelineTime(data.source_departure || data.first_departure),
+      });
+
+      steps.push({
+        type: "transfer",
+        title: transfer,
+        meta: `Change to ${data.second_train || "second train"}`,
+        time: formatTimelineTime(data.transfer_arrival || data.first_arrival),
+      });
+
+      steps.push({
+        type: "end",
+        title: destination,
+        meta: "Arrive at destination",
+        time: formatTimelineTime(data.destination_arrival || data.second_arrival),
+      });
+
+      return steps;
+    }
+
+    if (item.type === "multi_transfer") {
+      const legs = Array.isArray(data.train_legs) ? data.train_legs : [];
+
+      if (legs.length) {
+        legs.forEach((leg, index) => {
+          const fromStation =
+            leg.from ||
+            leg.source ||
+            leg.start_station ||
+            leg.start ||
+            data.route_preview?.[index] ||
+            `Stop ${index + 1}`;
+
+          const toStation =
+            leg.to ||
+            leg.destination ||
+            leg.end_station ||
+            leg.end ||
+            data.route_preview?.[index + 1] ||
+            `Stop ${index + 2}`;
+
+          steps.push({
+            type: index === 0 ? "start" : "transfer",
+            title: fromStation,
+            meta: `Board ${leg.train_no || leg.train || "train"}`,
+            time: formatTimelineTime(leg.start_time || leg.departure),
+          });
+
+          if (index === legs.length - 1) {
+            steps.push({
+              type: "end",
+              title: toStation,
+              meta: "Arrive at destination",
+              time: formatTimelineTime(leg.end_time || leg.arrival),
+            });
+          }
+        });
+
+        return steps;
+      }
+
+      const preview = Array.isArray(data.route_preview) ? data.route_preview : [];
+
+      if (preview.length) {
+        preview.forEach((station, index) => {
+          steps.push({
+            type: index === 0 ? "start" : index === preview.length - 1 ? "end" : "transfer",
+            title: station,
+            meta: index === 0 ? "Start journey" : index === preview.length - 1 ? "Arrive at destination" : "Transfer point",
+            time: "Time not available",
+          });
+        });
+
+        return steps;
+      }
+    }
+
+    return [
+      {
+        type: "start",
+        title: source,
+        meta: "Start journey",
+        time: "Time not available",
+      },
+      {
+        type: "end",
+        title: destination,
+        meta: "Arrive at destination",
+        time: "Time not available",
+      },
+    ];
+  }
+
+  function renderRouteTimeline(item) {
+    const steps = getRouteTimelineSteps(item);
+
+    if (!steps.length) return null;
+
+    return (
+      <div className="route-timeline-card">
+        <div className="route-timeline-heading">
+          <span>Journey timeline</span>
+          <strong>{steps.length} step{steps.length > 1 ? "s" : ""}</strong>
+        </div>
+
+        <div className="route-timeline-list">
+          {steps.map((step, index) => (
+            <div
+              className={`route-timeline-step route-timeline-${step.type}`}
+              key={`${step.title}-${index}`}
+            >
+              <div className="route-timeline-dot">{index + 1}</div>
+
+              <div>
+                <strong>{step.title}</strong>
+                <span>{step.meta}</span>
+                <small>{step.time}</small>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderBestPickBadge(item) {
     if (!isBestPickRoute(item)) return null;
 
@@ -2820,6 +2979,7 @@ function App() {
         {renderRouteTags(item)}
         {renderRiskBadge(item)}
         {renderBestPickBadge(item)}
+        {renderRouteTimeline(item)}
         {renderConfidenceBadge(item)}
         {renderFareBox(item)}
         {renderFareCoverageMeter(item)}
