@@ -2121,6 +2121,98 @@ function App() {
     ];
   }
 
+  function extractTransferWaitHours(item) {
+    if (typeof getTransferWaitHours === "function") {
+      return getTransferWaitHours(item);
+    }
+
+    const data = item.data || {};
+    const values = [
+      data.transfer_wait_hours,
+      data.max_transfer_wait_hours,
+      data.total_wait_hours,
+      data.wait_hours,
+      data.connection_wait_hours,
+    ];
+
+    for (const value of values) {
+      const numeric = Number(value);
+
+      if (!Number.isNaN(numeric) && numeric >= 0) {
+        return numeric;
+      }
+    }
+
+    return null;
+  }
+
+  function getTransferSafety(item) {
+    const transfers = typeof getRecommendationTransfers === "function"
+      ? getRecommendationTransfers(item)
+      : item.type === "direct"
+        ? 0
+        : 1;
+
+    if (transfers === 0) {
+      return {
+        level: "direct",
+        label: "Direct route",
+        detail: "No transfer risk",
+      };
+    }
+
+    const wait = extractTransferWaitHours(item);
+
+    if (wait === null) {
+      return {
+        level: "unknown",
+        label: "Transfer wait unknown",
+        detail: "Check connection timing before booking",
+      };
+    }
+
+    if (wait < 1) {
+      return {
+        level: "tight",
+        label: "Tight transfer",
+        detail: `${wait} hr wait · missed-connection risk`,
+      };
+    }
+
+    if (wait < 2) {
+      return {
+        level: "okay",
+        label: "Okay transfer",
+        detail: `${wait} hr wait · verify delay risk`,
+      };
+    }
+
+    if (wait <= 4) {
+      return {
+        level: "comfortable",
+        label: "Comfortable transfer",
+        detail: `${wait} hrs wait · safer buffer`,
+      };
+    }
+
+    return {
+      level: "long",
+      label: "Long transfer wait",
+      detail: `${wait} hrs wait · may be uncomfortable`,
+    };
+  }
+
+  function renderTransferSafetyBadge(item) {
+    const safety = getTransferSafety(item);
+
+    return (
+      <div className={`transfer-safety-badge transfer-safety-${safety.level}`}>
+        <strong>{safety.label}</strong>
+        <span>{safety.detail}</span>
+      </div>
+    );
+  }
+
   function renderRouteTimeline(item) {
     const steps = getRouteTimelineSteps(item);
 
@@ -2980,6 +3072,7 @@ function App() {
         {renderRiskBadge(item)}
         {renderBestPickBadge(item)}
         {renderRouteTimeline(item)}
+        {renderTransferSafetyBadge(item)}
         {renderConfidenceBadge(item)}
         {renderFareBox(item)}
         {renderFareCoverageMeter(item)}

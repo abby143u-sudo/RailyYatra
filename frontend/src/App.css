@@ -1999,3 +1999,53 @@ li {
 .route-timeline-end .route-timeline-dot {
   background: #dbeafe;
 }
+
+
+.transfer-safety-badge {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #f8fafc;
+  display: grid;
+  gap: 3px;
+}
+
+.transfer-safety-badge strong {
+  font-size: 13px;
+}
+
+.transfer-safety-badge span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.transfer-safety-direct {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+
+.transfer-safety-comfortable {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.transfer-safety-okay {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.transfer-safety-tight {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.transfer-safety-long {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.transfer-safety-unknown {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
