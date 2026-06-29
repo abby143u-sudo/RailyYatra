@@ -17,6 +17,7 @@ function App() {
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortMode, setSortMode] = useState("best");
+  const [hideUnknownFare, setHideUnknownFare] = useState(false);
   const [minScore, setMinScore] = useState("");
   const [maxTransferWait, setMaxTransferWait] = useState("");
   const [departureWindow, setDepartureWindow] = useState("all");
@@ -110,6 +111,12 @@ function App() {
 
     const minimumScoreFilterNote = "minimum score filter active";
 
+    if (hideUnknownFare) {
+      filtered = filtered.filter((item) => hasVerifiedFare(item));
+    }
+
+    const hideUnknownFareFilterNote = "hide unknown fare filter active";
+
     const sorted = [...filtered];
 
     if (sortMode === "best") {
@@ -139,7 +146,7 @@ function App() {
     }
 
     return sorted;
-  }, [allRecommendations, activeFilter, sortMode, maxFare, departureWindow, maxTransferWait, minScore]);
+  }, [allRecommendations, activeFilter, sortMode, maxFare, departureWindow, maxTransferWait, minScore, hideUnknownFare]);
 
   const bestDirect = useMemo(
     () => allRecommendations.find((item) => item.type === "direct"),
@@ -273,6 +280,7 @@ function App() {
     setMaxFare("");
     setActiveFilter("all");
     setSortMode("best");
+    setHideUnknownFare(false);
     setMinScore("");
     setMaxTransferWait("");
     setDepartureWindow("all");
@@ -1334,6 +1342,7 @@ function App() {
     lines.push(`Filter: ${activeFilter}`);
     if (activeFilter === "low_risk") lines.push("Low risk journeys only");
     lines.push(`Sort: ${sortMode}`);
+    lines.push(`Verified fare only: ${hideUnknownFare ? "Yes" : "No"}`);
     if (minScore) lines.push(`Minimum score: ${minScore}`);
     if (maxTransferWait) lines.push(`Max transfer wait: ${maxTransferWait} hrs`);
     lines.push(`Departure window: ${departureWindow}`);
@@ -2049,6 +2058,18 @@ function App() {
               onChange={(e) => setMinScore(e.target.value)}
               placeholder="Example: 700"
             />
+          </div>
+
+          <div className="field checkbox-field">
+            <label>Hide Unknown Fare</label>
+            <label className="inline-check">
+              <input
+                type="checkbox"
+                checked={hideUnknownFare}
+                onChange={(e) => setHideUnknownFare(e.target.checked)}
+              />
+              Show only verified fare journeys
+            </label>
           </div>
 
           <button type="submit" className="search-btn">
