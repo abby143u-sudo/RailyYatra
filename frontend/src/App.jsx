@@ -2202,6 +2202,127 @@ function App() {
     };
   }
 
+  function getSmartBookingChecklist(item) {
+    const checks = [];
+    const data = item.data || {};
+    const fare = item.fare || {};
+    const split = item.split_ticket || {};
+    const hasFare = typeof hasVerifiedFare === "function"
+      ? hasVerifiedFare(item)
+      : Boolean(fare.estimated_fare || fare.estimated_after_split);
+
+    const transfers = typeof getRecommendationTransfers === "function"
+      ? getRecommendationTransfers(item)
+      : item.type === "direct"
+        ? 0
+        : 1;
+
+    const risk = typeof getRouteRisk === "function"
+      ? getRouteRisk(item)
+      : { level: "medium" };
+
+    const transferSafety = typeof getTransferSafety === "function"
+      ? getTransferSafety(item)
+      : null;
+
+    const duration = typeof getRecommendationDuration === "function"
+      ? getRecommendationDuration(item)
+      : 9999;
+
+    checks.push({
+      status: "must",
+      title: "Verify on IRCTC before booking",
+      detail: "Confirm train availability, fare, quota and class on the official booking flow.",
+    });
+
+    checks.push({
+      status: hasFare ? "ok" : "warn",
+      title: hasFare ? "Fare data available" : "Fare needs manual check",
+      detail: hasFare
+        ? "RailYatra has fare estimate/coverage for this option."
+        : "Fare may be missing or estimated. Confirm actual price before payment.",
+    });
+
+    checks.push({
+      status: transfers === 0 ? "ok" : transferSafety?.level === "tight" ? "danger" : "warn",
+      title: transfers === 0 ? "No transfer risk" : "Check transfer buffer",
+      detail: transfers === 0
+        ? "Direct route, no missed-connection risk."
+        : transferSafety?.detail || "Check arrival and next train departure gap carefully.",
+    });
+
+    checks.push({
+      status: risk.level === "high" ? "danger" : risk.level === "medium" ? "warn" : "ok",
+      title: risk.level === "high" ? "High journey risk" : "Journey risk check",
+      detail: risk.label || "Review delay, transfer and fare reliability before booking.",
+    });
+
+    checks.push({
+      status: duration === 9999 ? "warn" : "ok",
+      title: "Duration check",
+      detail: duration === 9999
+        ? "Duration not clearly available. Verify timing manually."
+        : `Estimated duration: ${duration} hrs.`,
+    });
+
+    if (split.recommended) {
+      checks.push({
+        status: "warn",
+        title: "Split-ticket saving available",
+        detail: `Possible saving: ₹${split.estimated_saving || 0}. Verify both legs before booking.`,
+      });
+    }
+
+    if (data.running_days || data.days) {
+      checks.push({
+        status: "must",
+        title: "Train running day",
+        detail: `Check running days: ${data.running_days || data.days}.`,
+      });
+    } else {
+      checks.push({
+        status: "must",
+        title: "Train running day",
+        detail: "Confirm that this train runs on your selected journey date.",
+      });
+    }
+
+    return checks.slice(0, 7);
+  }
+
+  function renderSmartBookingChecklist(item) {
+    const checks = getSmartBookingChecklist(item);
+
+    if (!checks.length) return null;
+
+    return (
+      <div className="booking-checklist-card">
+        <div className="booking-checklist-heading">
+          <span>Booking checklist</span>
+          <strong>Before final payment</strong>
+        </div>
+
+        <div className="booking-checklist-list">
+          {checks.map((check, index) => (
+            <div
+              className={`booking-checklist-row booking-checklist-${check.status}`}
+              key={`${check.title}-${index}`}
+            >
+              <div className="booking-checklist-icon">
+                {check.status === "ok" ? "✓" : check.status === "danger" ? "!" : check.status === "must" ? "•" : "?"}
+              </div>
+
+              <div>
+                <strong>{check.title}</strong>
+                <span>{check.detail}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderTransferSafetyBadge(item) {
     const safety = getTransferSafety(item);
 
@@ -3073,6 +3194,7 @@ function App() {
         {renderBestPickBadge(item)}
         {renderRouteTimeline(item)}
         {renderTransferSafetyBadge(item)}
+        {renderSmartBookingChecklist(item)}
         {renderConfidenceBadge(item)}
         {renderFareBox(item)}
         {renderFareCoverageMeter(item)}
