@@ -19,6 +19,7 @@ function App() {
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortMode, setSortMode] = useState("best");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [hideUnknownFare, setHideUnknownFare] = useState(false);
   const [minScore, setMinScore] = useState("");
   const [maxTransferWait, setMaxTransferWait] = useState("");
@@ -330,6 +331,20 @@ function App() {
     return value.trim().toUpperCase();
   }
 
+  function getAdvancedFilterCount() {
+    let count = 0;
+
+    if (typeof trainType !== "undefined" && trainType !== "All") count += 1;
+    if (typeof quota !== "undefined" && quota !== "GN") count += 1;
+    if (typeof maxFare !== "undefined" && maxFare) count += 1;
+    if (typeof departureWindow !== "undefined" && departureWindow !== "all") count += 1;
+    if (typeof maxTransferWait !== "undefined" && maxTransferWait) count += 1;
+    if (typeof minScore !== "undefined" && minScore) count += 1;
+    if (typeof hideUnknownFare !== "undefined" && hideUnknownFare) count += 1;
+
+    return count;
+  }
+
   function resetSearchFilters() {
     setJourneyClass("SL");
     setTrainType("All");
@@ -338,6 +353,7 @@ function App() {
     setMaxFare("");
     setActiveFilter("all");
     setSortMode("best");
+    setShowAdvancedFilters(false);
     setHideUnknownFare(false);
     setMinScore("");
     setMaxTransferWait("");
@@ -3552,7 +3568,19 @@ function App() {
             </select>
           </div>
 
-          <div className="field">
+          <div className="advanced-filter-toggle-row">
+            <button
+              type="button"
+              className="advanced-filter-toggle"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
+              {showAdvancedFilters
+                ? "Hide advanced filters"
+                : `Show advanced filters${getAdvancedFilterCount() ? ` (${getAdvancedFilterCount()} active)` : ""}`}
+            </button>
+          </div>
+
+          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
             <label>Train Type</label>
             <select
               value={trainType}
@@ -3576,7 +3604,7 @@ function App() {
           </div>
 
 
-          <div className="field">
+          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
             <label>Quota</label>
             <select
               value={quota}
@@ -3589,7 +3617,7 @@ function App() {
             </select>
           </div>
 
-          <div className="field">
+          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
             <label>Max Fare</label>
             <input
               type="number"
@@ -3608,7 +3636,7 @@ function App() {
             Reset Filters
           </button>
 
-          <div className="field">
+          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
             <label>Departure Time</label>
             <select
               value={departureWindow}
@@ -3622,7 +3650,7 @@ function App() {
             </select>
           </div>
 
-          <div className="field">
+          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
             <label>Max Transfer Wait</label>
             <input
               type="number"
@@ -3634,7 +3662,7 @@ function App() {
             />
           </div>
 
-          <div className="field">
+          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
             <label>Minimum Score</label>
             <input
               type="number"
@@ -3645,7 +3673,7 @@ function App() {
             />
           </div>
 
-          <div className="field checkbox-field">
+          <div className={showAdvancedFilters ? "field checkbox-field advanced-filter" : "field checkbox-field advanced-filter advanced-filter-hidden"}>
             <label>Hide Unknown Fare</label>
             <label className="inline-check">
               <input
