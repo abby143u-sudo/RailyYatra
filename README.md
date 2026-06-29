@@ -152,3 +152,31 @@ Current migration status:
 - Ingestion metadata migration scaffold exists.
 - Existing train, station, route, and fare tables are protected.
 - Future ingestion work should write metadata first, then import normalized railway data only after dry-run approval.
+
+## Metadata-Only Ingestion Writer
+
+RailYatra has a metadata-only ingestion writer for safe audit testing before real data imports.
+
+Dry-run command:
+
+    python3 scripts/write_ingestion_metadata.py --dry-run
+
+Apply metadata-only audit write:
+
+    python3 scripts/write_ingestion_metadata.py --apply
+
+Smoke test command:
+
+    python3 scripts/smoke_metadata_writer.py
+
+Combined check:
+
+    scripts/check_all.sh
+
+Safety notes:
+
+- Metadata writer must not modify railway data tables.
+- It may only write audit rows to ingestion metadata tables.
+- It must create a backup before apply mode.
+- Default mode should remain dry-run.
+- Real train, station, stop, and fare tables must stay untouched.

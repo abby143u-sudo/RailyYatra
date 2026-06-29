@@ -144,3 +144,18 @@ Safety checkpoint:
 Next phase:
 
 Build an idempotent transactional importer that writes ingestion metadata first, validates raw JSON, then imports normalized railway data only after dry-run approval.
+
+## Metadata Writer Checkpoint
+
+Metadata-only ingestion writer status:
+
+- Dry-run supported.
+- Apply mode supported.
+- Backup is created before apply.
+- Railway data tables are not modified.
+- Smoke test exists.
+- Combined check includes metadata writer smoke test.
+
+Next safe step:
+
+Use metadata writer output to design the first idempotent transactional importer, but do not write normalized railway data until dry-run reports are approved.

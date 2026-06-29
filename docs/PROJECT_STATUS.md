@@ -192,3 +192,21 @@ Current status:
 - Migration smoke test is included in combined checks.
 - Migration runner dry-run is included in combined checks.
 - Existing train/station/route/fare data remains untouched.
+
+## Metadata-Only Ingestion Writer
+
+Current status:
+
+- scripts/write_ingestion_metadata.py exists.
+- scripts/smoke_metadata_writer.py exists.
+- scripts/check_all.sh includes metadata writer smoke testing.
+- Dry-run mode is safe and read-only.
+- Apply mode writes only ingestion audit metadata.
+- Railway data tables remain untouched.
+
+Commands:
+
+    python3 scripts/write_ingestion_metadata.py --dry-run
+    python3 scripts/write_ingestion_metadata.py --apply
+    python3 scripts/smoke_metadata_writer.py
+    scripts/check_all.sh
