@@ -24,6 +24,7 @@ function App() {
   const [departureWindow, setDepartureWindow] = useState("all");
   const [maxFare, setMaxFare] = useState("");
   const [expandedCard, setExpandedCard] = useState(null);
+  const [compareRoutes, setCompareRoutes] = useState([]);
   const [shareMessage, setShareMessage] = useState("");
   const [favoriteRoutes, setFavoriteRoutes] = useState(() => {
     try {
@@ -1438,6 +1439,153 @@ function App() {
     );
   }
 
+  function getCompareRouteKey(item) {
+    const data = item.data || {};
+
+    if (item.type === "direct") {
+      return `compare-direct-${source}-${destination}-${data.train_no}`;
+    }
+
+    if (item.type === "one_transfer") {
+      return `compare-transfer-${source}-${destination}-${data.first_train}-${data.transfer_station}-${data.second_train}`;
+    }
+
+    if (item.type === "multi_transfer") {
+      const preview = data.route_preview?.join("-") || data.summary || "";
+      const legs = data.train_legs?.map((leg) => leg.train_no).join("-") || "";
+      return `compare-smart-${source}-${destination}-${preview}-${legs}`;
+    }
+
+    return `compare-${source}-${destination}-${getRecommendationTitle(item)}`;
+  }
+
+  function isRouteInCompare(item) {
+    const key = getCompareRouteKey(item);
+    return compareRoutes.some((route) => route.key === key);
+  }
+
+  function toggleCompareRoute(item) {
+    const key = getCompareRouteKey(item);
+    const alreadySelected = compareRoutes.some((route) => route.key === key);
+
+    if (alreadySelected) {
+      setCompareRoutes(compareRoutes.filter((route) => route.key !== key));
+      return;
+    }
+
+    if (compareRoutes.length >= 3) {
+      setShareMessage("You can compare maximum 3 routes.");
+      setTimeout(() => setShareMessage(""), 2200);
+      return;
+    }
+
+    const data = item.data || {};
+    const fare = item.fare || {};
+    const split = item.split_ticket || {};
+    const coverage = item.fare_coverage || {};
+    const duration = getRecommendationDuration(item);
+    const transfers = getRecommendationTransfers(item);
+
+    const compareItem = {
+      key,
+      title: getRecommendationTitle(item),
+      subtext: getRecommendationSubtext(item),
+      type: item.label || item.type,
+      score: item.score || 0,
+      duration,
+      transfers,
+      fare: fare.estimated_fare || fare.estimated_after_split || "N/A",
+      saving: split.recommended ? split.estimated_saving : "N/A",
+      coverage: coverage.label || "N/A",
+      route: data.route_preview?.join(" → ") || data.summary || `${source} → ${destination}`,
+    };
+
+    setCompareRoutes([...compareRoutes, compareItem]);
+  }
+
+  function clearCompareRoutes() {
+    setCompareRoutes([]);
+  }
+
+  function renderCompareButton(item) {
+    const selected = isRouteInCompare(item);
+
+    return (
+      <button
+        type="button"
+        className={selected ? "share-journey-btn compare-active" : "share-journey-btn"}
+        onClick={() => toggleCompareRoute(item)}
+      >
+        {selected ? "✓ In Compare" : "Compare"}
+      </button>
+    );
+  }
+
+  function renderComparePanel() {
+    if (!compareRoutes.length) return null;
+
+    return (
+      <div className="compare-panel">
+        <div className="compare-header">
+          <div>
+            <span>Route comparison</span>
+            <strong>{compareRoutes.length}/3 selected</strong>
+          </div>
+
+          <button type="button" onClick={clearCompareRoutes}>
+            Clear compare
+          </button>
+        </div>
+
+        <div className="compare-grid">
+          {compareRoutes.map((route) => (
+            <div className="compare-card" key={route.key}>
+              <h4>{route.title}</h4>
+              <p>{route.subtext}</p>
+
+              <div className="compare-row">
+                <span>Type</span>
+                <strong>{route.type}</strong>
+              </div>
+
+              <div className="compare-row">
+                <span>Score</span>
+                <strong>{route.score}</strong>
+              </div>
+
+              <div className="compare-row">
+                <span>Duration</span>
+                <strong>{route.duration === 9999 ? "N/A" : `${route.duration} hrs`}</strong>
+              </div>
+
+              <div className="compare-row">
+                <span>Transfers</span>
+                <strong>{route.transfers === 0 ? "No transfer" : route.transfers}</strong>
+              </div>
+
+              <div className="compare-row">
+                <span>Fare</span>
+                <strong>{route.fare === "N/A" ? "N/A" : `₹${route.fare}`}</strong>
+              </div>
+
+              <div className="compare-row">
+                <span>Split saving</span>
+                <strong>{route.saving === "N/A" ? "N/A" : `₹${route.saving}`}</strong>
+              </div>
+
+              <div className="compare-row">
+                <span>Coverage</span>
+                <strong>{route.coverage}</strong>
+              </div>
+
+              <div className="compare-route">{route.route}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderShareButton(item) {
     return (
       <button
@@ -1746,6 +1894,7 @@ function App() {
         {renderSplitTicketBox(item)}
         {renderShareButton(item)}
         {renderFavoriteButton(item)}
+        {renderCompareButton(item)}
 
         <button
           type="button"
@@ -1843,6 +1992,7 @@ function App() {
         {renderSplitTicketBox(item)}
         {renderShareButton(item)}
         {renderFavoriteButton(item)}
+        {renderCompareButton(item)}
 
         <button
           type="button"
@@ -1916,6 +2066,7 @@ function App() {
         {renderSplitTicketBox(item)}
         {renderShareButton(item)}
         {renderFavoriteButton(item)}
+        {renderCompareButton(item)}
 
         {firstLeg && (
           <div className="timeline">
@@ -2205,6 +2356,8 @@ function App() {
           {renderFareAdminPanel()}
 
         {renderFavoritesPanel()}
+
+        {renderComparePanel()}
 
         <div className="quick-routes">
           <button type="button" onClick={() => setQuickRoute("NDLS", "PNBE")}>
