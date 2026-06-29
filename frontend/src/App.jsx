@@ -1705,14 +1705,131 @@ function App() {
     );
   }
 
+  function getShareFareText(item) {
+    const fare = item.fare || {};
+    const values = [
+      fare.estimated_after_split,
+      fare.estimated_fare,
+      fare.total_fare,
+      fare.fare,
+      fare.amount,
+    ];
+
+    for (const value of values) {
+      const numeric = Number(value);
+
+      if (!Number.isNaN(numeric) && numeric > 0) {
+        return `₹${numeric}`;
+      }
+    }
+
+    return "Fare not available";
+  }
+
+  function getShareTrainText(item) {
+    const data = item.data || {};
+
+    if (item.type === "direct") {
+      return data.train_no
+        ? `${data.train_no}${data.train_name ? " - " + data.train_name : ""}`
+        : "Direct train";
+    }
+
+    if (item.type === "one_transfer") {
+      return `${data.first_train || "Train 1"} + ${data.second_train || "Train 2"} via ${data.transfer_station || "transfer"}`;
+    }
+
+    if (item.type === "multi_transfer") {
+      const trains = data.train_legs?.map((leg) => leg.train_no).filter(Boolean);
+
+      if (trains?.length) {
+        return trains.join(" + ");
+      }
+
+      return "Smart multi-train route";
+    }
+
+    return "RailYatra route";
+  }
+
+  function buildWhatsAppRouteMessage(item) {
+    const data = item.data || {};
+    const split = item.split_ticket || {};
+    const coverage = item.fare_coverage || {};
+    const title = getRecommendationTitle(item);
+    const subtext = getRecommendationSubtext(item);
+    const duration = getRecommendationDuration(item);
+    const transfers = getRecommendationTransfers(item);
+    const routeText = data.route_preview?.join(" → ") || data.summary || `${source} → ${destination}`;
+    const trainText = getShareTrainText(item);
+    const fareText = getShareFareText(item);
+    const classText = typeof journeyClass !== "undefined" ? journeyClass : "SL";
+    const trainTypeText = typeof trainType !== "undefined" ? trainType : "All";
+    const quotaText = typeof quota !== "undefined" ? quota : "GN";
+    const dateText = typeof journeyDate !== "undefined" && journeyDate ? journeyDate : "Not selected";
+    const scoreText = item.score ? `${item.score}/1000` : "N/A";
+    const transferText = transfers === 0 ? "No transfer" : `${transfers} transfer${transfers > 1 ? "s" : ""}`;
+    const durationText = duration === 9999 ? "N/A" : `${duration} hrs`;
+    const savingText = split.recommended && split.estimated_saving
+      ? `₹${split.estimated_saving}`
+      : "No split saving";
+    const coverageText = coverage.label || "N/A";
+    const risk = typeof getRouteRisk === "function" ? getRouteRisk(item) : null;
+    const riskText = risk ? `${risk.label || risk.level || "N/A"}` : "N/A";
+
+    return [
+      "🚆 RailYatra Smart Route",
+      "",
+      `Route: ${source} → ${destination}`,
+      `Best option: ${title}`,
+      `Details: ${subtext}`,
+      `Path: ${routeText}`,
+      `Train: ${trainText}`,
+      "",
+      `Class: ${classText}`,
+      `Quota: ${quotaText}`,
+      `Journey date: ${dateText}`,
+      `Train type filter: ${trainTypeText}`,
+      "",
+      `Duration: ${durationText}`,
+      `Transfer: ${transferText}`,
+      `Fare: ${fareText}`,
+      `Split saving: ${savingText}`,
+      `Fare coverage: ${coverageText}`,
+      `Risk: ${riskText}`,
+      `Score: ${scoreText}`,
+      "",
+      "Shared from RailYatra"
+    ].join("\n");
+  }
+
+  async function shareRouteToClipboard(item) {
+    const message = buildWhatsAppRouteMessage(item);
+
+    try {
+      await navigator.clipboard.writeText(message);
+      setShareMessage("WhatsApp-ready route message copied.");
+    } catch {
+      const textArea = document.createElement("textarea");
+      textArea.value = message;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setShareMessage("WhatsApp-ready route message copied.");
+    }
+
+    setTimeout(() => setShareMessage(""), 2400);
+  }
+
   function renderShareButton(item) {
     return (
       <button
         type="button"
-        className="share-journey-btn"
-        onClick={() => copyJourney(item)}
+        className="share-journey-btn whatsapp-share-btn"
+        onClick={() => shareRouteToClipboard(item)}
       >
-        Copy journey
+        Copy WhatsApp message
       </button>
     );
   }
