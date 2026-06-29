@@ -17,6 +17,7 @@ function App() {
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortMode, setSortMode] = useState("best");
+  const [minScore, setMinScore] = useState("");
   const [maxTransferWait, setMaxTransferWait] = useState("");
   const [departureWindow, setDepartureWindow] = useState("all");
   const [maxFare, setMaxFare] = useState("");
@@ -99,6 +100,16 @@ function App() {
 
     const maxTransferWaitFilterNote = "max transfer wait filter active";
 
+    if (minScore) {
+      const scoreLimit = Number(minScore);
+
+      if (!Number.isNaN(scoreLimit) && scoreLimit > 0) {
+        filtered = filtered.filter((item) => Number(item.score || 0) >= scoreLimit);
+      }
+    }
+
+    const minimumScoreFilterNote = "minimum score filter active";
+
     const sorted = [...filtered];
 
     if (sortMode === "best") {
@@ -128,7 +139,7 @@ function App() {
     }
 
     return sorted;
-  }, [allRecommendations, activeFilter, sortMode, maxFare, departureWindow, maxTransferWait]);
+  }, [allRecommendations, activeFilter, sortMode, maxFare, departureWindow, maxTransferWait, minScore]);
 
   const bestDirect = useMemo(
     () => allRecommendations.find((item) => item.type === "direct"),
@@ -262,6 +273,7 @@ function App() {
     setMaxFare("");
     setActiveFilter("all");
     setSortMode("best");
+    setMinScore("");
     setMaxTransferWait("");
     setDepartureWindow("all");
     setExpandedCard(null);
@@ -1322,6 +1334,7 @@ function App() {
     lines.push(`Filter: ${activeFilter}`);
     if (activeFilter === "low_risk") lines.push("Low risk journeys only");
     lines.push(`Sort: ${sortMode}`);
+    if (minScore) lines.push(`Minimum score: ${minScore}`);
     if (maxTransferWait) lines.push(`Max transfer wait: ${maxTransferWait} hrs`);
     lines.push(`Departure window: ${departureWindow}`);
     if (sortMode === "cheapest") lines.push("Lowest fare sort enabled");
@@ -2024,6 +2037,17 @@ function App() {
               value={maxTransferWait}
               onChange={(e) => setMaxTransferWait(e.target.value)}
               placeholder="Hours"
+            />
+          </div>
+
+          <div className="field">
+            <label>Minimum Score</label>
+            <input
+              type="number"
+              min="1"
+              value={minScore}
+              onChange={(e) => setMinScore(e.target.value)}
+              placeholder="Example: 700"
             />
           </div>
 
