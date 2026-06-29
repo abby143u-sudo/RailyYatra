@@ -1797,3 +1797,71 @@ li {
   cursor: pointer;
   white-space: nowrap;
 }
+
+
+.empty-suggestion-panel {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.empty-suggestion-panel span {
+  display: block;
+  font-size: 12px;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.empty-suggestion-panel strong {
+  display: block;
+  color: #78350f;
+}
+
+.empty-suggestion-panel p {
+  margin: 6px 0;
+  color: #92400e;
+}
+
+.empty-suggestion-panel ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #78350f;
+}
+
+.empty-suggestion-panel li {
+  margin: 4px 0;
+}
+
+.empty-suggestion-actions {
+  display: grid;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.empty-suggestion-actions button {
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .empty-suggestion-panel {
+    display: grid;
+  }
+
+  .empty-suggestion-actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}

@@ -2120,6 +2120,97 @@ function App() {
     };
   }
 
+  function loosenStrictFilters() {
+    if (typeof setMaxFare !== "undefined") setMaxFare("");
+    if (typeof setMinScore !== "undefined") setMinScore("");
+    if (typeof setMaxTransferWait !== "undefined") setMaxTransferWait("");
+    if (typeof setHideUnknownFare !== "undefined") setHideUnknownFare(false);
+    if (typeof setDepartureWindow !== "undefined") setDepartureWindow("all");
+
+    setActiveFilter("all");
+    setSortMode("best");
+  }
+
+  function getEmptyResultSuggestions() {
+    const baseList = Array.isArray(allRecommendations) ? allRecommendations : [];
+    const visibleList = Array.isArray(recommendations) ? recommendations : [];
+
+    if (!baseList.length || visibleList.length) return [];
+
+    const suggestions = [];
+
+    if (typeof maxFare !== "undefined" && maxFare) {
+      suggestions.push("Your max fare limit may be too low. Increase Max Fare or clear it.");
+    }
+
+    if (typeof minScore !== "undefined" && minScore) {
+      suggestions.push("Minimum score may be too strict. Try lowering it.");
+    }
+
+    if (typeof maxTransferWait !== "undefined" && maxTransferWait) {
+      suggestions.push("Max transfer wait may be hiding transfer routes. Increase wait limit.");
+    }
+
+    if (typeof departureWindow !== "undefined" && departureWindow !== "all") {
+      suggestions.push("Departure time window is narrow. Try All day.");
+    }
+
+    if (typeof hideUnknownFare !== "undefined" && hideUnknownFare) {
+      suggestions.push("Verified fare only is hiding routes with incomplete fare data.");
+    }
+
+    if (activeFilter !== "all") {
+      suggestions.push("Route type filter is active. Try All recommendations.");
+    }
+
+    if (!suggestions.length) {
+      suggestions.push("No visible journey after filters. Reset filters and search again.");
+    }
+
+    return suggestions.slice(0, 5);
+  }
+
+  function renderEmptyResultsSuggestionPanel() {
+    const suggestions = getEmptyResultSuggestions();
+
+    if (!suggestions.length) return null;
+
+    return (
+      <div className="empty-suggestion-panel">
+        <div>
+          <span>No visible results</span>
+          <strong>Filters are probably too strict</strong>
+          <p>RailYatra found routes, but current filters are hiding them.</p>
+
+          <ul>
+            {suggestions.map((suggestion) => (
+              <li key={suggestion}>{suggestion}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="empty-suggestion-actions">
+          <button type="button" onClick={loosenStrictFilters}>
+            Loosen filters
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof resetSearchFilters === "function") {
+                resetSearchFilters();
+              } else {
+                loosenStrictFilters();
+              }
+            }}
+          >
+            Reset filters
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   function renderSearchErrorPanel() {
     if (!searchErrorDetails) return null;
 
@@ -2991,6 +3082,8 @@ function App() {
         {renderBackendHealthCard()}
 
         {renderSearchErrorPanel()}
+
+        {renderEmptyResultsSuggestionPanel()}
 
         {renderSmartWarningsPanel()}
 
