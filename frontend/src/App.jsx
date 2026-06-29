@@ -61,6 +61,12 @@ function App() {
       filtered = allRecommendations.filter((item) => hasVerifiedFare(item));
     }
 
+    if (activeFilter === "low_risk") {
+      filtered = allRecommendations.filter(
+        (item) => getRouteRisk(item).level === "low"
+      );
+    }
+
     const sorted = [...filtered];
 
     if (sortMode === "best") {
@@ -1195,6 +1201,7 @@ function App() {
     lines.push(`Journey date: ${journeyDate || "Not selected"}`);
     lines.push(`Train type: ${trainType}`);
     lines.push(`Filter: ${activeFilter}`);
+    if (activeFilter === "low_risk") lines.push("Low risk journeys only");
     lines.push(`Sort: ${sortMode}`);
     if (sortMode === "cheapest") lines.push("Lowest fare sort enabled");
     lines.push(`Total visible options: ${recommendations.length}`);
@@ -1979,6 +1986,14 @@ function App() {
                 onClick={() => setActiveFilter("smart")}
               >
                 Smart
+              </button>
+
+              <button
+                type="button"
+                className={activeFilter === "low_risk" ? "active" : ""}
+                onClick={() => setActiveFilter("low_risk")}
+              >
+                Low Risk
               </button>
 
               <button
