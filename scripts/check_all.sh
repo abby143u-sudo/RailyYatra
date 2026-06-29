@@ -24,21 +24,57 @@ cleanup() {
 trap cleanup EXIT
 
 backend_status=0
+ingestion_status=0
+import_status=0
 frontend_status=0
 
-printf '%s\n' 'Running backend smoke test...'
+printf '%s\n' '' '=== 1/4 Backend smoke test ==='
 python3 scripts/smoke_backend.py || backend_status=$?
+if [ "$backend_status" -eq 0 ]; then
+  printf '%s\n' 'PASS: backend smoke test'
+else
+  printf 'FAIL: backend smoke test exited with status %s\n' "$backend_status" >&2
+fi
 
-printf '%s\n' 'Running frontend smoke test...'
-./scripts/smoke_frontend.sh || frontend_status=$?
+printf '%s\n' '' '=== 2/4 Ingestion smoke test ==='
+python3 scripts/smoke_ingestion.py || ingestion_status=$?
+if [ "$ingestion_status" -eq 0 ]; then
+  printf '%s\n' 'PASS: ingestion smoke test'
+else
+  printf 'FAIL: ingestion smoke test exited with status %s\n' \
+    "$ingestion_status" >&2
+fi
+
+printf '%s\n' '' '=== 3/4 Dry-run railway data import ==='
+python3 scripts/import_railway_data.py --dry-run || import_status=$?
+if [ "$import_status" -eq 0 ]; then
+  printf '%s\n' 'PASS: dry-run railway data import'
+else
+  printf 'FAIL: dry-run railway data import exited with status %s\n' \
+    "$import_status" >&2
+fi
+
+printf '%s\n' '' '=== 4/4 Frontend smoke test ==='
+scripts/smoke_frontend.sh || frontend_status=$?
+if [ "$frontend_status" -eq 0 ]; then
+  printf '%s\n' 'PASS: frontend smoke test'
+else
+  printf 'FAIL: frontend smoke test exited with status %s\n' \
+    "$frontend_status" >&2
+fi
 
 cleanup
 
-if [ "$backend_status" -eq 0 ] && [ "$frontend_status" -eq 0 ]; then
+printf '%s\n' '' '=== Final result ==='
+
+if [ "$backend_status" -eq 0 ] \
+  && [ "$ingestion_status" -eq 0 ] \
+  && [ "$import_status" -eq 0 ] \
+  && [ "$frontend_status" -eq 0 ]; then
   printf '%s\n' 'PASS: all RailYatra checks completed successfully'
   exit 0
 fi
 
-printf 'FAIL: backend status=%s, frontend status=%s\n' \
-  "$backend_status" "$frontend_status" >&2
+printf 'FAIL: backend=%s, ingestion=%s, import=%s, frontend=%s\n' \
+  "$backend_status" "$ingestion_status" "$import_status" "$frontend_status" >&2
 exit 1
