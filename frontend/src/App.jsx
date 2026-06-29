@@ -8,6 +8,7 @@ function App() {
   const [destination, setDestination] = useState("NDLS");
   const [trainType, setTrainType] = useState("All");
   const [journeyClass, setJourneyClass] = useState("SL");
+  const [quota, setQuota] = useState("GN");
   const [journeyDate, setJourneyDate] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -228,6 +229,8 @@ function App() {
         journeyClass +
         "&train_type=" +
         encodeURIComponent(trainType) +
+        "&quota=" +
+        encodeURIComponent(quota) +
         (journeyDate ? "&journey_date=" + encodeURIComponent(journeyDate) : "")
       );
 
@@ -1057,6 +1060,7 @@ function App() {
     lines.push("------------------------");
     lines.push(`Route: ${source} → ${destination}`);
     lines.push(`Class: ${journeyClass}`);
+    lines.push(`Quota: ${quota}`);
     lines.push(`Journey date: ${journeyDate || "Not selected"}`);
     lines.push(`Train type: ${trainType}`);
     lines.push(`Option: ${title}`);
@@ -1157,6 +1161,7 @@ function App() {
     lines.push("=================================");
     lines.push(`Route: ${source} → ${destination}`);
     lines.push(`Class: ${journeyClass}`);
+    lines.push(`Quota: ${quota}`);
     lines.push(`Journey date: ${journeyDate || "Not selected"}`);
     lines.push(`Train type: ${trainType}`);
     lines.push(`Filter: ${activeFilter}`);
@@ -1314,6 +1319,12 @@ function App() {
             <span>Sort</span>
             <strong>{sortMode}</strong>
           </div>
+
+          <div>
+            <span>Quota</span>
+            <strong>{quota}</strong>
+          </div>
+
 
           <div>
             <span>Fare coverage</span>
@@ -1796,6 +1807,20 @@ function App() {
               value={journeyDate}
               onChange={(e) => setJourneyDate(e.target.value)}
             />
+          </div>
+
+
+          <div className="field">
+            <label>Quota</label>
+            <select
+              value={quota}
+              onChange={(e) => setQuota(e.target.value)}
+            >
+              <option value="GN">General - GN</option>
+              <option value="TQ">Tatkal - TQ</option>
+              <option value="LD">Ladies - LD</option>
+              <option value="SS">Senior Citizen - SS</option>
+            </select>
           </div>
 
           <button type="submit" className="search-btn">

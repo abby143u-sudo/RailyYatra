@@ -189,6 +189,7 @@ def search(
     date: str | None = None,
     class_code: str = "SL",
     train_type: str = "All",
+    quota: str = "GN",
 ):
     result = plan_journey(
         source=source,
@@ -199,6 +200,9 @@ def search(
     )
 
     result = apply_train_type_filter_to_response(result, train_type)
+
+    if isinstance(result, dict):
+        result["selected_quota"] = quota.upper().strip()
 
     return result
     
