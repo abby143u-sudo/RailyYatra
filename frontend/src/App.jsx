@@ -32,6 +32,7 @@ function App() {
     label: "Checking backend",
     detail: "Testing RailYatra API connection...",
   });
+  const [searchErrorDetails, setSearchErrorDetails] = useState(null);
   const [recentSearches, setRecentSearches] = useState(() => {
     try {
       if (typeof window === "undefined") return [];
@@ -396,6 +397,7 @@ function App() {
     setSource(from);
     setDestination(to);
     setLoading(true);
+    setSearchErrorDetails(null);
     setError("");
     setResult(null);
     setActiveFilter("all");
@@ -473,6 +475,20 @@ function App() {
         `http://127.0.0.1:8000/fares/import?csv_file=${encodeURIComponent(fileName)}`,
         { method: "POST" }
       );
+
+      if (!response.ok) {
+        let errorMessage = `Search API returned HTTP ${response.status}`;
+
+        try {
+          const errorPayload = await response.clone().json();
+          errorMessage = errorPayload.detail || errorPayload.message || errorMessage;
+        } catch {}
+
+        const apiError = new Error(errorMessage);
+        apiError.statusCode = response.status;
+        setSearchErrorDetails(buildSearchErrorDetails(apiError, response.status));
+        throw apiError;
+      }
 
       const data = await response.json();
 
@@ -2056,6 +2072,78 @@ function App() {
     return mapHealthPayloadToApiStatus(payload, response.status);
   }
 
+  function buildSearchErrorDetails(error, statusCode = null) {
+    const message = error?.message || String(error || "Unknown error");
+    const lowerMessage = message.toLowerCase();
+
+    if (lowerMessage.includes("failed to fetch") || lowerMessage.includes("networkerror")) {
+      return {
+        title: "Backend is not reachable",
+        detail: "Frontend could not connect to RailYatra API. Start backend server and retry.",
+        fix: "cd ~/RailYatra/app && uvicorn backend.api.main:app --reload",
+        statusCode,
+      };
+    }
+
+    if (statusCode === 404) {
+      return {
+        title: "API endpoint not found",
+        detail: "Frontend is calling an endpoint that backend does not expose yet.",
+        fix: "Check backend routes in FastAPI /docs.",
+        statusCode,
+      };
+    }
+
+    if (statusCode && statusCode >= 500) {
+      return {
+        title: "Backend internal error",
+        detail: "Backend crashed while processing this search. Check backend terminal traceback.",
+        fix: "Read uvicorn terminal logs and fix the Python error shown there.",
+        statusCode,
+      };
+    }
+
+    if (statusCode && statusCode >= 400) {
+      return {
+        title: "Search request rejected",
+        detail: message,
+        fix: "Check source, destination, date, quota and class values.",
+        statusCode,
+      };
+    }
+
+    return {
+      title: "Search failed",
+      detail: message,
+      fix: "Try again, or check frontend/backend terminal logs.",
+      statusCode,
+    };
+  }
+
+  function renderSearchErrorPanel() {
+    if (!searchErrorDetails) return null;
+
+    return (
+      <div className="search-error-panel">
+        <div>
+          <span>Search error</span>
+          <strong>{searchErrorDetails.title}</strong>
+          <p>{searchErrorDetails.detail}</p>
+
+          {searchErrorDetails.statusCode ? (
+            <small>HTTP status: {searchErrorDetails.statusCode}</small>
+          ) : null}
+
+          <code>{searchErrorDetails.fix}</code>
+        </div>
+
+        <button type="button" onClick={handleSearch}>
+          Retry search
+        </button>
+      </div>
+    );
+  }
+
   function renderBackendHealthCard() {
     const statusClass = `backend-health-card backend-health-${apiStatus.state}`;
 
@@ -2901,6 +2989,8 @@ function App() {
         {renderComparePanel()}
 
         {renderBackendHealthCard()}
+
+        {renderSearchErrorPanel()}
 
         {renderSmartWarningsPanel()}
 
