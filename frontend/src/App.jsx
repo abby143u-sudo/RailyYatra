@@ -17,6 +17,7 @@ function App() {
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortMode, setSortMode] = useState("best");
+  const [maxFare, setMaxFare] = useState("");
   const [expandedCard, setExpandedCard] = useState(null);
   const [shareMessage, setShareMessage] = useState("");
   const [showFareAdmin, setShowFareAdmin] = useState(false);
@@ -67,6 +68,16 @@ function App() {
       );
     }
 
+    if (maxFare) {
+      const fareLimit = Number(maxFare);
+
+      if (!Number.isNaN(fareLimit) && fareLimit > 0) {
+        filtered = filtered.filter(
+          (item) => getRecommendationFare(item) <= fareLimit
+        );
+      }
+    }
+
     const sorted = [...filtered];
 
     if (sortMode === "best") {
@@ -96,7 +107,7 @@ function App() {
     }
 
     return sorted;
-  }, [allRecommendations, activeFilter, sortMode]);
+  }, [allRecommendations, activeFilter, sortMode, maxFare]);
 
   const bestDirect = useMemo(
     () => allRecommendations.find((item) => item.type === "direct"),
@@ -1096,6 +1107,7 @@ function App() {
     lines.push("------------------------");
     lines.push(`Route: ${source} → ${destination}`);
     lines.push(`Class: ${journeyClass}`);
+    if (maxFare) lines.push(`Max fare: ₹${maxFare}`);
     lines.push(`Quota: ${quota}`);
     lines.push(`Journey date: ${journeyDate || "Not selected"}`);
     lines.push(`Train type: ${trainType}`);
@@ -1197,6 +1209,7 @@ function App() {
     lines.push("=================================");
     lines.push(`Route: ${source} → ${destination}`);
     lines.push(`Class: ${journeyClass}`);
+    if (maxFare) lines.push(`Max fare: ₹${maxFare}`);
     lines.push(`Quota: ${quota}`);
     lines.push(`Journey date: ${journeyDate || "Not selected"}`);
     lines.push(`Train type: ${trainType}`);
@@ -1859,6 +1872,17 @@ function App() {
               <option value="LD">Ladies - LD</option>
               <option value="SS">Senior Citizen - SS</option>
             </select>
+          </div>
+
+          <div className="field">
+            <label>Max Fare</label>
+            <input
+              type="number"
+              min="1"
+              value={maxFare}
+              onChange={(e) => setMaxFare(e.target.value)}
+              placeholder="Max ₹"
+            />
           </div>
 
           <button type="submit" className="search-btn">
