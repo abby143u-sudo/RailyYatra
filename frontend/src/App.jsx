@@ -17,6 +17,7 @@ function App() {
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortMode, setSortMode] = useState("best");
+  const [departureWindow, setDepartureWindow] = useState("all");
   const [maxFare, setMaxFare] = useState("");
   const [expandedCard, setExpandedCard] = useState(null);
   const [shareMessage, setShareMessage] = useState("");
@@ -78,6 +79,12 @@ function App() {
       }
     }
 
+    if (departureWindow !== "all") {
+      filtered = filtered.filter((item) =>
+        matchesDepartureWindow(item, departureWindow)
+      );
+    }
+
     const sorted = [...filtered];
 
     if (sortMode === "best") {
@@ -107,7 +114,7 @@ function App() {
     }
 
     return sorted;
-  }, [allRecommendations, activeFilter, sortMode, maxFare]);
+  }, [allRecommendations, activeFilter, sortMode, maxFare, departureWindow]);
 
   const bestDirect = useMemo(
     () => allRecommendations.find((item) => item.type === "direct"),
@@ -180,6 +187,55 @@ function App() {
     };
   }, [allRecommendations]);
 
+  function parseTimeHour(value) {
+    if (!value || value === "None" || value === "N/A") return null;
+
+    const text = String(value).trim();
+    const match = text.match(/(\d{1,2}):(\d{2})/);
+
+    if (!match) return null;
+
+    const hour = Number(match[1]);
+
+    if (Number.isNaN(hour)) return null;
+
+    return hour;
+  }
+
+  function getRecommendationDepartureHour(item) {
+    const data = item.data || {};
+
+    if (item.type === "direct") {
+      return parseTimeHour(data.departure || data.source_departure);
+    }
+
+    if (item.type === "one_transfer") {
+      return parseTimeHour(data.source_departure || data.first_departure);
+    }
+
+    if (item.type === "multi_transfer") {
+      const firstLeg = data.train_legs?.[0];
+      return parseTimeHour(firstLeg?.start_time || data.departure);
+    }
+
+    return parseTimeHour(data.departure || data.source_departure || data.start_time);
+  }
+
+  function matchesDepartureWindow(item, windowName) {
+    if (!windowName || windowName === "all") return true;
+
+    const hour = getRecommendationDepartureHour(item);
+
+    if (hour === null) return true;
+
+    if (windowName === "morning") return hour >= 5 && hour < 12;
+    if (windowName === "afternoon") return hour >= 12 && hour < 17;
+    if (windowName === "evening") return hour >= 17 && hour < 21;
+    if (windowName === "night") return hour >= 21 || hour < 5;
+
+    return true;
+  }
+
   function cleanStation(value) {
     return value.trim().toUpperCase();
   }
@@ -192,6 +248,7 @@ function App() {
     setMaxFare("");
     setActiveFilter("all");
     setSortMode("best");
+    setDepartureWindow("all");
     setExpandedCard(null);
   }
 
@@ -1227,6 +1284,7 @@ function App() {
     lines.push(`Filter: ${activeFilter}`);
     if (activeFilter === "low_risk") lines.push("Low risk journeys only");
     lines.push(`Sort: ${sortMode}`);
+    lines.push(`Departure window: ${departureWindow}`);
     if (sortMode === "cheapest") lines.push("Lowest fare sort enabled");
     lines.push(`Total visible options: ${recommendations.length}`);
 
@@ -1903,6 +1961,20 @@ function App() {
           >
             Reset Filters
           </button>
+
+          <div className="field">
+            <label>Departure Time</label>
+            <select
+              value={departureWindow}
+              onChange={(e) => setDepartureWindow(e.target.value)}
+            >
+              <option value="all">All day</option>
+              <option value="morning">Morning: 5 AM - 12 PM</option>
+              <option value="afternoon">Afternoon: 12 PM - 5 PM</option>
+              <option value="evening">Evening: 5 PM - 9 PM</option>
+              <option value="night">Night: 9 PM - 5 AM</option>
+            </select>
+          </div>
 
           <button type="submit" className="search-btn">
             {loading ? "Searching..." : "Search"}
