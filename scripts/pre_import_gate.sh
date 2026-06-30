@@ -34,6 +34,7 @@ run_step "Migration runner dry-run" python3 scripts/run_migrations.py --dry-run
 run_step "Raw railway ingestion inspection" python3 scripts/smoke_ingestion.py
 run_step "Railway data import dry-run" python3 scripts/import_railway_data.py --dry-run
 run_step "Staging planner smoke test" python3 scripts/smoke_staging_planner.py
+run_step "Staging apply skeleton smoke test" python3 scripts/smoke_staging_apply.py
 run_step "Metadata writer smoke test" python3 scripts/smoke_metadata_writer.py
 run_step "Ingestion metadata verifier dry-run" python3 scripts/verify_ingestion_metadata.py --dry-run
 run_step "Frontend production build" scripts/smoke_frontend.sh
