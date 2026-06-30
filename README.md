@@ -260,3 +260,28 @@ Safety notes:
 - Database opened: no
 - Database write skipped: yes
 - Railway data tables modified: no
+
+## Staging Apply Skeleton
+
+RailYatra has a safe staging apply skeleton.
+
+Commands:
+
+    python3 scripts/apply_staging_import.py --dry-run
+    python3 scripts/smoke_staging_apply.py
+    scripts/pre_import_gate.sh
+    scripts/check_all.sh
+
+Current behavior:
+
+- Default mode is dry-run.
+- Dry-run opens no database connection.
+- Dry-run writes nothing.
+- --apply mode is intentionally blocked.
+- Apply mode prints safety requirements and exits with failure by design.
+
+Safety notes:
+
+- Railway production tables are not modified.
+- Staging writes are not enabled yet.
+- Actual staging writes require backup, transaction, validation, and rollback rules first.

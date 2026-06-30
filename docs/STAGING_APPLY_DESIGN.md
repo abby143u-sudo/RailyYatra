@@ -181,3 +181,24 @@ First version must support:
 - clear safety print statements
 
 Actual staging row inserts should come after skeleton review.
+
+## Skeleton Implemented
+
+Safe skeleton implemented:
+
+    scripts/apply_staging_import.py
+
+Smoke test implemented:
+
+    scripts/smoke_staging_apply.py
+
+Current skeleton behavior:
+
+- --dry-run is safe and read-only.
+- --apply is blocked by design.
+- Production railway tables are not touched.
+- Staging rows are not written yet.
+
+Next implementation requirement:
+
+Before enabling --apply, the script must run pre-import gate, create a backup, open a transaction, write only staging tables, validate counts, validate orphan references, and rollback on failure.

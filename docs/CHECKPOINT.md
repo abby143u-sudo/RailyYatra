@@ -206,3 +206,19 @@ Staging planner status:
 Next safe step:
 
 Design staging apply mode, but keep it disabled until backup, transaction, validation, and rollback rules are implemented.
+
+## Staging Apply Skeleton Checkpoint
+
+Staging apply skeleton status:
+
+- Safe skeleton exists.
+- Smoke test exists.
+- Combined check includes skeleton smoke test.
+- Pre-import gate includes skeleton smoke test.
+- Dry-run mode is safe and read-only.
+- Apply mode is intentionally blocked.
+- No real staging writes happen yet.
+
+Next safe step:
+
+Implement staging apply mode behind an explicit flag only after adding backup, transaction, staging-only delete rules, row inserts, validation, and rollback handling.

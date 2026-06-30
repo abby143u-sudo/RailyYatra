@@ -262,3 +262,22 @@ The planner must remain read-only:
 Next design step:
 
 Create staging apply mode with explicit flag only. It must write only to staging tables and must never touch production railway tables.
+
+## Staging Apply Skeleton Implemented
+
+The staging apply skeleton is implemented.
+
+Commands:
+
+    python3 scripts/apply_staging_import.py --dry-run
+    python3 scripts/smoke_staging_apply.py
+
+Current rule:
+
+- --apply remains disabled by design.
+- No production railway table writes are allowed.
+- No staging row writes are enabled yet.
+
+Next safe implementation:
+
+Enable staging-only apply mode after backup, transaction, validation, and rollback code is ready.

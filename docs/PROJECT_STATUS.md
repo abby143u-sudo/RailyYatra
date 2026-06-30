@@ -259,3 +259,23 @@ Commands:
     python3 scripts/smoke_staging_planner.py
     scripts/pre_import_gate.sh
     scripts/check_all.sh
+
+## Staging Apply Skeleton
+
+Current status:
+
+- scripts/apply_staging_import.py exists.
+- scripts/smoke_staging_apply.py exists.
+- scripts/check_all.sh includes staging apply skeleton smoke test.
+- scripts/pre_import_gate.sh includes staging apply skeleton smoke test.
+- Dry-run mode is safe.
+- Apply mode is disabled by design.
+- No staging rows are written yet.
+- No production railway tables are touched.
+
+Commands:
+
+    python3 scripts/apply_staging_import.py --dry-run
+    python3 scripts/smoke_staging_apply.py
+    scripts/pre_import_gate.sh
+    scripts/check_all.sh
