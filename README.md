@@ -285,3 +285,37 @@ Safety notes:
 - Railway production tables are not modified.
 - Staging writes are not enabled yet.
 - Actual staging writes require backup, transaction, validation, and rollback rules first.
+
+## Phase 2.5 Completion: Real Data Safety Layer
+
+Phase 2.5 is the RailYatra real railway data safety layer.
+
+Completed safety tools:
+
+- Backend smoke test
+- Frontend smoke test
+- Migration smoke test
+- Safe migration runner
+- Raw railway data inspection
+- Railway data import dry-run
+- Metadata-only ingestion writer
+- Metadata verifier true dry-run
+- Pre-import safety gate
+- Staging import dry-run planner
+- Staging apply script with explicit confirmation
+- Staging import verifier
+- Combined project check
+
+Important commands:
+
+    scripts/check_all.sh
+    scripts/pre_import_gate.sh
+    python3 scripts/verify_staging_import.py
+    python3 scripts/smoke_staging_verifier.py
+
+Current guarantee:
+
+- Production railway tables are protected.
+- Real staging data can be verified safely.
+- frontend/dist is removed after builds.
+- Future production import work must start from staging validation.

@@ -281,3 +281,20 @@ Current rule:
 Next safe implementation:
 
 Enable staging-only apply mode after backup, transaction, validation, and rollback code is ready.
+
+## Phase 2.5 Completion Note
+
+The real data safety foundation is complete.
+
+Validated pieces:
+
+- staging schema exists
+- staging planning exists
+- staging apply is explicit and confirmed
+- staging verification exists
+- safety gate exists
+- combined check exists
+
+Production import is still not enabled.
+
+Phase 3 should use staging data as the source for building the real graph/search pipeline.

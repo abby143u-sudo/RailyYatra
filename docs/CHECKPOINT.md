@@ -222,3 +222,35 @@ Staging apply skeleton status:
 Next safe step:
 
 Implement staging apply mode behind an explicit flag only after adding backup, transaction, staging-only delete rules, row inserts, validation, and rollback handling.
+
+## Phase 2.5 Final Checkpoint
+
+Phase 2.5 is complete when both commands pass:
+
+    scripts/check_all.sh
+    scripts/pre_import_gate.sh
+
+Completed:
+
+- 001 ingestion metadata migration
+- 002 staging import tables migration
+- multi-migration smoke test
+- safe migration runner
+- metadata-only writer
+- metadata verifier true dry-run
+- staging import planner
+- staging-only apply mode
+- staging import verifier
+- frontend build smoke test
+- backend smoke test
+
+Protected:
+
+- production train data
+- production station data
+- production route/search data
+- production fare data
+
+Next phase:
+
+Phase 3 should build production graph/search integration from staging data.

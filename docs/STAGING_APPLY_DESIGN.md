@@ -202,3 +202,21 @@ Current skeleton behavior:
 Next implementation requirement:
 
 Before enabling --apply, the script must run pre-import gate, create a backup, open a transaction, write only staging tables, validate counts, validate orphan references, and rollback on failure.
+
+## Staging Verification Implemented
+
+Staging verification is implemented.
+
+Commands:
+
+    python3 scripts/verify_staging_import.py
+    python3 scripts/smoke_staging_verifier.py
+
+The verifier checks:
+
+- staging_stations count
+- staging_trains count
+- staging_train_stops count
+- production railway tables modified: no
+
+This completes the Phase 2.5 staging safety loop.

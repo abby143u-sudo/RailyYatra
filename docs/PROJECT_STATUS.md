@@ -279,3 +279,38 @@ Commands:
     python3 scripts/smoke_staging_apply.py
     scripts/pre_import_gate.sh
     scripts/check_all.sh
+
+## Phase 2.5 Completed
+
+Phase 2.5 status:
+
+Completed.
+
+RailYatra now has a real railway data safety and staging layer.
+
+Current verified raw data scale:
+
+- stations: 8990
+- trains: 5208
+- schedules/stops: 417080
+
+Completed systems:
+
+- migration safety
+- metadata audit
+- true dry-run verifier
+- pre-import safety gate
+- staging tables
+- staging planner
+- confirmed staging-only apply mode
+- staging import verifier
+- combined check pipeline
+
+Main checks:
+
+    scripts/check_all.sh
+    scripts/pre_import_gate.sh
+
+Next phase:
+
+Phase 3: connect validated staging railway data into the real search and graph engine.
