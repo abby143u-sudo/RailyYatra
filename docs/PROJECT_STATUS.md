@@ -210,3 +210,19 @@ Commands:
     python3 scripts/write_ingestion_metadata.py --apply
     python3 scripts/smoke_metadata_writer.py
     scripts/check_all.sh
+
+## Ingestion Metadata Verifier
+
+Current status:
+
+- scripts/verify_ingestion_metadata.py exists.
+- Dry-run mode validates metadata schema in memory.
+- scripts/check_all.sh includes verifier dry-run.
+- Live mode can verify latest metadata apply result.
+- Railway data tables remain untouched.
+
+Commands:
+
+    python3 scripts/verify_ingestion_metadata.py --dry-run
+    python3 scripts/verify_ingestion_metadata.py
+    scripts/check_all.sh

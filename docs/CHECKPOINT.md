@@ -159,3 +159,17 @@ Metadata-only ingestion writer status:
 Next safe step:
 
 Use metadata writer output to design the first idempotent transactional importer, but do not write normalized railway data until dry-run reports are approved.
+
+## Verifier Checkpoint
+
+Ingestion metadata verifier status:
+
+- Dry-run supported.
+- Dry-run included in combined check.
+- Live metadata verification supported after metadata apply.
+- Verifier checks metadata schema and latest ingestion audit state.
+- Railway train, station, route, stop, and fare data remains protected.
+
+Next safe step:
+
+Build a strict pre-import gate that blocks real railway data writes unless migrations, smoke tests, dry-run import, metadata writer, and verifier all pass.

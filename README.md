@@ -180,3 +180,26 @@ Safety notes:
 - It must create a backup before apply mode.
 - Default mode should remain dry-run.
 - Real train, station, stop, and fare tables must stay untouched.
+
+## Ingestion Metadata Verifier
+
+Use the verifier to confirm the ingestion metadata schema safely.
+
+Dry-run command:
+
+    python3 scripts/verify_ingestion_metadata.py --dry-run
+
+Live database verification after metadata apply:
+
+    python3 scripts/verify_ingestion_metadata.py
+
+Combined check:
+
+    scripts/check_all.sh
+
+Safety notes:
+
+- Dry-run validates metadata schema in memory.
+- Dry-run does not open or write the project database.
+- Live verification reads metadata rows only.
+- Railway data tables remain untouched.
