@@ -241,3 +241,24 @@ Next safe file:
     app/backend/database/migrations/002_staging_import_tables.sql
 
 This migration should create staging tables only.
+
+## Staging Planner Implemented
+
+The staging import dry-run planner is implemented.
+
+Commands:
+
+    python3 scripts/plan_staging_import.py --dry-run
+    python3 scripts/smoke_staging_planner.py
+
+The planner checks planned staging inserts and blocking validation issues.
+
+The planner must remain read-only:
+
+- Database opened: no
+- Database write skipped: yes
+- Railway data tables modified: no
+
+Next design step:
+
+Create staging apply mode with explicit flag only. It must write only to staging tables and must never touch production railway tables.

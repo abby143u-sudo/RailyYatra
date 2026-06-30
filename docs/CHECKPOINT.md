@@ -191,3 +191,18 @@ Pre-import safety gate status:
 Next safe step:
 
 Create a real import design document before writing normalized railway data into production tables.
+
+## Staging Planner Checkpoint
+
+Staging planner status:
+
+- Dry-run planner exists.
+- Smoke test exists.
+- Combined check includes planner smoke test.
+- Pre-import gate includes planner smoke test.
+- No database writes happen in planner dry-run.
+- No railway production tables are modified.
+
+Next safe step:
+
+Design staging apply mode, but keep it disabled until backup, transaction, validation, and rollback rules are implemented.

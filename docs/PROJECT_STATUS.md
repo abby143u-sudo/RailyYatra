@@ -240,3 +240,22 @@ Current status:
 Command:
 
     scripts/pre_import_gate.sh
+
+## Staging Import Dry-Run Planner
+
+Current status:
+
+- scripts/plan_staging_import.py exists.
+- scripts/smoke_staging_planner.py exists.
+- scripts/check_all.sh includes staging planner smoke test.
+- scripts/pre_import_gate.sh includes staging planner smoke test.
+- Planner dry-run does not open the database.
+- Planner dry-run does not write to the database.
+- Planner validates blocking issues before any future staging write.
+
+Commands:
+
+    python3 scripts/plan_staging_import.py --dry-run
+    python3 scripts/smoke_staging_planner.py
+    scripts/pre_import_gate.sh
+    scripts/check_all.sh

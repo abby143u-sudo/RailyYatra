@@ -229,3 +229,34 @@ Safety notes:
 - Database write mode stays disabled.
 - frontend/dist is removed after the build.
 - Passing this gate means the project is ready for manual review before any real import.
+
+## Staging Import Dry-Run Planner
+
+RailYatra has a staging import planner that calculates planned staging inserts without writing to the database.
+
+Commands:
+
+    python3 scripts/plan_staging_import.py --dry-run
+    python3 scripts/smoke_staging_planner.py
+    scripts/pre_import_gate.sh
+    scripts/check_all.sh
+
+Planner checks:
+
+- planned staging_stations inserts
+- planned staging_trains inserts
+- planned staging_train_stops inserts
+- missing station codes
+- missing train numbers
+- missing schedule train numbers
+- missing schedule station codes
+- duplicate station code groups
+- duplicate train number groups
+- orphan schedule train numbers
+- orphan schedule station codes
+
+Safety notes:
+
+- Database opened: no
+- Database write skipped: yes
+- Railway data tables modified: no
