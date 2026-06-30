@@ -203,3 +203,29 @@ Safety notes:
 - Dry-run does not open or write the project database.
 - Live verification reads metadata rows only.
 - Railway data tables remain untouched.
+
+## Pre-Import Safety Gate
+
+Run the pre-import gate before any future real railway data import.
+
+Command:
+
+    scripts/pre_import_gate.sh
+
+What it checks:
+
+- Backend smoke test.
+- Migration safety.
+- Migration runner dry-run.
+- Raw railway data inspection.
+- Railway import dry-run.
+- Metadata writer smoke test.
+- Ingestion metadata verifier dry-run.
+- Frontend production build.
+
+Safety notes:
+
+- Real railway data tables are not modified.
+- Database write mode stays disabled.
+- frontend/dist is removed after the build.
+- Passing this gate means the project is ready for manual review before any real import.

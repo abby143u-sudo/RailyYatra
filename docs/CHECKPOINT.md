@@ -173,3 +173,21 @@ Ingestion metadata verifier status:
 Next safe step:
 
 Build a strict pre-import gate that blocks real railway data writes unless migrations, smoke tests, dry-run import, metadata writer, and verifier all pass.
+
+## Pre-Import Gate Checkpoint
+
+Pre-import safety gate status:
+
+- Backend smoke test included.
+- Migration smoke test included.
+- Migration runner dry-run included.
+- Raw railway ingestion inspection included.
+- Railway data import dry-run included.
+- Metadata writer smoke test included.
+- Ingestion metadata verifier dry-run included.
+- Frontend production build included.
+- Real railway data writes blocked until manual review.
+
+Next safe step:
+
+Create a real import design document before writing normalized railway data into production tables.

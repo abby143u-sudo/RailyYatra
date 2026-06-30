@@ -226,3 +226,17 @@ Commands:
     python3 scripts/verify_ingestion_metadata.py --dry-run
     python3 scripts/verify_ingestion_metadata.py
     scripts/check_all.sh
+
+## Pre-Import Safety Gate
+
+Current status:
+
+- scripts/pre_import_gate.sh exists.
+- The gate runs all required safety checks before real import work.
+- The gate is dry-run/read-only for railway data.
+- The gate removes frontend/dist after frontend build.
+- Real railway data tables remain untouched.
+
+Command:
+
+    scripts/pre_import_gate.sh
