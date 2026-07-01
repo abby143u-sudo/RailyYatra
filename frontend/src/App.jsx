@@ -5,6 +5,7 @@ import Phase3DirectPreview from "./components/Phase3DirectPreview.jsx";
 import Phase3RouteSearchPreview from "./components/Phase3RouteSearchPreview.jsx";
 import Phase4RecommendationPreview from "./components/Phase4RecommendationPreview.jsx";
 import Phase5ProductStatusPanel from "./components/Phase5ProductStatusPanel.jsx";
+import Phase5BetaChecklistPanel from "./components/Phase5BetaChecklistPanel.jsx";
 
 const API_BASE = "http://127.0.0.1:8000";
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
@@ -3991,6 +3992,7 @@ function App() {
         <Phase3RouteSearchPreview />
         <Phase4RecommendationPreview />
         <Phase5ProductStatusPanel />
+        <Phase5BetaChecklistPanel />
         <header className="hero">
           <div className="pill">Smart Railway Planner</div>
           <h1>Find the best train journey</h1>
