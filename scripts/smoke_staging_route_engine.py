@@ -30,7 +30,7 @@ def main() -> int:
         source_station_code=source,
         destination_station_code=destination,
         direct_limit=5,
-        transfer_limit=5,
+        transfer_limit=1,
     )
 
     print(f"source: {result['source']}")

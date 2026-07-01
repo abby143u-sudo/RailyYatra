@@ -19,6 +19,15 @@ def rows_to_dicts(rows: list[sqlite3.Row]) -> list[dict[str, Any]]:
     return [dict(row) for row in rows]
 
 
+def safe_int(value: Any, default: int = 0) -> int:
+    try:
+        if value is None or value == "":
+            return default
+        return int(float(value))
+    except (TypeError, ValueError):
+        return default
+
+
 def find_direct_routes(
     source_station_code: str,
     destination_station_code: str,
@@ -78,17 +87,96 @@ def find_direct_routes(
                         "to_sequence": row["destination_sequence"],
                         "departure": row["departure"],
                         "arrival": row["arrival"],
-                        "distance": row["distance"],
-                        "stop_count": row["stop_count"],
+                        "distance": safe_int(row["distance"]),
+                        "stop_count": safe_int(row["stop_count"]),
                     }
                 ],
-                "total_stop_count": row["stop_count"],
-                "total_distance": row["distance"],
+                "total_stop_count": safe_int(row["stop_count"]),
+                "total_distance": safe_int(row["distance"]),
                 "warnings": [],
             }
         )
 
     return routes
+
+
+def load_first_leg_candidates(
+    conn: sqlite3.Connection,
+    source: str,
+    destination: str,
+    row_limit: int = 250,
+) -> list[dict[str, Any]]:
+    rows = conn.execute(
+        """
+        SELECT
+            s1.train_number AS first_train_number,
+            t.train_name AS first_train_name,
+            t.train_type AS first_train_type,
+            s1.station_code AS source_station_code,
+            s2.station_code AS transfer_station_code,
+            s1.stop_sequence AS source_sequence,
+            s2.stop_sequence AS transfer_arrival_sequence,
+            s1.departure AS first_departure,
+            s2.arrival AS first_arrival,
+            COALESCE(s2.distance, 0) - COALESCE(s1.distance, 0) AS first_distance,
+            s2.stop_sequence - s1.stop_sequence AS first_stop_count
+        FROM staging_train_stops s1
+        JOIN staging_train_stops s2
+            ON s1.train_number = s2.train_number
+           AND s2.stop_sequence > s1.stop_sequence
+        LEFT JOIN staging_trains t
+            ON t.train_number = s1.train_number
+        WHERE s1.station_code = ?
+          AND s2.station_code NOT IN (?, ?)
+        ORDER BY first_stop_count ASC, first_distance ASC, s1.train_number
+        LIMIT ?
+        """,
+        (source, source, destination, row_limit),
+    ).fetchall()
+
+    return rows_to_dicts(rows)
+
+
+def load_second_leg_candidates(
+    conn: sqlite3.Connection,
+    transfer_stations: list[str],
+    destination: str,
+    row_limit: int = 600,
+) -> list[dict[str, Any]]:
+    if not transfer_stations:
+        return []
+
+    placeholders = ",".join("?" for _ in transfer_stations)
+
+    rows = conn.execute(
+        f"""
+        SELECT
+            s3.train_number AS second_train_number,
+            t.train_name AS second_train_name,
+            t.train_type AS second_train_type,
+            s3.station_code AS transfer_station_code,
+            s4.station_code AS destination_station_code,
+            s3.stop_sequence AS transfer_departure_sequence,
+            s4.stop_sequence AS destination_sequence,
+            s3.departure AS second_departure,
+            s4.arrival AS second_arrival,
+            COALESCE(s4.distance, 0) - COALESCE(s3.distance, 0) AS second_distance,
+            s4.stop_sequence - s3.stop_sequence AS second_stop_count
+        FROM staging_train_stops s3
+        JOIN staging_train_stops s4
+            ON s3.train_number = s4.train_number
+           AND s4.stop_sequence > s3.stop_sequence
+        LEFT JOIN staging_trains t
+            ON t.train_number = s3.train_number
+        WHERE s3.station_code IN ({placeholders})
+          AND s4.station_code = ?
+        ORDER BY second_stop_count ASC, second_distance ASC, s3.train_number
+        LIMIT ?
+        """,
+        [*transfer_stations, destination, row_limit],
+    ).fetchall()
+
+    return rows_to_dicts(rows)
 
 
 def find_one_transfer_routes(
@@ -98,133 +186,123 @@ def find_one_transfer_routes(
 ) -> list[dict[str, Any]]:
     source = source_station_code.upper().strip()
     destination = destination_station_code.upper().strip()
-    safe_limit = max(1, min(limit, 30))
+    safe_limit = max(0, min(limit, 20))
+
+    if safe_limit == 0:
+        return []
 
     with get_connection() as conn:
-        rows = conn.execute(
-            """
-            WITH first_leg AS (
-                SELECT
-                    s1.train_number AS first_train_number,
-                    t1.train_name AS first_train_name,
-                    t1.train_type AS first_train_type,
-                    s1.station_code AS source_station_code,
-                    s2.station_code AS transfer_station_code,
-                    s1.stop_sequence AS source_sequence,
-                    s2.stop_sequence AS transfer_arrival_sequence,
-                    s1.departure AS first_departure,
-                    s2.arrival AS first_arrival,
-                    COALESCE(s2.distance, 0) - COALESCE(s1.distance, 0) AS first_distance,
-                    s2.stop_sequence - s1.stop_sequence AS first_stop_count
-                FROM staging_train_stops s1
-                JOIN staging_train_stops s2
-                    ON s1.train_number = s2.train_number
-                   AND s2.stop_sequence > s1.stop_sequence
-                LEFT JOIN staging_trains t1
-                    ON t1.train_number = s1.train_number
-                WHERE s1.station_code = ?
-            ),
-            second_leg AS (
-                SELECT
-                    s3.train_number AS second_train_number,
-                    t2.train_name AS second_train_name,
-                    t2.train_type AS second_train_type,
-                    s3.station_code AS transfer_station_code,
-                    s4.station_code AS destination_station_code,
-                    s3.stop_sequence AS transfer_departure_sequence,
-                    s4.stop_sequence AS destination_sequence,
-                    s3.departure AS second_departure,
-                    s4.arrival AS second_arrival,
-                    COALESCE(s4.distance, 0) - COALESCE(s3.distance, 0) AS second_distance,
-                    s4.stop_sequence - s3.stop_sequence AS second_stop_count
-                FROM staging_train_stops s3
-                JOIN staging_train_stops s4
-                    ON s3.train_number = s4.train_number
-                   AND s4.stop_sequence > s3.stop_sequence
-                LEFT JOIN staging_trains t2
-                    ON t2.train_number = s3.train_number
-                WHERE s4.station_code = ?
-            )
-            SELECT
-                first_leg.*,
-                second_leg.second_train_number,
-                second_leg.second_train_name,
-                second_leg.second_train_type,
-                second_leg.destination_station_code,
-                second_leg.transfer_departure_sequence,
-                second_leg.destination_sequence,
-                second_leg.second_departure,
-                second_leg.second_arrival,
-                second_leg.second_distance,
-                second_leg.second_stop_count,
-                first_leg.first_stop_count + second_leg.second_stop_count AS total_stop_count,
-                first_leg.first_distance + second_leg.second_distance AS total_distance
-            FROM first_leg
-            JOIN second_leg
-                ON first_leg.transfer_station_code = second_leg.transfer_station_code
-            WHERE first_leg.first_train_number != second_leg.second_train_number
-              AND first_leg.transfer_station_code NOT IN (?, ?)
-            ORDER BY total_stop_count ASC, total_distance ASC, first_leg.transfer_station_code
-            LIMIT ?
-            """,
-            (source, destination, source, destination, safe_limit),
-        ).fetchall()
+        first_legs = load_first_leg_candidates(
+            conn=conn,
+            source=source,
+            destination=destination,
+            row_limit=250,
+        )
+
+        transfer_stations: list[str] = []
+        seen_transfers: set[str] = set()
+
+        for first_leg in first_legs:
+            transfer = str(first_leg["transfer_station_code"])
+            if transfer not in seen_transfers:
+                seen_transfers.add(transfer)
+                transfer_stations.append(transfer)
+
+            if len(transfer_stations) >= 60:
+                break
+
+        second_legs = load_second_leg_candidates(
+            conn=conn,
+            transfer_stations=transfer_stations,
+            destination=destination,
+            row_limit=600,
+        )
+
+    second_by_transfer: dict[str, list[dict[str, Any]]] = {}
+
+    for second_leg in second_legs:
+        second_by_transfer.setdefault(str(second_leg["transfer_station_code"]), []).append(second_leg)
 
     routes: list[dict[str, Any]] = []
 
-    for row in rows_to_dicts(rows):
-        warnings: list[str] = []
+    for first_leg in first_legs:
+        transfer = str(first_leg["transfer_station_code"])
 
-        if row["first_arrival"] in (None, "") or row["second_departure"] in (None, ""):
-            warnings.append("transfer_time_unknown")
+        for second_leg in second_by_transfer.get(transfer, [])[:10]:
+            if str(first_leg["first_train_number"]) == str(second_leg["second_train_number"]):
+                continue
 
-        route = {
-            "route_type": "one_transfer",
-            "source": source,
-            "destination": destination,
-            "transfer_station": row["transfer_station_code"],
-            "legs": [
-                {
-                    "train_number": row["first_train_number"],
-                    "train_name": row["first_train_name"],
-                    "train_type": row["first_train_type"],
-                    "from_station_code": row["source_station_code"],
-                    "to_station_code": row["transfer_station_code"],
-                    "from_sequence": row["source_sequence"],
-                    "to_sequence": row["transfer_arrival_sequence"],
-                    "departure": row["first_departure"],
-                    "arrival": row["first_arrival"],
-                    "distance": row["first_distance"],
-                    "stop_count": row["first_stop_count"],
-                },
-                {
-                    "train_number": row["second_train_number"],
-                    "train_name": row["second_train_name"],
-                    "train_type": row["second_train_type"],
-                    "from_station_code": row["transfer_station_code"],
-                    "to_station_code": row["destination_station_code"],
-                    "from_sequence": row["transfer_departure_sequence"],
-                    "to_sequence": row["destination_sequence"],
-                    "departure": row["second_departure"],
-                    "arrival": row["second_arrival"],
-                    "distance": row["second_distance"],
-                    "stop_count": row["second_stop_count"],
-                },
-            ],
-            "total_stop_count": row["total_stop_count"],
-            "total_distance": row["total_distance"],
-            "warnings": warnings,
-        }
+            warnings: list[str] = []
 
-        route["score"] = score_transfer_route(route)
-        routes.append(route)
+            if first_leg["first_arrival"] in (None, "") or second_leg["second_departure"] in (None, ""):
+                warnings.append("transfer_time_unknown")
 
-    return routes
+            first_distance = safe_int(first_leg["first_distance"])
+            second_distance = safe_int(second_leg["second_distance"])
+            first_stop_count = safe_int(first_leg["first_stop_count"])
+            second_stop_count = safe_int(second_leg["second_stop_count"])
+
+            route = {
+                "route_type": "one_transfer",
+                "source": source,
+                "destination": destination,
+                "transfer_station": transfer,
+                "legs": [
+                    {
+                        "train_number": first_leg["first_train_number"],
+                        "train_name": first_leg["first_train_name"],
+                        "train_type": first_leg["first_train_type"],
+                        "from_station_code": first_leg["source_station_code"],
+                        "to_station_code": first_leg["transfer_station_code"],
+                        "from_sequence": first_leg["source_sequence"],
+                        "to_sequence": first_leg["transfer_arrival_sequence"],
+                        "departure": first_leg["first_departure"],
+                        "arrival": first_leg["first_arrival"],
+                        "distance": first_distance,
+                        "stop_count": first_stop_count,
+                    },
+                    {
+                        "train_number": second_leg["second_train_number"],
+                        "train_name": second_leg["second_train_name"],
+                        "train_type": second_leg["second_train_type"],
+                        "from_station_code": second_leg["transfer_station_code"],
+                        "to_station_code": second_leg["destination_station_code"],
+                        "from_sequence": second_leg["transfer_departure_sequence"],
+                        "to_sequence": second_leg["destination_sequence"],
+                        "departure": second_leg["second_departure"],
+                        "arrival": second_leg["second_arrival"],
+                        "distance": second_distance,
+                        "stop_count": second_stop_count,
+                    },
+                ],
+                "total_stop_count": first_stop_count + second_stop_count,
+                "total_distance": first_distance + second_distance,
+                "warnings": warnings,
+            }
+
+            route["score"] = score_transfer_route(route)
+            routes.append(route)
+
+            if len(routes) >= safe_limit * 5:
+                break
+
+        if len(routes) >= safe_limit * 5:
+            break
+
+    routes.sort(
+        key=lambda route: (
+            -safe_int(route.get("score")),
+            safe_int(route.get("total_stop_count"), 9999),
+            safe_int(route.get("total_distance"), 999999),
+        )
+    )
+
+    return routes[:safe_limit]
 
 
 def score_direct_route(row: dict[str, Any]) -> int:
-    stop_count = int(row.get("stop_count") or 0)
-    distance = int(row.get("distance") or 0)
+    stop_count = safe_int(row.get("stop_count"))
+    distance = safe_int(row.get("distance"))
 
     score = 1000
     score -= min(stop_count * 8, 250)
@@ -236,8 +314,8 @@ def score_direct_route(row: dict[str, Any]) -> int:
 
 
 def score_transfer_route(route: dict[str, Any]) -> int:
-    stop_count = int(route.get("total_stop_count") or 0)
-    distance = int(route.get("total_distance") or 0)
+    stop_count = safe_int(route.get("total_stop_count"))
+    distance = safe_int(route.get("total_distance"))
 
     score = 850
     score -= min(stop_count * 8, 260)
@@ -275,8 +353,8 @@ def search_staging_routes(
     all_routes = direct_routes + transfer_routes
     all_routes.sort(
         key=lambda route: (
-            -int(route.get("score") or 0),
-            int(route.get("total_stop_count") or 9999),
+            -safe_int(route.get("score")),
+            safe_int(route.get("total_stop_count"), 9999),
             route.get("route_type") != "direct",
         )
     )
