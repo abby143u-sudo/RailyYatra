@@ -113,3 +113,13 @@ Use Uvicorn only in Start Command:
 
 Do not run `prepare_deploy_database.py` inside Start Command, otherwise Render may time out before the web port opens.
 
+## Health endpoint compatibility
+
+The deployment database script creates compatibility views:
+
+    stations
+    trains
+    train_stops
+
+These map to the staging tables so legacy health checks and old read-only helpers can count railway data safely on Render.
+

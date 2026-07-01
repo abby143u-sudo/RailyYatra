@@ -195,6 +195,12 @@ def import_schedules(conn: sqlite3.Connection) -> int:
     conn.executemany("INSERT INTO staging_train_stops (train_number, station_code, station_name, sequence, stop_sequence, arrival, departure, arrival_time, departure_time, distance, distance_from_source, day_offset) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", prepared)
     return len(prepared)
 
+
+def create_compatibility_views(conn: sqlite3.Connection) -> None:
+    conn.execute("CREATE VIEW IF NOT EXISTS stations AS SELECT id, station_code AS code, station_name AS name, station_code, station_name, state, station_state, latitude, longitude FROM staging_stations")
+    conn.execute("CREATE VIEW IF NOT EXISTS trains AS SELECT id, train_number, train_name, source_station_code, destination_station_code, source, destination, train_type, runs_on FROM staging_trains")
+    conn.execute("CREATE VIEW IF NOT EXISTS train_stops AS SELECT id, train_number, station_code, station_name, sequence, stop_sequence, arrival, departure, arrival_time, departure_time, distance, distance_from_source, day_offset FROM staging_train_stops")
+
 def verify(conn: sqlite3.Connection) -> dict[str, int]:
     counts = {}
     for table in ["staging_stations", "staging_trains", "staging_train_stops"]:
@@ -216,6 +222,7 @@ def main() -> int:
         train_count = import_trains(conn)
         stop_count = import_schedules(conn)
         conn.commit()
+        create_compatibility_views(conn)
         counts = verify(conn)
         print(f"Stations imported: {station_count}")
         print(f"Trains imported: {train_count}")
