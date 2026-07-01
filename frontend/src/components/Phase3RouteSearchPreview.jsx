@@ -296,7 +296,7 @@ export default function Phase3RouteSearchPreview() {
       </form>
 
       <p className="phase3-route-search-card__hint">
-        Type station code or name. Suggestions come from the real staging station table.
+        Type station code or name. Suggestions come from the real staging station table. Legacy /search is still untouched.
       </p>
 
       {state.error && (

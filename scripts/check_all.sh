@@ -38,6 +38,7 @@ run_step "Staging query helper smoke test" python3 scripts/smoke_staging_queries
 run_step "Staging route index smoke test" python3 scripts/smoke_staging_route_indexes.py
 run_step "Staging route engine smoke test" python3 scripts/smoke_staging_route_engine.py
 run_step "Search-v2 smoke test" python3 scripts/smoke_search_v2.py
+run_step "Frontend search-v2 smoke test" python3 scripts/smoke_frontend_search_v2.py
 run_step "Staging API smoke test" python3 scripts/smoke_staging_api.py
 run_step "Metadata writer smoke test" python3 scripts/smoke_metadata_writer.py
 run_step "Ingestion metadata verifier dry-run" python3 scripts/verify_ingestion_metadata.py --dry-run
