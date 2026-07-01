@@ -46,6 +46,7 @@ run_step "Public demo docs smoke test" python3 scripts/smoke_public_demo_docs.py
 run_step "Deployed public demo smoke test" python3 scripts/smoke_deployed_public_demo.py
 run_step "Phase 7 deploy preflight docs smoke test" python3 scripts/smoke_phase7_deploy_preflight.py
 run_step "GitHub push readiness smoke test" python3 scripts/smoke_github_push_readiness.py
+run_step "Render backend readiness smoke test" python3 scripts/smoke_render_backend_readiness.py
 run_step "Frontend API config smoke test" python3 scripts/smoke_frontend_api_config.py
 run_step "Public demo banner smoke test" python3 scripts/smoke_public_demo_banner.py
 run_step "Beta checklist smoke test" python3 scripts/smoke_beta_checklist.py
