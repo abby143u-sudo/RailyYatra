@@ -469,3 +469,22 @@ Next action after this commit:
 - deploy frontend on Vercel
 - run deployed smoke test with deployed URLs
 
+## Phase 7 Local Deploy Ready Checkpoint
+
+Current phase:
+
+- Phase 7: actual public demo deployment
+
+This checkpoint confirms the project is ready for GitHub push after local preflight passes.
+
+Use:
+
+- `scripts/deploy_preflight.sh`
+- `scripts/github_push_readiness.sh`
+
+Next action:
+
+- if origin remote exists, run `git push -u origin main`
+- if origin remote is missing, create an empty GitHub repo and add remote first
+- after GitHub push, deploy backend on Render and frontend on Vercel
+
