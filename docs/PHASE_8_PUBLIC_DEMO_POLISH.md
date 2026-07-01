@@ -47,3 +47,13 @@ Also test:
 Next implementation step:
 
 Polish homepage hero and primary search section.
+
+## Completed polish items
+
+- Public demo hero section
+- Demo flow strip
+- Main From/To search card polish
+- Collapsible internal engineering panels
+- Recommendation preview intro
+- Mobile final polish
+- Public demo footer/status section

@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import "./App.css";
+import PublicDemoFooter from "./components/PublicDemoFooter.jsx";
 import { API_BASE } from "./config/api.js";
 import Phase3StagingCard from "./components/Phase3StagingCard.jsx";
 import Phase3DirectPreview from "./components/Phase3DirectPreview.jsx";
@@ -4480,7 +4481,8 @@ function App() {
             )}
           </section>
         )}
-      </main>
+            <PublicDemoFooter />
+</main>
     </div>
   );
 }
