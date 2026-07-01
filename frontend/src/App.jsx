@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import "./App.css";
+import { API_BASE } from "./config/api.js";
 import Phase3StagingCard from "./components/Phase3StagingCard.jsx";
 import Phase3DirectPreview from "./components/Phase3DirectPreview.jsx";
 import Phase3RouteSearchPreview from "./components/Phase3RouteSearchPreview.jsx";
@@ -8,7 +9,6 @@ import Phase5ProductStatusPanel from "./components/Phase5ProductStatusPanel.jsx"
 import Phase5BetaChecklistPanel from "./components/Phase5BetaChecklistPanel.jsx";
 import PublicDemoWarningBanner from "./components/PublicDemoWarningBanner.jsx";
 
-const API_BASE = "http://127.0.0.1:8000";
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
 
@@ -391,6 +391,41 @@ function App() {
       setter(data.stations || []);
     } catch {
       setter([]);
+    }
+  }
+
+
+  function handleMainStationInputChange(value, target) {
+    const normalizedValue = String(value || "").toUpperCase();
+
+    if (target === "source") {
+      setSource(normalizedValue);
+      fetchStationSuggestions(normalizedValue, setSourceSuggestions);
+    } else {
+      setDestination(normalizedValue);
+      fetchStationSuggestions(normalizedValue, setDestinationSuggestions);
+    }
+
+    setError("");
+  }
+
+  function handleMainStationInputFocus(target) {
+    if (target === "source") {
+      fetchStationSuggestions(source, setSourceSuggestions);
+    } else {
+      fetchStationSuggestions(destination, setDestinationSuggestions);
+    }
+  }
+
+  function handleMainStationInputKeyUp(event, target) {
+    const browseKeys = ["Backspace", "Delete", "ArrowDown", "ArrowUp"];
+
+    if (browseKeys.includes(event.key)) {
+      if (target === "source") {
+        fetchStationSuggestions(event.currentTarget.value, setSourceSuggestions);
+      } else {
+        fetchStationSuggestions(event.currentTarget.value, setDestinationSuggestions);
+      }
     }
   }
 
@@ -4009,11 +4044,9 @@ function App() {
             <label>From</label>
             <input
               value={source}
-              onChange={(e) => {
-                const value = e.target.value.toUpperCase();
-                setSource(value);
-                fetchStationSuggestions(value, setSourceSuggestions);
-              }}
+              onChange={(e) => handleMainStationInputChange(e.target.value, "source")}
+              onFocus={() => handleMainStationInputFocus("source")}
+              onKeyUp={(e) => handleMainStationInputKeyUp(e, "source")}
               placeholder="PNBE or Patna"
             />
 
@@ -4045,11 +4078,9 @@ function App() {
             <label>To</label>
             <input
               value={destination}
-              onChange={(e) => {
-                const value = e.target.value.toUpperCase();
-                setDestination(value);
-                fetchStationSuggestions(value, setDestinationSuggestions);
-              }}
+              onChange={(e) => handleMainStationInputChange(e.target.value, "destination")}
+              onFocus={() => handleMainStationInputFocus("destination")}
+              onKeyUp={(e) => handleMainStationInputKeyUp(e, "destination")}
               placeholder="NDLS or Delhi"
             />
 
