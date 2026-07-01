@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import "./App.css";
 import Phase3StagingCard from "./components/Phase3StagingCard.jsx";
 import Phase3DirectPreview from "./components/Phase3DirectPreview.jsx";
+import Phase3RouteSearchPreview from "./components/Phase3RouteSearchPreview.jsx";
 
 const API_BASE = "http://127.0.0.1:8000";
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
@@ -3985,6 +3986,7 @@ function App() {
       <main className="app">
         <Phase3StagingCard />
         <Phase3DirectPreview />
+        <Phase3RouteSearchPreview />
         <header className="hero">
           <div className="pill">Smart Railway Planner</div>
           <h1>Find the best train journey</h1>

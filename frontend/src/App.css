@@ -2799,3 +2799,203 @@ li {
   }
 }
 /* Phase 3 direct preview end */
+
+/* Phase 3 route search preview start */
+.phase3-route-search-card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 18px;
+  padding: 18px;
+  margin: 18px 0;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+}
+
+.phase3-route-search-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.phase3-route-search-card__eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.phase3-route-search-card h2,
+.phase3-route-search-route h3 {
+  margin: 0;
+}
+
+.phase3-route-search-card h2 {
+  font-size: 1.25rem;
+}
+
+.phase3-route-search-route h3 {
+  font-size: 1.05rem;
+  margin-top: 8px;
+}
+
+.phase3-route-search-card__badge,
+.phase3-route-search-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.phase3-route-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin: 14px 0 8px;
+}
+
+.phase3-route-search-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 0.84rem;
+}
+
+.phase3-route-search-form input {
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  text-transform: uppercase;
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.phase3-route-search-form button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.phase3-route-search-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.phase3-route-search-card__hint,
+.phase3-route-search-card__message {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+  opacity: 0.82;
+}
+
+.phase3-route-search-card__message.error,
+.phase3-route-search-card__message.warning {
+  opacity: 1;
+  font-weight: 800;
+}
+
+.phase3-route-search-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.phase3-route-search-summary div,
+.phase3-route-search-meta div {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.phase3-route-search-summary span,
+.phase3-route-search-meta span,
+.phase3-route-search-leg span,
+.phase3-route-search-score span {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.72;
+  margin-bottom: 4px;
+}
+
+.phase3-route-search-list {
+  display: grid;
+  gap: 14px;
+}
+
+.phase3-route-search-route {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(248, 250, 252, 0.74);
+}
+
+.phase3-route-search-route__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.phase3-route-search-score {
+  text-align: right;
+}
+
+.phase3-route-search-score strong {
+  font-size: 1.2rem;
+}
+
+.phase3-route-search-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.phase3-route-search-legs {
+  display: grid;
+  gap: 10px;
+}
+
+.phase3-route-search-leg {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.phase3-route-search-leg div {
+  display: grid;
+  gap: 3px;
+}
+
+@media (max-width: 900px) {
+  .phase3-route-search-form,
+  .phase3-route-search-summary,
+  .phase3-route-search-meta,
+  .phase3-route-search-leg {
+    grid-template-columns: 1fr;
+  }
+
+  .phase3-route-search-route__top {
+    flex-direction: column;
+  }
+
+  .phase3-route-search-score {
+    text-align: left;
+  }
+}
+/* Phase 3 route search preview end */
