@@ -718,3 +718,24 @@ from backend.product.beta_checklist import get_beta_checklist as phase5_get_beta
 def product_beta_checklist():
     return phase5_get_beta_checklist()
 # --- Phase 5 beta checklist API end ---
+
+# --- Phase 6 CORS configuration start ---
+from backend.product.deployment import (
+    get_allowed_origins as phase6_get_allowed_origins,
+    get_deployment_status as phase6_get_deployment_status,
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=phase6_get_allowed_origins(),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/product/deployment-status")
+def product_deployment_status():
+    return phase6_get_deployment_status()
+# --- Phase 6 CORS configuration end ---
