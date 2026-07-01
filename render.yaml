@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: railyatra-backend
+    env: python
+    plan: free
+    rootDir: app
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: RAILYATRA_ENV
+        value: production
+      - key: RAILYATRA_ALLOWED_ORIGINS
+        sync: false
+      - key: RAILYATRA_LIVE_BOOKING_ENABLED
+        value: false
+      - key: RAILYATRA_LIVE_FARE_ENABLED
+        value: false
+      - key: RAILYATRA_LIVE_AVAILABILITY_ENABLED
+        value: false
+      - key: RAILYATRA_PNR_ENABLED
+        value: false
+      - key: RAILYATRA_PAYMENT_ENABLED
+        value: false

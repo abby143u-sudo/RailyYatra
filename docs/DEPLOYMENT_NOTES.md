@@ -92,3 +92,21 @@ For deployed frontend, set this variable in Vercel/Netlify:
     VITE_RAILYATRA_API_BASE=https://your-backend-domain.example.com
 
 After changing the variable, rebuild/redeploy the frontend.
+
+## Deployment packaging
+
+Files added for public demo deployment:
+
+- `app/requirements.txt`
+- `render.yaml`
+- `frontend/vercel.json`
+- `docs/DEPLOYMENT_TARGETS.md`
+
+Recommended setup:
+
+- backend on Render
+- frontend on Vercel
+- frontend env var: `VITE_RAILYATRA_API_BASE`
+- backend env var: `RAILYATRA_ALLOWED_ORIGINS`
+
+Keep all live booking/payment/PNR/fare/availability flags disabled until official integrations exist.

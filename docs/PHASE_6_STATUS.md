@@ -6,6 +6,16 @@ Prepare RailYatra for deployment packaging and public beta demo configuration.
 
 ## Completed in this checkpoint
 
+- deployment packaging smoke test
+
+- deployment targets guide
+
+- Vercel frontend SPA config
+
+- Render backend deployment config
+
+- backend requirements file for deployment
+
 - `.env.example`
 - CORS configuration
 - deployment status helper

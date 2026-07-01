@@ -41,6 +41,7 @@ run_step "Search-v2 smoke test" python3 scripts/smoke_search_v2.py
 run_step "Recommend-v2 smoke test" python3 scripts/smoke_recommend_v2.py
 run_step "Product status smoke test" python3 scripts/smoke_product_status.py
 run_step "Deployment config smoke test" python3 scripts/smoke_deployment_config.py
+run_step "Deployment packaging smoke test" python3 scripts/smoke_deployment_packaging.py
 run_step "Frontend API config smoke test" python3 scripts/smoke_frontend_api_config.py
 run_step "Public demo banner smoke test" python3 scripts/smoke_public_demo_banner.py
 run_step "Beta checklist smoke test" python3 scripts/smoke_beta_checklist.py

@@ -1,3 +1,4 @@
-fastapi
-uvicorn
-networkx
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+networkx>=3.2.1
+python-multipart>=0.0.9
