@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -220,6 +221,12 @@ def main() -> int:
         print(f"Trains imported: {train_count}")
         print(f"Train stops imported: {stop_count}")
         print(f"Verified counts: {counts}")
+        alt_dir = APP_ROOT / "app"
+        alt_dir.mkdir(exist_ok=True)
+        alt_db_path = alt_dir / "railyatra.db"
+        if alt_db_path.resolve() != DB_PATH.resolve():
+            shutil.copy2(DB_PATH, alt_db_path)
+            print(f"Runtime database copy created: {alt_db_path}")
         print("PASS: deploy database prepared")
         return 0
     except Exception:

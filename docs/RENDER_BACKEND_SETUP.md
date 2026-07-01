@@ -75,3 +75,15 @@ This creates app/railyatra.db from:
 
 This is required for /health, /search-v2 and /recommend-v2.
 
+## Render runtime database path note
+
+Render uses `app` as the service root directory. Some local code paths can resolve `app/railyatra.db` differently on Render than on the developer machine.
+
+The deploy database script now prepares the main SQLite database and creates a runtime copy at:
+
+    app/railyatra.db
+
+inside the Render service root when needed.
+
+This protects `/health`, `/search-v2` and `/recommend-v2` from runtime path mismatch errors.
+
