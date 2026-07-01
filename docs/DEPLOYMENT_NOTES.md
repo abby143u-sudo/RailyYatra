@@ -110,3 +110,16 @@ Recommended setup:
 - backend env var: `RAILYATRA_ALLOWED_ORIGINS`
 
 Keep all live booking/payment/PNR/fare/availability flags disabled until official integrations exist.
+
+## Public demo documents
+
+Before sharing a public link, review:
+
+- README.md
+- docs/PUBLIC_DEMO_SCRIPT.md
+- docs/LAUNCH_CHECKLIST.md
+- docs/PUBLIC_BETA_READINESS.md
+
+The approved public label remains:
+
+    Real railway route recommendation preview

@@ -6,6 +6,14 @@ Prepare RailYatra for deployment packaging and public beta demo configuration.
 
 ## Completed in this checkpoint
 
+- public demo docs smoke test
+
+- launch checklist
+
+- public demo script
+
+- README quickstart
+
 - deployment packaging smoke test
 
 - deployment targets guide
