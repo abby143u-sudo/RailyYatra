@@ -21,8 +21,8 @@ Use the GitHub repository connected to this local repo.
 - Name: railyatra-backend
 - Environment: Python
 - Root Directory: app
-- Build Command: pip install -r requirements.txt && python scripts/prepare_deploy_database.py
-- Start Command: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+- Build Command: pip install -r requirements.txt
+- Start Command: python scripts/prepare_deploy_database.py && uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
 
 ## Environment variables
 
@@ -86,4 +86,16 @@ The deploy database script now prepares the main SQLite database and creates a r
 inside the Render service root when needed.
 
 This protects `/health`, `/search-v2` and `/recommend-v2` from runtime path mismatch errors.
+
+## Important Render manual settings
+
+Because the Render service was created manually, the dashboard settings may override `render.yaml`.
+
+Use these exact settings in Render:
+
+    Root Directory: app
+    Build Command: pip install -r requirements.txt
+    Start Command: python scripts/prepare_deploy_database.py && uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+
+This prepares `railyatra.db` every time the Render service starts, then starts FastAPI.
 
