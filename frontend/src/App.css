@@ -3114,3 +3114,230 @@ li {
   letter-spacing: 0.02em;
 }
 /* Phase 3 search-v2 marker end */
+
+/* Phase 4 recommend-v2 preview start */
+.phase4-recommend-card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 18px;
+  padding: 18px;
+  margin: 18px 0;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+}
+
+.phase4-recommend-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.phase4-recommend-card__eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.phase4-recommend-card h2,
+.phase4-recommend-route h3 {
+  margin: 0;
+}
+
+.phase4-recommend-card h2 {
+  font-size: 1.25rem;
+}
+
+.phase4-recommend-card__badge,
+.phase4-rank-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.phase4-recommend-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin: 14px 0 8px;
+}
+
+.phase4-recommend-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 900;
+  font-size: 0.84rem;
+}
+
+.phase4-recommend-form input {
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  text-transform: uppercase;
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.phase4-recommend-form button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.phase4-recommend-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.phase4-recommend-card__hint,
+.phase4-recommend-card__message {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+  opacity: 0.82;
+}
+
+.phase4-recommend-card__message.error {
+  opacity: 1;
+  font-weight: 900;
+}
+
+.phase4-recommend-summary,
+.phase4-recommend-meta {
+  display: grid;
+  gap: 12px;
+}
+
+.phase4-recommend-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 14px 0;
+}
+
+.phase4-recommend-meta {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 12px 0;
+}
+
+.phase4-recommend-summary div,
+.phase4-recommend-meta div,
+.phase4-best-box,
+.phase4-reasons-box,
+.phase4-booking-warning {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.phase4-recommend-summary span,
+.phase4-recommend-meta span,
+.phase4-score-box span,
+.phase4-leg-row span,
+.phase4-best-box span,
+.phase4-reasons-box span,
+.phase4-booking-warning span {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.72;
+  margin-bottom: 4px;
+}
+
+.phase4-recommend-list {
+  display: grid;
+  gap: 14px;
+}
+
+.phase4-recommend-route {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(248, 250, 252, 0.74);
+}
+
+.phase4-recommend-route__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.phase4-recommend-route h3 {
+  font-size: 1.05rem;
+  margin-top: 8px;
+}
+
+.phase4-score-box {
+  text-align: right;
+}
+
+.phase4-score-box strong {
+  font-size: 1.3rem;
+}
+
+.phase4-reasons-box ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.phase4-reasons-box li {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.phase4-leg-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.phase4-leg-row {
+  display: grid;
+  grid-template-columns: 0.8fr 1.4fr 1fr 1.2fr;
+  gap: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.phase4-leg-row div {
+  display: grid;
+  gap: 3px;
+}
+
+.phase4-booking-warning {
+  margin-top: 12px;
+}
+
+.phase4-booking-warning strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 900px) {
+  .phase4-recommend-form,
+  .phase4-recommend-summary,
+  .phase4-recommend-meta,
+  .phase4-leg-row {
+    grid-template-columns: 1fr;
+  }
+
+  .phase4-recommend-route__top {
+    flex-direction: column;
+  }
+
+  .phase4-score-box {
+    text-align: left;
+  }
+}
+/* Phase 4 recommend-v2 preview end */
