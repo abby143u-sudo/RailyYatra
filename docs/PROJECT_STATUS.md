@@ -337,3 +337,30 @@ Completed capabilities:
 Legacy `/search` remains protected and unchanged.
 
 See `docs/PHASE_3_STATUS.md` for the full checkpoint.
+
+## Phase 4 Checkpoint
+
+Phase 4 has added a production-candidate recommendation layer on top of the Phase 3 staging route engine.
+
+Completed capabilities:
+
+- `/recommend-v2` endpoint
+- recommendation ranking
+- route confidence labels
+- transfer safety labels
+- recommendation reasons
+- live booking/fare/availability warning
+- frontend recommendation preview
+- station suggestions in recommendation preview
+- backend recommend-v2 smoke test
+- frontend recommend-v2 smoke test
+
+Important safety status:
+
+- legacy `/search` remains unchanged
+- `/search-v2` remains available
+- `/recommend-v2` is read-only
+- live booking is not connected yet
+- production railway tables remain protected
+
+See `docs/PHASE_4_STATUS.md` for the full checkpoint.
