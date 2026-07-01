@@ -6,6 +6,7 @@ import Phase3RouteSearchPreview from "./components/Phase3RouteSearchPreview.jsx"
 import Phase4RecommendationPreview from "./components/Phase4RecommendationPreview.jsx";
 import Phase5ProductStatusPanel from "./components/Phase5ProductStatusPanel.jsx";
 import Phase5BetaChecklistPanel from "./components/Phase5BetaChecklistPanel.jsx";
+import PublicDemoWarningBanner from "./components/PublicDemoWarningBanner.jsx";
 
 const API_BASE = "http://127.0.0.1:8000";
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
@@ -3987,6 +3988,7 @@ function App() {
       </nav>
 
       <main className="app">
+        <PublicDemoWarningBanner />
         <Phase3StagingCard />
         <Phase3DirectPreview />
         <Phase3RouteSearchPreview />
