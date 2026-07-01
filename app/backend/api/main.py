@@ -664,3 +664,39 @@ def search_v2(source: str, destination: str, direct_limit: int = 8, transfer_lim
         "production_railway_tables_modified": False,
     }
 # --- Phase 3 production-candidate search API end ---
+
+# --- Phase 4 recommendation-v2 API start ---
+from backend.staging.recommendation_engine import (
+    recommend_staging_routes as phase4_recommend_staging_routes,
+)
+
+
+@app.get("/recommend-v2")
+def recommend_v2(source: str, destination: str, direct_limit: int = 8, transfer_limit: int = 2):
+    source_code = source.upper().strip()
+    destination_code = destination.upper().strip()
+
+    safe_direct_limit = max(1, min(direct_limit, 20))
+    safe_transfer_limit = max(0, min(transfer_limit, 10))
+
+    if not source_code or not destination_code:
+        return {
+            "status": "error",
+            "message": "source and destination are required",
+            "endpoint": "/recommend-v2",
+            "engine": "phase_4_recommendation_engine",
+            "source": source_code,
+            "destination": destination_code,
+            "count": 0,
+            "recommendations": [],
+            "database_write_skipped": True,
+            "production_railway_tables_modified": False,
+        }
+
+    return phase4_recommend_staging_routes(
+        source_station_code=source_code,
+        destination_station_code=destination_code,
+        direct_limit=safe_direct_limit,
+        transfer_limit=safe_transfer_limit,
+    )
+# --- Phase 4 recommendation-v2 API end ---
