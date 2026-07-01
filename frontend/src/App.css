@@ -3049,3 +3049,62 @@ li {
   opacity: 0.76;
 }
 /* Phase 3 station suggestions end */
+
+/* Phase 3 train stops drilldown start */
+.phase3-route-search-stop-action {
+  display: flex;
+  align-items: center;
+}
+
+.phase3-route-search-stop-action button {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.phase3-route-search-stop-panel {
+  grid-column: 1 / -1;
+  border: 1px dashed rgba(15, 23, 42, 0.18);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.phase3-route-search-stop-panel p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.phase3-route-search-stop-list {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.phase3-route-search-stop-row {
+  display: grid;
+  grid-template-columns: 54px 90px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.phase3-route-search-stop-row span,
+.phase3-route-search-stop-row strong {
+  font-size: 0.82rem;
+}
+
+@media (max-width: 900px) {
+  .phase3-route-search-stop-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+/* Phase 3 train stops drilldown end */

@@ -31,6 +31,7 @@ export default function Phase3RouteSearchPreview() {
   const [destination, setDestination] = useState("VVH");
   const [sourceSuggestions, setSourceSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+  const [stopDetails, setStopDetails] = useState({});
   const [state, setState] = useState({
     loading: false,
     error: "",
@@ -106,6 +107,7 @@ export default function Phase3RouteSearchPreview() {
       return;
     }
 
+    setStopDetails({});
     setState({
       loading: true,
       error: "",
@@ -139,6 +141,81 @@ export default function Phase3RouteSearchPreview() {
         error: error instanceof Error ? error.message : "Unable to reach staging route engine",
         data: null,
       });
+    }
+  }
+
+  async function toggleTrainStops(trainNumber, fromSequence, toSequence) {
+    const key = `${trainNumber}-${fromSequence}-${toSequence}`;
+    const existing = stopDetails[key];
+
+    if (existing?.open) {
+      setStopDetails((current) => ({
+        ...current,
+        [key]: {
+          ...existing,
+          open: false,
+        },
+      }));
+      return;
+    }
+
+    if (existing?.stops?.length) {
+      setStopDetails((current) => ({
+        ...current,
+        [key]: {
+          ...existing,
+          open: true,
+        },
+      }));
+      return;
+    }
+
+    setStopDetails((current) => ({
+      ...current,
+      [key]: {
+        loading: true,
+        error: "",
+        open: true,
+        stops: [],
+      },
+    }));
+
+    try {
+      const response = await fetch(`${API_BASE}/staging/trains/${trainNumber}/stops?limit=500`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const allStops = data.stops || [];
+      const start = Number(fromSequence);
+      const end = Number(toSequence);
+
+      const visibleStops = allStops.filter((stop) => {
+        const sequence = Number(stop.stop_sequence);
+        return sequence >= start && sequence <= end;
+      });
+
+      setStopDetails((current) => ({
+        ...current,
+        [key]: {
+          loading: false,
+          error: "",
+          open: true,
+          stops: visibleStops,
+        },
+      }));
+    } catch (error) {
+      setStopDetails((current) => ({
+        ...current,
+        [key]: {
+          loading: false,
+          error: error instanceof Error ? error.message : "Unable to fetch train stops",
+          open: true,
+          stops: [],
+        },
+      }));
     }
   }
 
@@ -291,34 +368,80 @@ export default function Phase3RouteSearchPreview() {
                   </div>
 
                   <div className="phase3-route-search-legs">
-                    {(route.legs || []).map((leg, legIndex) => (
-                      <div
-                        className="phase3-route-search-leg"
-                        key={`${leg.train_number}-${leg.from_station_code}-${leg.to_station_code}-${legIndex}`}
-                      >
-                        <div>
-                          <strong>{displayValue(leg.train_number)}</strong>
-                          <span>{displayValue(leg.train_name, "Train name unavailable")}</span>
-                        </div>
+                    {(route.legs || []).map((leg, legIndex) => {
+                      const stopKey = `${leg.train_number}-${leg.from_sequence}-${leg.to_sequence}`;
+                      const details = stopDetails[stopKey];
 
-                        <div>
-                          <span>Route</span>
-                          <strong>
-                            {displayValue(leg.from_station_code)} → {displayValue(leg.to_station_code)}
-                          </strong>
-                        </div>
+                      return (
+                        <div
+                          className="phase3-route-search-leg"
+                          key={`${leg.train_number}-${leg.from_station_code}-${leg.to_station_code}-${legIndex}`}
+                        >
+                          <div>
+                            <strong>{displayValue(leg.train_number)}</strong>
+                            <span>{displayValue(leg.train_name, "Train name unavailable")}</span>
+                          </div>
 
-                        <div>
-                          <span>Departure</span>
-                          <strong>{displayValue(leg.departure)}</strong>
-                        </div>
+                          <div>
+                            <span>Route</span>
+                            <strong>
+                              {displayValue(leg.from_station_code)} → {displayValue(leg.to_station_code)}
+                            </strong>
+                          </div>
 
-                        <div>
-                          <span>Arrival</span>
-                          <strong>{displayValue(leg.arrival)}</strong>
+                          <div>
+                            <span>Departure</span>
+                            <strong>{displayValue(leg.departure)}</strong>
+                          </div>
+
+                          <div>
+                            <span>Arrival</span>
+                            <strong>{displayValue(leg.arrival)}</strong>
+                          </div>
+
+                          <div className="phase3-route-search-stop-action">
+                            <button
+                              type="button"
+                              onClick={() => toggleTrainStops(leg.train_number, leg.from_sequence, leg.to_sequence)}
+                            >
+                              {details?.open ? "Hide stops" : "View stops"}
+                            </button>
+                          </div>
+
+                          {details?.open && (
+                            <div className="phase3-route-search-stop-panel">
+                              {details.loading && <p>Loading train stops...</p>}
+
+                              {details.error && (
+                                <p className="phase3-route-search-card__message error">
+                                  {details.error}
+                                </p>
+                              )}
+
+                              {!details.loading && !details.error && details.stops.length === 0 && (
+                                <p>No stop details found for this leg.</p>
+                              )}
+
+                              {!details.loading && !details.error && details.stops.length > 0 && (
+                                <div className="phase3-route-search-stop-list">
+                                  {details.stops.map((stop) => (
+                                    <div
+                                      className="phase3-route-search-stop-row"
+                                      key={`${leg.train_number}-${stop.station_code}-${stop.stop_sequence}`}
+                                    >
+                                      <span>{stop.stop_sequence}</span>
+                                      <strong>{stop.station_code}</strong>
+                                      <span>Arr: {displayValue(stop.arrival)}</span>
+                                      <span>Dep: {displayValue(stop.departure)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {route.warnings?.length > 0 && (
