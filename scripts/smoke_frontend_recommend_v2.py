@@ -34,6 +34,9 @@ def main() -> int:
         "Live booking not connected yet",
         "Legacy /search unchanged",
         "recommendations.map",
+        "/staging/stations",
+        "phase4-recommend-suggestions",
+        "Type station code or name",
     ]
 
     required_app_phrases = [

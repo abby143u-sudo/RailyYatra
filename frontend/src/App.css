@@ -3341,3 +3341,53 @@ li {
   }
 }
 /* Phase 4 recommend-v2 preview end */
+
+/* Phase 4 recommendation station suggestions start */
+.phase4-recommend-station-field {
+  position: relative;
+}
+
+.phase4-recommend-suggestions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 35;
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
+}
+
+.phase4-recommend-suggestions button {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: rgba(248, 250, 252, 0.95);
+  text-align: left;
+  cursor: pointer;
+}
+
+.phase4-recommend-suggestions button:hover {
+  background: rgba(226, 232, 240, 0.95);
+}
+
+.phase4-recommend-suggestions strong {
+  font-size: 0.86rem;
+}
+
+.phase4-recommend-suggestions span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+  opacity: 0.76;
+}
+/* Phase 4 recommendation station suggestions end */
