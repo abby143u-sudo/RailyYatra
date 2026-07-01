@@ -505,3 +505,59 @@ def add_manual_verified_fare(
         "fare": saved_fare,
         "stats": get_fare_stats(),
     }
+
+# --- Phase 3 staging read-only API start ---
+from backend.staging.queries import (
+    find_direct_trains as staging_find_direct_trains,
+    find_station_by_code as staging_find_station_by_code,
+    get_staging_counts as staging_get_counts,
+)
+
+
+@app.get("/staging/health")
+def staging_health():
+    counts = staging_get_counts()
+
+    ready = (
+        counts.get("staging_stations", 0) >= 8000
+        and counts.get("staging_trains", 0) >= 5000
+        and counts.get("staging_train_stops", 0) >= 400000
+    )
+
+    return {
+        "status": "ready" if ready else "not_ready",
+        "mode": "read_only",
+        "phase": "phase_3_staging_integration",
+        "counts": counts,
+        "database_write_skipped": True,
+        "production_railway_tables_modified": False,
+    }
+
+
+@app.get("/staging/direct")
+def staging_direct(source: str, destination: str, limit: int = 20):
+    source_code = source.upper().strip()
+    destination_code = destination.upper().strip()
+    safe_limit = max(1, min(limit, 50))
+
+    source_station = staging_find_station_by_code(source_code)
+    destination_station = staging_find_station_by_code(destination_code)
+
+    routes = staging_find_direct_trains(
+        source_station_code=source_code,
+        destination_station_code=destination_code,
+        limit=safe_limit,
+    )
+
+    return {
+        "mode": "staging_read_only",
+        "source": source_code,
+        "destination": destination_code,
+        "source_station_found": source_station is not None,
+        "destination_station_found": destination_station is not None,
+        "count": len(routes),
+        "routes": routes,
+        "database_write_skipped": True,
+        "production_railway_tables_modified": False,
+    }
+# --- Phase 3 staging read-only API end ---

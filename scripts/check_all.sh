@@ -35,6 +35,7 @@ run_step "Staging planner smoke test" python3 scripts/smoke_staging_planner.py
 run_step "Staging apply skeleton smoke test" python3 scripts/smoke_staging_apply.py
 run_step "Staging verifier smoke test" python3 scripts/smoke_staging_verifier.py
 run_step "Staging query helper smoke test" python3 scripts/smoke_staging_queries.py
+run_step "Staging API smoke test" python3 scripts/smoke_staging_api.py
 run_step "Metadata writer smoke test" python3 scripts/smoke_metadata_writer.py
 run_step "Ingestion metadata verifier dry-run" python3 scripts/verify_ingestion_metadata.py --dry-run
 run_step "Frontend smoke test" scripts/smoke_frontend.sh
