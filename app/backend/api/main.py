@@ -709,3 +709,12 @@ from backend.product.status import get_product_status as phase5_get_product_stat
 def product_status():
     return phase5_get_product_status()
 # --- Phase 5 product status API end ---
+
+# --- Phase 5 beta checklist API start ---
+from backend.product.beta_checklist import get_beta_checklist as phase5_get_beta_checklist
+
+
+@app.get("/product/beta-checklist")
+def product_beta_checklist():
+    return phase5_get_beta_checklist()
+# --- Phase 5 beta checklist API end ---
