@@ -4031,7 +4031,10 @@ function App() {
       </PublicDemoInternalPanel>
         <Phase3DirectPreview />
         <Phase3RouteSearchPreview />
-        <div id="recommendations-preview"><Phase4RecommendationPreview /></div>
+        <div id="recommendations-preview" className="recommendations-preview-section">
+        <PublicRecommendationIntro />
+        <Phase4RecommendationPreview />
+      </div>
         <PublicDemoInternalPanel title="Product status flags" description="Confirms live booking/payment/PNR are not enabled.">
         <Phase5ProductStatusPanel />
       </PublicDemoInternalPanel>
