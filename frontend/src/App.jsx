@@ -8,6 +8,7 @@ import Phase4RecommendationPreview from "./components/Phase4RecommendationPrevie
 import Phase5ProductStatusPanel from "./components/Phase5ProductStatusPanel.jsx";
 import Phase5BetaChecklistPanel from "./components/Phase5BetaChecklistPanel.jsx";
 import PublicDemoWarningBanner from "./components/PublicDemoWarningBanner.jsx";
+import PublicDemoHero from "./components/PublicDemoHero.jsx";
 
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
@@ -4024,10 +4025,11 @@ function App() {
 
       <main className="app">
         <PublicDemoWarningBanner />
+      <PublicDemoHero />
         <Phase3StagingCard />
         <Phase3DirectPreview />
         <Phase3RouteSearchPreview />
-        <Phase4RecommendationPreview />
+        <div id="recommendations-preview"><Phase4RecommendationPreview /></div>
         <Phase5ProductStatusPanel />
         <Phase5BetaChecklistPanel />
         <header className="hero">
@@ -4039,7 +4041,7 @@ function App() {
           </p>
         </header>
 
-        <form className="search-card" onSubmit={searchJourney}>
+        <form id="main-search" className="search-card" onSubmit={searchJourney}>
           <div className="field">
             <label>From</label>
             <input
