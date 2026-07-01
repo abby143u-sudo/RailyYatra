@@ -2648,3 +2648,154 @@ li {
 }
 /* Phase 3 staging card end */
 
+/* Phase 3 direct preview start */
+.phase3-direct-preview-card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 18px;
+  padding: 18px;
+  margin: 18px 0;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+}
+
+.phase3-direct-preview-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.phase3-direct-preview-card__eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.phase3-direct-preview-card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.phase3-direct-preview-card__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.phase3-direct-preview-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin: 14px 0 8px;
+}
+
+.phase3-direct-preview-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 0.84rem;
+}
+
+.phase3-direct-preview-form input {
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  text-transform: uppercase;
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.phase3-direct-preview-form button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.phase3-direct-preview-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.phase3-direct-preview-card__hint,
+.phase3-direct-preview-card__message {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+  opacity: 0.82;
+}
+
+.phase3-direct-preview-card__message.error {
+  opacity: 1;
+  font-weight: 800;
+}
+
+.phase3-direct-preview-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  margin: 14px 0;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.phase3-direct-preview-summary span {
+  opacity: 0.72;
+  font-weight: 800;
+}
+
+.phase3-direct-preview-list {
+  display: grid;
+  gap: 10px;
+}
+
+.phase3-direct-preview-route {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.phase3-direct-preview-route div {
+  display: grid;
+  gap: 4px;
+}
+
+.phase3-direct-preview-route span {
+  font-size: 0.78rem;
+  opacity: 0.72;
+}
+
+.phase3-direct-preview-route strong {
+  font-size: 0.92rem;
+}
+
+@media (max-width: 900px) {
+  .phase3-direct-preview-form {
+    grid-template-columns: 1fr;
+  }
+
+  .phase3-direct-preview-summary {
+    flex-direction: column;
+  }
+
+  .phase3-direct-preview-route {
+    grid-template-columns: 1fr;
+  }
+}
+/* Phase 3 direct preview end */
