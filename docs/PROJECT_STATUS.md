@@ -314,3 +314,26 @@ Main checks:
 Next phase:
 
 Phase 3: connect validated staging railway data into the real search and graph engine.
+
+## Phase 3 Checkpoint
+
+Phase 3 has connected the validated staging railway data to a real route/search layer.
+
+Completed capabilities:
+
+- read-only staging query helpers
+- staging health endpoint
+- staging station search endpoint
+- staging direct-train endpoint
+- staging train-stops endpoint
+- staging route engine
+- production-candidate `/search-v2`
+- frontend `/search-v2` route preview
+- station suggestions from staging data
+- train stop drilldown
+- route lookup indexes
+- smoke tests for backend, frontend, search-v2, staging API, route engine, and indexes
+
+Legacy `/search` remains protected and unchanged.
+
+See `docs/PHASE_3_STATUS.md` for the full checkpoint.
