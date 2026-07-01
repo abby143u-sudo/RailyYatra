@@ -122,3 +122,14 @@ Public label: RailYatra — Real railway route recommendation preview
 
 Safety note: This is not a live ticket booking service yet. Live booking, payment, PNR, live fare, live seat availability and cancellation are not connected.
 
+## Phase 8
+
+Phase 8 has started: Public demo polish, landing page clarity, main search UX, mobile layout and investor/demo flow.
+
+Current live demo:
+
+- Frontend: https://raily-yatra.vercel.app
+- Backend: https://railyyatra-backend.onrender.com
+
+Public label: RailYatra — Real railway route recommendation preview
+
