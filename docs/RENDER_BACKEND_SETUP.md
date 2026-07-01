@@ -21,7 +21,7 @@ Use the GitHub repository connected to this local repo.
 - Name: railyatra-backend
 - Environment: Python
 - Root Directory: app
-- Build Command: pip install -r requirements.txt
+- Build Command: pip install -r requirements.txt && python scripts/prepare_deploy_database.py
 - Start Command: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
 
 ## Environment variables
@@ -58,3 +58,20 @@ After Vercel frontend deployment, replace RAILYATRA_ALLOWED_ORIGINS with the Ver
 ## Approved public label
 
 Real railway route recommendation preview
+
+## Render database preparation fix
+
+Render must build the SQLite staging database during deployment.
+
+Use this Build Command:
+
+    pip install -r requirements.txt && python scripts/prepare_deploy_database.py
+
+This creates app/railyatra.db from:
+
+- app/data/raw/stations.json
+- app/data/raw/trains.json
+- app/data/raw/schedules.json
+
+This is required for /health, /search-v2 and /recommend-v2.
+

@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     rootDir: app
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python scripts/prepare_deploy_database.py
     startCommand: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: RAILYATRA_ENV
