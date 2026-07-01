@@ -510,7 +510,10 @@ def add_manual_verified_fare(
 from backend.staging.queries import (
     find_direct_trains as staging_find_direct_trains,
     find_station_by_code as staging_find_station_by_code,
+    find_train_by_number as staging_find_train_by_number,
     get_staging_counts as staging_get_counts,
+    get_train_stops as staging_get_train_stops,
+    search_stations as staging_search_stations,
 )
 
 
@@ -529,6 +532,53 @@ def staging_health():
         "mode": "read_only",
         "phase": "phase_3_staging_integration",
         "counts": counts,
+        "database_write_skipped": True,
+        "production_railway_tables_modified": False,
+    }
+
+
+@app.get("/staging/stations")
+def staging_stations(q: str = "", limit: int = 10):
+    query = q.strip()
+    safe_limit = max(1, min(limit, 25))
+
+    if not query:
+        return {
+            "mode": "staging_read_only",
+            "query": query,
+            "count": 0,
+            "stations": [],
+            "database_write_skipped": True,
+            "production_railway_tables_modified": False,
+        }
+
+    stations = staging_search_stations(query=query, limit=safe_limit)
+
+    return {
+        "mode": "staging_read_only",
+        "query": query.upper(),
+        "count": len(stations),
+        "stations": stations,
+        "database_write_skipped": True,
+        "production_railway_tables_modified": False,
+    }
+
+
+@app.get("/staging/trains/{train_number}/stops")
+def staging_train_stops(train_number: str, limit: int = 200):
+    safe_train_number = train_number.strip()
+    safe_limit = max(1, min(limit, 500))
+
+    train = staging_find_train_by_number(safe_train_number)
+    stops = staging_get_train_stops(safe_train_number, limit=safe_limit)
+
+    return {
+        "mode": "staging_read_only",
+        "train_number": safe_train_number,
+        "train_found": train is not None,
+        "train": train,
+        "count": len(stops),
+        "stops": stops,
         "database_write_skipped": True,
         "production_railway_tables_modified": False,
     }
