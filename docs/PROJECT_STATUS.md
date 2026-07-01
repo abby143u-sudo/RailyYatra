@@ -425,3 +425,27 @@ Current deployment position:
 
 See `docs/PHASE_6_FINAL_CHECKPOINT.md` for the final Phase 6 checkpoint.
 
+## Phase 7 Checkpoint
+
+Phase 7 has started.
+
+Current phase:
+
+- Phase 7: actual public demo deployment stage
+
+Completed in this step:
+
+- Phase 7 deployment runbook
+- deployed public demo smoke checker
+- deployed smoke checker safely skips until backend/frontend URLs are provided
+- deployed smoke checker verifies backend safety flags after deployment
+
+Next manual deployment work:
+
+- push repository to GitHub
+- deploy backend on Render
+- deploy frontend on Vercel
+- set frontend backend URL
+- set backend allowed origin
+- run deployed smoke test with real deployed URLs
+
