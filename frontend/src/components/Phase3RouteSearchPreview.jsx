@@ -79,6 +79,34 @@ export default function Phase3RouteSearchPreview() {
     }
   }
 
+  function handleStationInputChange(value, target) {
+    const normalizedValue = value.toUpperCase();
+
+    if (target === "source") {
+      setSource(normalizedValue);
+    } else {
+      setDestination(normalizedValue);
+    }
+
+    loadStationSuggestions(normalizedValue, target);
+  }
+
+  function handleStationInputFocus(target) {
+    if (target === "source") {
+      loadStationSuggestions(source, "source");
+    } else {
+      loadStationSuggestions(destination, "destination");
+    }
+  }
+
+  function handleStationInputKeyUp(event, target) {
+    const browseKeys = ["Backspace", "Delete", "ArrowDown", "ArrowUp"];
+
+    if (browseKeys.includes(event.key)) {
+      loadStationSuggestions(event.currentTarget.value, target);
+    }
+  }
+
   function chooseStation(station, target) {
     const code = station.station_code || "";
 
@@ -235,11 +263,9 @@ export default function Phase3RouteSearchPreview() {
           <span>Source</span>
           <input
             value={source}
-            onChange={(event) => {
-              const value = event.target.value.toUpperCase();
-              setSource(value);
-              loadStationSuggestions(value, "source");
-            }}
+            onChange={(event) => handleStationInputChange(event.target.value, "source")}
+            onFocus={() => handleStationInputFocus("source")}
+            onKeyUp={(event) => handleStationInputKeyUp(event, "source")}
             placeholder="LTT"
             maxLength={30}
           />
@@ -264,11 +290,9 @@ export default function Phase3RouteSearchPreview() {
           <span>Destination</span>
           <input
             value={destination}
-            onChange={(event) => {
-              const value = event.target.value.toUpperCase();
-              setDestination(value);
-              loadStationSuggestions(value, "destination");
-            }}
+            onChange={(event) => handleStationInputChange(event.target.value, "destination")}
+            onFocus={() => handleStationInputFocus("destination")}
+            onKeyUp={(event) => handleStationInputKeyUp(event, "destination")}
             placeholder="VVH"
             maxLength={30}
           />
