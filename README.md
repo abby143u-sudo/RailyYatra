@@ -112,3 +112,13 @@ Live feature flags must stay disabled until official integrations exist:
 - docs/PUBLIC_DEMO_SCRIPT.md
 - docs/LAUNCH_CHECKLIST.md
 
+## Live public demo
+
+Frontend: https://raily-yatra.vercel.app
+
+Backend: https://railyyatra-backend.onrender.com
+
+Public label: RailYatra — Real railway route recommendation preview
+
+Safety note: This is not a live ticket booking service yet. Live booking, payment, PNR, live fare, live seat availability and cancellation are not connected.
+
