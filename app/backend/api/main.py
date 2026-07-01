@@ -1,3 +1,4 @@
+from backend.staging.route_engine import search_staging_routes as phase3_search_staging_routes
 from backend.services.official_fare_service import upsert_official_fare
 from backend.services.fare_source_adapter import (
     get_fare_sources,
@@ -611,3 +612,55 @@ def staging_direct(source: str, destination: str, limit: int = 20):
         "production_railway_tables_modified": False,
     }
 # --- Phase 3 staging read-only API end ---
+
+# --- Phase 3 production-candidate search API start ---
+try:
+    phase3_search_staging_routes
+except NameError:
+    from backend.staging.route_engine import search_staging_routes as phase3_search_staging_routes
+
+
+@app.get("/search-v2")
+def search_v2(source: str, destination: str, direct_limit: int = 8, transfer_limit: int = 3):
+    source_code = source.upper().strip()
+    destination_code = destination.upper().strip()
+
+    safe_direct_limit = max(1, min(direct_limit, 20))
+    safe_transfer_limit = max(0, min(transfer_limit, 10))
+
+    if not source_code or not destination_code:
+        return {
+            "status": "error",
+            "message": "source and destination are required",
+            "engine": "phase_3_staging_route_engine",
+            "source": source_code,
+            "destination": destination_code,
+            "count": 0,
+            "routes": [],
+            "database_write_skipped": True,
+            "production_railway_tables_modified": False,
+        }
+
+    result = phase3_search_staging_routes(
+        source_station_code=source_code,
+        destination_station_code=destination_code,
+        direct_limit=safe_direct_limit,
+        transfer_limit=safe_transfer_limit,
+    )
+
+    return {
+        "status": "ok",
+        "endpoint": "/search-v2",
+        "engine": result.get("engine"),
+        "mode": result.get("mode"),
+        "source": result.get("source"),
+        "destination": result.get("destination"),
+        "count": result.get("count"),
+        "direct_count": result.get("direct_count"),
+        "one_transfer_count": result.get("one_transfer_count"),
+        "routes": result.get("routes", []),
+        "compatibility_note": "search-v2 is powered by Phase 3 staging railway data; legacy /search is unchanged",
+        "database_write_skipped": True,
+        "production_railway_tables_modified": False,
+    }
+# --- Phase 3 production-candidate search API end ---
