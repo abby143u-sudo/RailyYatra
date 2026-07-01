@@ -364,3 +364,35 @@ Important safety status:
 - production railway tables remain protected
 
 See `docs/PHASE_4_STATUS.md` for the full checkpoint.
+
+## Phase 5 Checkpoint
+
+Phase 5 has prepared RailYatra for public beta preview readiness.
+
+Completed capabilities:
+
+- `/product/status` endpoint
+- `/product/beta-checklist` endpoint
+- frontend product status panel
+- frontend public beta checklist panel
+- product readiness smoke test
+- frontend product readiness smoke test
+- beta checklist smoke test
+- frontend beta checklist smoke test
+
+Current public beta position:
+
+- real railway route recommendation preview is demo-ready
+- user/investor demo is allowed
+- live booking claim is blocked
+- ticket payment claim is blocked
+- PNR, live fare and live availability are not connected yet
+
+Important safety status:
+
+- legacy `/search` remains unchanged
+- `/search-v2` remains available
+- `/recommend-v2` remains available
+- production railway tables remain protected
+
+See `docs/PHASE_5_STATUS.md` for the full checkpoint.
