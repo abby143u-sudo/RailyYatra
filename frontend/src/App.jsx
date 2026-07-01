@@ -17,8 +17,8 @@ const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
 
 function App() {
-  const [source, setSource] = useState("PNBE");
-  const [destination, setDestination] = useState("NDLS");
+  const [source, setSource] = useState("");
+  const [destination, setDestination] = useState("");
   const [trainType, setTrainType] = useState("All");
   const [journeyClass, setJourneyClass] = useState("SL");
   const [quota, setQuota] = useState("GN");
@@ -115,8 +115,6 @@ function App() {
       clearInterval(timer);
     };
   }, []);
-
-
 
   const recommendations = useMemo(() => {
     let filtered = allRecommendations;
@@ -378,8 +376,9 @@ function App() {
     setDestination(source);
   }
 
+
   async function fetchStationSuggestions(value, setter) {
-    const query = value.trim();
+    const query = String(value || "").trim().toUpperCase();
 
     if (query.length < 2) {
       setter([]);
@@ -387,20 +386,27 @@ function App() {
     }
 
     try {
-      const res = await fetch(API_BASE + "/stations?q=" + query + "&limit=8");
+      const params = new URLSearchParams({
+        q: query,
+        limit: "8",
+      });
 
-      if (!res.ok) return;
+      const res = await fetch(`${API_BASE}/staging/stations?${params.toString()}`);
+
+      if (!res.ok) {
+        setter([]);
+        return;
+      }
 
       const data = await res.json();
-      setter(data.stations || []);
+      setter(Array.isArray(data.stations) ? data.stations : []);
     } catch {
       setter([]);
     }
   }
 
-
-  function handleMainStationInputChange(value, target) {
-    const normalizedValue = String(value || "").toUpperCase();
+  function handleMainStationInputChange(event, target) {
+    const normalizedValue = String(event?.target?.value || "").toUpperCase();
 
     if (target === "source") {
       setSource(normalizedValue);
@@ -422,16 +428,23 @@ function App() {
   }
 
   function handleMainStationInputKeyUp(event, target) {
-    const browseKeys = ["Backspace", "Delete", "ArrowDown", "ArrowUp"];
+    const key = event?.key || "";
+    const currentValue = String(event?.currentTarget?.value || "");
 
-    if (browseKeys.includes(event.key)) {
+    if (["Backspace", "Delete", "ArrowDown", "ArrowUp"].includes(key)) {
       if (target === "source") {
-        fetchStationSuggestions(event.currentTarget.value, setSourceSuggestions);
+        fetchStationSuggestions(currentValue, setSourceSuggestions);
       } else {
-        fetchStationSuggestions(event.currentTarget.value, setDestinationSuggestions);
+        fetchStationSuggestions(currentValue, setDestinationSuggestions);
       }
     }
   }
+
+
+
+
+
+
 
   function getStationCode(station) {
     return station.station_code || station.code || station.id || "";
@@ -4056,7 +4069,7 @@ function App() {
             <label>From</label>
             <input
               value={source}
-              onChange={(e) => handleMainStationInputChange(e.target.value, "source")}
+              onChange={(e) => handleMainStationInputChange(e, "source")}
               onFocus={() => handleMainStationInputFocus("source")}
               onKeyUp={(e) => handleMainStationInputKeyUp(e, "source")}
               placeholder="PNBE or Patna"
@@ -4090,7 +4103,7 @@ function App() {
             <label>To</label>
             <input
               value={destination}
-              onChange={(e) => handleMainStationInputChange(e.target.value, "destination")}
+              onChange={(e) => handleMainStationInputChange(e, "destination")}
               onFocus={() => handleMainStationInputFocus("destination")}
               onKeyUp={(e) => handleMainStationInputKeyUp(e, "destination")}
               placeholder="NDLS or Delhi"
