@@ -4026,11 +4026,15 @@ function App() {
       <main className="app">
         <PublicDemoWarningBanner />
       <PublicDemoHero />
+        <PublicDemoInternalPanel title="Staging data health" description="Backend data/status check for demo verification.">
         <Phase3StagingCard />
+      </PublicDemoInternalPanel>
         <Phase3DirectPreview />
         <Phase3RouteSearchPreview />
         <div id="recommendations-preview"><Phase4RecommendationPreview /></div>
+        <PublicDemoInternalPanel title="Product status flags" description="Confirms live booking/payment/PNR are not enabled.">
         <Phase5ProductStatusPanel />
+      </PublicDemoInternalPanel>
         <Phase5BetaChecklistPanel />
         <header className="hero">
           <div className="pill">Smart Railway Planner</div>

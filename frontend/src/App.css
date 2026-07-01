@@ -4342,3 +4342,97 @@ li {
   }
 }
 /* Phase 8 main search polish end */
+
+/* Phase 8 internal panels collapse start */
+.public-demo-internal-panel {
+  margin: 0.9rem auto;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.public-demo-internal-panel summary {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  color: #0f172a;
+}
+
+.public-demo-internal-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.public-demo-internal-panel summary span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.public-demo-internal-panel summary strong {
+  font-size: 0.98rem;
+  letter-spacing: -0.02em;
+}
+
+.public-demo-internal-panel summary small {
+  color: #64748b;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.public-demo-internal-panel summary em {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  min-height: 34px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 999px;
+  color: #1d4ed8;
+  background: rgba(239, 246, 255, 0.95);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.public-demo-internal-panel[open] summary em {
+  color: #78350f;
+  border-color: rgba(245, 158, 11, 0.22);
+  background: rgba(255, 251, 235, 0.95);
+}
+
+.public-demo-internal-panel[open] summary em::before {
+  content: "Close";
+}
+
+.public-demo-internal-panel[open] summary em {
+  font-size: 0;
+}
+
+.public-demo-internal-panel[open] summary em::before {
+  font-size: 0.78rem;
+}
+
+.public-demo-internal-panel__body {
+  padding: 0 1rem 1rem;
+}
+
+.public-demo-internal-panel__body > * {
+  margin-top: 0;
+}
+
+@media (max-width: 860px) {
+  .public-demo-internal-panel summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .public-demo-internal-panel summary em {
+    width: 100%;
+  }
+}
+/* Phase 8 internal panels collapse end */
