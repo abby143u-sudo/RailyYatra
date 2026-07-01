@@ -3000,3 +3000,52 @@ li {
 }
 /* Phase 3 route search preview end */
 
+/* Phase 3 station suggestions start */
+.phase3-route-search-station-field {
+  position: relative;
+}
+
+.phase3-route-search-suggestions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
+}
+
+.phase3-route-search-suggestions button {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: rgba(248, 250, 252, 0.95);
+  text-align: left;
+  cursor: pointer;
+}
+
+.phase3-route-search-suggestions button:hover {
+  background: rgba(226, 232, 240, 0.95);
+}
+
+.phase3-route-search-suggestions strong {
+  font-size: 0.86rem;
+}
+
+.phase3-route-search-suggestions span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+  opacity: 0.76;
+}
+/* Phase 3 station suggestions end */
