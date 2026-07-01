@@ -10,6 +10,7 @@ import Phase5ProductStatusPanel from "./components/Phase5ProductStatusPanel.jsx"
 import Phase5BetaChecklistPanel from "./components/Phase5BetaChecklistPanel.jsx";
 import PublicDemoWarningBanner from "./components/PublicDemoWarningBanner.jsx";
 import PublicDemoHero from "./components/PublicDemoHero.jsx";
+import PublicDemoInternalPanel from "./components/PublicDemoInternalPanel.jsx";
 
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
