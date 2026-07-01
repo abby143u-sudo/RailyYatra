@@ -57,3 +57,14 @@ Polish homepage hero and primary search section.
 - Recommendation preview intro
 - Mobile final polish
 - Public demo footer/status section
+
+## Final QA checkpoint
+
+Phase 8 public demo QA has been completed.
+
+QA file: docs/PHASE_8_FINAL_PUBLIC_DEMO_QA.md
+
+Final public label: RailYatra — Real railway route recommendation preview
+
+Next phase: Phase 9 — product hardening, analytics, user feedback capture, saved demo searches, and live integration planning.
+

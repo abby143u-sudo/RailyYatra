@@ -133,3 +133,15 @@ Current live demo:
 
 Public label: RailYatra — Real railway route recommendation preview
 
+## Phase 8 QA
+
+Phase 8 public demo polish and QA checkpoint completed.
+
+Live frontend: https://raily-yatra.vercel.app
+
+Live backend: https://railyyatra-backend.onrender.com
+
+Recommended demo route: DSNR → TPKR
+
+Next phase: Phase 9 — product hardening, analytics, user feedback capture, saved demo searches, and live integration planning.
+
