@@ -700,3 +700,12 @@ def recommend_v2(source: str, destination: str, direct_limit: int = 8, transfer_
         transfer_limit=safe_transfer_limit,
     )
 # --- Phase 4 recommendation-v2 API end ---
+
+# --- Phase 5 product status API start ---
+from backend.product.status import get_product_status as phase5_get_product_status
+
+
+@app.get("/product/status")
+def product_status():
+    return phase5_get_product_status()
+# --- Phase 5 product status API end ---

@@ -41,6 +41,7 @@ run_step "Staging route index smoke test" python3 scripts/smoke_staging_route_in
 run_step "Staging route engine smoke test" python3 scripts/smoke_staging_route_engine.py
 run_step "Search-v2 smoke test" python3 scripts/smoke_search_v2.py
 run_step "Recommend-v2 smoke test" python3 scripts/smoke_recommend_v2.py
+run_step "Product status smoke test" python3 scripts/smoke_product_status.py
 run_step "Frontend recommend-v2 smoke test" python3 scripts/smoke_frontend_recommend_v2.py
 run_step "Frontend search-v2 smoke test" python3 scripts/smoke_frontend_search_v2.py
 run_step "Staging API smoke test" python3 scripts/smoke_staging_api.py
