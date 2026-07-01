@@ -449,3 +449,23 @@ Next manual deployment work:
 - set backend allowed origin
 - run deployed smoke test with real deployed URLs
 
+## Phase 7 Deployment Preflight
+
+Current phase:
+
+- Phase 7: actual public demo deployment
+
+Added in this step:
+
+- `scripts/deploy_preflight.sh`
+- `docs/PHASE_7_MANUAL_DEPLOYMENT_STEPS.md`
+- `scripts/smoke_phase7_deploy_preflight.py`
+
+Next action after this commit:
+
+- run `scripts/deploy_preflight.sh`
+- push repo to GitHub
+- deploy backend on Render
+- deploy frontend on Vercel
+- run deployed smoke test with deployed URLs
+
