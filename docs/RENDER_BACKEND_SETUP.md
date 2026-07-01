@@ -21,8 +21,8 @@ Use the GitHub repository connected to this local repo.
 - Name: railyatra-backend
 - Environment: Python
 - Root Directory: app
-- Build Command: pip install -r requirements.txt
-- Start Command: python scripts/prepare_deploy_database.py && uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+- Build Command: pip install -r requirements.txt && python -u scripts/prepare_deploy_database.py
+- Start Command: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
 
 ## Environment variables
 
@@ -94,8 +94,22 @@ Because the Render service was created manually, the dashboard settings may over
 Use these exact settings in Render:
 
     Root Directory: app
-    Build Command: pip install -r requirements.txt
-    Start Command: python scripts/prepare_deploy_database.py && uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+    Build Command: pip install -r requirements.txt && python -u scripts/prepare_deploy_database.py
+    Start Command: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
 
 This prepares `railyatra.db` every time the Render service starts, then starts FastAPI.
+
+## Port timeout fix
+
+Render port scanning starts during the service start phase.
+
+Use database preparation in Build Command only:
+
+    pip install -r requirements.txt && python -u scripts/prepare_deploy_database.py
+
+Use Uvicorn only in Start Command:
+
+    uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+
+Do not run `prepare_deploy_database.py` inside Start Command, otherwise Render may time out before the web port opens.
 
