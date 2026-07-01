@@ -396,3 +396,32 @@ Important safety status:
 - production railway tables remain protected
 
 See `docs/PHASE_5_STATUS.md` for the full checkpoint.
+
+## Phase 6 Checkpoint
+
+Phase 6 has prepared RailYatra for public demo deployment packaging.
+
+Completed capabilities:
+
+- `.env.example`
+- backend CORS configuration
+- `/product/deployment-status`
+- frontend API base via `VITE_RAILYATRA_API_BASE`
+- public demo warning banner
+- backend `app/requirements.txt`
+- Render backend config
+- Vercel frontend config
+- deployment targets guide
+- README quickstart
+- public demo script
+- public launch checklist
+- deployment smoke tests
+
+Current deployment position:
+
+- public demo deployment is ready to start
+- local full checks must pass before deployment
+- live booking, payment, PNR, live fare and live availability remain blocked
+
+See `docs/PHASE_6_FINAL_CHECKPOINT.md` for the final Phase 6 checkpoint.
+
