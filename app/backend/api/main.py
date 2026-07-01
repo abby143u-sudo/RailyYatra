@@ -159,15 +159,62 @@ def home():
 
 @app.get("/health")
 def health():
-    return {
-        "status": "healthy",
-        "counts": {
-            "trains": fetch_one("SELECT COUNT(*) AS count FROM trains")["count"],
-            "stations": fetch_one("SELECT COUNT(*) AS count FROM stations")["count"],
-            "train_stops": fetch_one("SELECT COUNT(*) AS count FROM train_stops")["count"],
-        },
-    }
+    import sqlite3
+    from pathlib import Path
 
+    app_root = Path(__file__).resolve().parents[2]
+    cwd = Path.cwd()
+    db_candidates = [
+        app_root / "railyatra.db",
+        app_root / "app" / "railyatra.db",
+        cwd / "railyatra.db",
+        cwd / "app" / "railyatra.db",
+    ]
+
+    table_sets = [
+        ("staging", {"stations": "staging_stations", "trains": "staging_trains", "train_stops": "staging_train_stops"}),
+        ("legacy", {"stations": "stations", "trains": "trains", "train_stops": "train_stops"}),
+    ]
+
+    checked = []
+
+    for db_path in db_candidates:
+        if not db_path.exists():
+            checked.append({"path": str(db_path), "exists": False})
+            continue
+
+        for source, tables in table_sets:
+            try:
+                conn = sqlite3.connect(db_path)
+                counts = {}
+                for public_name, table_name in tables.items():
+                    counts[public_name] = int(conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0])
+                conn.close()
+                if all(value >= 0 for value in counts.values()):
+                    return {
+                        "status": "healthy",
+                        "source": source,
+                        "database_path": str(db_path),
+                        "counts": counts,
+                    }
+            except Exception as error:
+                checked.append({
+                    "path": str(db_path),
+                    "exists": True,
+                    "source": source,
+                    "error": str(error),
+                })
+            finally:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+
+    return {
+        "status": "unhealthy",
+        "reason": "No readable railway database tables found",
+        "checked": checked,
+    }
 
 @app.get("/stations")
 def stations(
