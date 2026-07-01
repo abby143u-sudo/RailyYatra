@@ -122,7 +122,7 @@ export default function Phase3RouteSearchPreview() {
         transfer_limit: "2",
       });
 
-      const response = await fetch(`${API_BASE}/staging/search?${params.toString()}`);
+      const response = await fetch(`${API_BASE}/search-v2?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -138,7 +138,7 @@ export default function Phase3RouteSearchPreview() {
     } catch (error) {
       setState({
         loading: false,
-        error: error instanceof Error ? error.message : "Unable to reach staging route engine",
+        error: error instanceof Error ? error.message : "Unable to reach search-v2 route engine",
         data: null,
       });
     }
@@ -225,10 +225,10 @@ export default function Phase3RouteSearchPreview() {
     <section className="phase3-route-search-card">
       <div className="phase3-route-search-card__header">
         <div>
-          <p className="phase3-route-search-card__eyebrow">Phase 3 Engine</p>
-          <h2>Real Staging Route Search</h2>
+          <p className="phase3-route-search-card__eyebrow">Search v2</p>
+          <h2>Production Candidate Route Search</h2>
         </div>
-        <span className="phase3-route-search-card__badge">Direct + Transfer</span>
+        <span className="phase3-route-search-card__badge">/search-v2</span>
       </div>
 
       <form className="phase3-route-search-form" onSubmit={searchRoutes}>

@@ -3108,3 +3108,9 @@ li {
   }
 }
 /* Phase 3 train stops drilldown end */
+
+/* Phase 3 search-v2 marker start */
+.phase3-route-search-card__badge {
+  letter-spacing: 0.02em;
+}
+/* Phase 3 search-v2 marker end */
