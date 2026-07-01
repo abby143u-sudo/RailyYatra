@@ -78,3 +78,17 @@ Expected:
 - `frontend/dist` is removed before commit
 - production railway tables remain protected
 - live booking claim remains blocked
+
+## Frontend backend URL
+
+The frontend no longer depends on hardcoded `127.0.0.1` inside each component.
+
+Local default:
+
+    VITE_RAILYATRA_API_BASE=http://127.0.0.1:8000
+
+For deployed frontend, set this variable in Vercel/Netlify:
+
+    VITE_RAILYATRA_API_BASE=https://your-backend-domain.example.com
+
+After changing the variable, rebuild/redeploy the frontend.

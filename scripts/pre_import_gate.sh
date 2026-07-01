@@ -43,6 +43,7 @@ run_step "Search-v2 smoke test" python3 scripts/smoke_search_v2.py
 run_step "Recommend-v2 smoke test" python3 scripts/smoke_recommend_v2.py
 run_step "Product status smoke test" python3 scripts/smoke_product_status.py
 run_step "Deployment config smoke test" python3 scripts/smoke_deployment_config.py
+run_step "Frontend API config smoke test" python3 scripts/smoke_frontend_api_config.py
 run_step "Beta checklist smoke test" python3 scripts/smoke_beta_checklist.py
 run_step "Frontend beta checklist smoke test" python3 scripts/smoke_frontend_beta_checklist.py
 run_step "Frontend product status smoke test" python3 scripts/smoke_frontend_product_status.py

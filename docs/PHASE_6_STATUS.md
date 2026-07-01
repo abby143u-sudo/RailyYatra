@@ -12,6 +12,7 @@ Prepare RailYatra for deployment packaging and public beta demo configuration.
 - `/product/deployment-status` endpoint
 - deployment notes
 - deployment config smoke test
+- frontend API base now uses `VITE_RAILYATRA_API_BASE` instead of per-component hardcoded local backend URLs
 - safety checks added to combined project checks
 
 ## Current deployment readiness
