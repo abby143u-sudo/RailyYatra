@@ -3391,3 +3391,154 @@ li {
   opacity: 0.76;
 }
 /* Phase 4 recommendation station suggestions end */
+
+/* Phase 5 product status panel start */
+.phase5-product-status-card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 18px;
+  padding: 18px;
+  margin: 18px 0;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+}
+
+.phase5-product-status-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.phase5-product-status-card__eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.phase5-product-status-card h2,
+.phase5-product-status-card h3 {
+  margin: 0;
+}
+
+.phase5-product-status-card h2 {
+  font-size: 1.25rem;
+}
+
+.phase5-product-status-card h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.phase5-product-status-card__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.phase5-status-hero,
+.phase5-status-grid,
+.phase5-live-grid,
+.phase5-engine-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.phase5-status-hero {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 14px 0;
+}
+
+.phase5-status-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.phase5-live-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.phase5-engine-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.phase5-status-section {
+  margin-top: 18px;
+}
+
+.phase5-status-hero div,
+.phase5-status-grid div,
+.phase5-live-item,
+.phase5-engine-card {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.phase5-engine-card p {
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+  opacity: 0.76;
+}
+
+.phase5-status-hero span,
+.phase5-status-grid span,
+.phase5-live-item span,
+.phase5-engine-card span {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.72;
+  margin-bottom: 4px;
+  text-transform: capitalize;
+}
+
+.phase5-status-hero strong,
+.phase5-status-grid strong,
+.phase5-live-item strong,
+.phase5-engine-card strong {
+  overflow-wrap: anywhere;
+}
+
+.phase5-live-item.blocked {
+  background: rgba(254, 242, 242, 0.85);
+  border-color: rgba(248, 113, 113, 0.18);
+}
+
+.phase5-live-item.live {
+  background: rgba(240, 253, 244, 0.85);
+  border-color: rgba(34, 197, 94, 0.18);
+}
+
+.phase5-product-status-card__message {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+  opacity: 0.82;
+}
+
+.phase5-product-status-card__message.error,
+.phase5-product-status-card__message.warning {
+  opacity: 1;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .phase5-product-status-card__header {
+    flex-direction: column;
+  }
+
+  .phase5-status-hero,
+  .phase5-status-grid,
+  .phase5-live-grid,
+  .phase5-engine-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Phase 5 product status panel end */
