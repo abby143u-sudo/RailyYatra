@@ -145,3 +145,7 @@ Recommended demo route: DSNR → TPKR
 
 Next phase: Phase 9 — product hardening, analytics, user feedback capture, saved demo searches, and live integration planning.
 
+## Frontend stability note
+
+The main top From/To autocomplete is temporarily disabled to keep the public demo stable. Manual station-code entry works, and the next safe step is to rebuild autocomplete as an isolated tested component.
+
