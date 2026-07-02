@@ -793,3 +793,6 @@ app.include_router(feedback_router)
 from backend.api.analytics_api import router as analytics_router
 app.include_router(analytics_router)
 
+from backend.api.admin_api import router as admin_router
+app.include_router(admin_router)
+

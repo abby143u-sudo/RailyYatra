@@ -56,3 +56,24 @@ Endpoints:
 
 Added scripts/smoke_phase10_backend_api.py to test feedback and analytics endpoints after Render deploy.
 
+## Admin summary API
+
+Added internal demo summary endpoints.
+
+Endpoints:
+
+- GET /admin/health
+- GET /admin/feedback-summary
+- GET /admin/analytics-summary
+- GET /admin/demo-summary
+
+Purpose:
+
+- Review feedback and analytics counts
+- See latest demo events
+- Confirm live booking/payment/PNR flags remain false
+
+Smoke script:
+
+- scripts/smoke_phase10_admin_api.py
+
