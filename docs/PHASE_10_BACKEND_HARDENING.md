@@ -120,3 +120,18 @@ Also rechecked:
 
 Next target: rate-limit planning and admin protection planning.
 
+## Security middleware
+
+Added basic backend security middleware.
+
+Includes:
+
+- In-memory request rate-limit
+- Stricter write request limit
+- Optional admin token protection using RAILYATRA_ADMIN_TOKEN
+- Security errors returned with standard error envelope
+
+Smoke script:
+
+- scripts/smoke_phase10_security_middleware.py
+
