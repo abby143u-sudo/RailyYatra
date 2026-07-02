@@ -40,3 +40,15 @@ Tracked events:
 
 This is intentionally local-only for the public demo. Production analytics can be connected later after deciding privacy, consent and measurement needs.
 
+## Saved demo searches
+
+Added PublicSavedDemoSearchesPanel.
+
+Capabilities:
+
+- Quick route buttons for DSNR → TPKR, PNBE → NDLS and LTT → VVH
+- Save current From/To route in browser localStorage
+- Apply saved route directly into the main search inputs
+
+This supports faster public demos and repeated QA testing.
+

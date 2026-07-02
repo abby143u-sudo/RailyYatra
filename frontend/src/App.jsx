@@ -15,6 +15,7 @@ import PublicRecommendationIntro from "./components/PublicRecommendationIntro.js
 import SafeStationInput from "./components/SafeStationInput.jsx";
 import PublicFeedbackPanel from "./components/PublicFeedbackPanel.jsx";
 import PublicDemoAnalyticsPanel from "./components/PublicDemoAnalyticsPanel.jsx";
+import PublicSavedDemoSearchesPanel from "./components/PublicSavedDemoSearchesPanel.jsx";
 
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
@@ -4022,6 +4023,15 @@ function App() {
       <main className="app">
         <PublicDemoWarningBanner />
       <PublicDemoHero />
+      <PublicSavedDemoSearchesPanel
+        currentSource={source}
+        currentDestination={destination}
+        onApplyRoute={(from, to) => {
+          setSource(from);
+          setDestination(to);
+          setError("");
+        }}
+      />
         <PublicDemoInternalPanel title="Staging data health" description="Backend data/status check for demo verification.">
         <Phase3StagingCard />
       </PublicDemoInternalPanel>

@@ -5330,3 +5330,120 @@ li {
   }
 }
 /* Phase 9 demo analytics end */
+
+/* Phase 9 saved demo searches start */
+.public-saved-demo-searches {
+  display: grid;
+  gap: 1rem;
+  margin: 1.25rem auto;
+  padding: 1.1rem;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.92));
+  box-shadow: 0 20px 55px rgba(15, 23, 42, 0.07);
+}
+
+.public-saved-demo-searches__intro span {
+  display: inline-flex;
+  margin-bottom: 0.4rem;
+  color: #2563eb;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.public-saved-demo-searches__intro strong {
+  display: block;
+  color: #0f172a;
+  font-size: clamp(1.25rem, 2.5vw, 1.8rem);
+  letter-spacing: -0.05em;
+}
+
+.public-saved-demo-searches__intro p {
+  max-width: 820px;
+  margin: 0.45rem 0 0;
+  color: #64748b;
+  line-height: 1.65;
+}
+
+.public-saved-demo-searches__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.public-saved-demo-searches__actions button {
+  min-height: 44px;
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.public-saved-demo-searches__status {
+  margin: 0;
+  color: #1d4ed8;
+  font-weight: 800;
+}
+
+.public-saved-demo-searches__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.public-saved-demo-searches__grid article {
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+  padding: 0.9rem;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.public-saved-demo-searches__grid article > span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.public-saved-demo-searches__grid strong {
+  color: #0f172a;
+  font-size: 1.15rem;
+  letter-spacing: -0.04em;
+}
+
+.public-saved-demo-searches__grid p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.public-saved-demo-searches__grid button {
+  width: fit-content;
+  min-height: 40px;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .public-saved-demo-searches__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .public-saved-demo-searches__actions {
+    flex-direction: column;
+  }
+
+  .public-saved-demo-searches__actions button,
+  .public-saved-demo-searches__grid button {
+    width: 100%;
+  }
+}
+/* Phase 9 saved demo searches end */
