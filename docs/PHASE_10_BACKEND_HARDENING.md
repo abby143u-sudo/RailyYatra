@@ -152,3 +152,20 @@ Verified:
 
 Next target: database persistence upgrade for feedback and analytics.
 
+## SQLite persistence upgrade
+
+Feedback and analytics storage moved from JSONL files to a shared SQLite runtime database.
+
+Files:
+
+- app/backend/api/demo_store.py
+- scripts/smoke_phase10_sqlite_persistence.py
+
+Runtime database:
+
+- app/data/demo_events.db
+
+Production note:
+
+This is a lightweight runtime persistence layer. For serious production, use managed PostgreSQL or another durable managed database.
+
