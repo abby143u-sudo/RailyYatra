@@ -5767,3 +5767,19 @@ li {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.admin-dashboard-preview__analytics-table {
+  background: rgba(240, 253, 250, 0.72);
+}
+
+.admin-dashboard-preview__pill--analytics {
+  background: rgba(20, 184, 166, 0.13);
+  color: #0f766e;
+}
+
+.admin-dashboard-preview__details-cell {
+  max-width: 360px;
+  overflow-wrap: anywhere;
+  color: #334155;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+}

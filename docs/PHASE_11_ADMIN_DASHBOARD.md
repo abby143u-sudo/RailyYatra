@@ -36,3 +36,11 @@ Preview URLs:
 
 The public homepage hides admin preview by default.
 
+## Analytics event table
+
+Added latest analytics event table to the admin dashboard preview.
+
+The table reads from /admin/demo-summary and shows event type, details, timestamp and page.
+
+Next target: admin token input or protected login design.
+
