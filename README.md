@@ -213,3 +213,9 @@ Next: Phase 11 admin dashboard and managed PostgreSQL migration.
 
 Phase 11 has started with an admin dashboard preview connected to the backend admin summary API. Next: protected admin route, feedback inbox, analytics table and managed PostgreSQL migration.
 
+## Phase 11 Admin Dashboard QA
+
+Phase 11 admin dashboard preview QA is complete. The admin preview is gated behind ?admin=preview, includes admin token input, feedback inbox and analytics event table.
+
+Next: managed PostgreSQL migration implementation plan.
+
