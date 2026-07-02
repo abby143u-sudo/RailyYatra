@@ -181,3 +181,9 @@ Phase 10 has started: backend hardening, real feedback API, analytics API, admin
 
 First target: move feedback from browser-local storage to a backend feedback API.
 
+## Phase 10 Backend APIs Verified
+
+Phase 10 backend APIs are verified on the deployed Render backend: feedback, analytics and admin summary APIs. Smoke scripts are available for deployed checks.
+
+Next: request validation, standard API error envelope, rate-limit planning and admin protection planning.
+

@@ -77,3 +77,18 @@ Smoke script:
 
 - scripts/smoke_phase10_admin_api.py
 
+## Backend APIs verified
+
+Deployed Phase 10 backend APIs are verified on Render.
+
+Verified:
+
+- Feedback API
+- Analytics API
+- Admin summary API
+- Backend smoke script
+- Admin smoke script
+- Live frontend check
+
+Next target: request validation and standard API error envelope.
+
