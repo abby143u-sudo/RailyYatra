@@ -149,3 +149,15 @@ Next phase: Phase 9 — product hardening, analytics, user feedback capture, sav
 
 The main top From/To autocomplete is temporarily disabled to keep the public demo stable. Manual station-code entry works, and the next safe step is to rebuild autocomplete as an isolated tested component.
 
+## Phase 8 stable public demo release
+
+RailYatra Phase 8 stable public demo release is ready.
+
+Frontend: https://raily-yatra.vercel.app
+
+Backend: https://railyyatra-backend.onrender.com
+
+Main From/To search uses SafeStationInput. PNBE and NDLS typing should not blank the page.
+
+Next phase: Phase 9 — analytics, user feedback capture, saved searches, and live integration planning.
+
