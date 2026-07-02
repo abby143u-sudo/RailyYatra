@@ -209,3 +209,7 @@ Phase 10 final QA checkpoint is complete. Feedback, analytics, admin summary, er
 
 Next: Phase 11 admin dashboard and managed PostgreSQL migration.
 
+## Phase 11 Admin Dashboard Started
+
+Phase 11 has started with an admin dashboard preview connected to the backend admin summary API. Next: protected admin route, feedback inbox, analytics table and managed PostgreSQL migration.
+
