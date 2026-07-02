@@ -786,3 +786,6 @@ app.add_middleware(
 def product_deployment_status():
     return phase6_get_deployment_status()
 # --- Phase 6 CORS configuration end ---
+
+from backend.api.feedback_api import router as feedback_router
+app.include_router(feedback_router)

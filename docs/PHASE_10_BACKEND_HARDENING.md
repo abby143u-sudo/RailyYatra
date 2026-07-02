@@ -23,3 +23,22 @@ RailYatra is still a route recommendation preview. Live booking, payment, PNR, l
 
 Next implementation:
 Backend feedback API.
+
+## Backend feedback API
+
+Added server-side feedback API.
+
+Endpoints:
+
+- GET /feedback/health
+- POST /feedback
+- GET /feedback
+
+Storage:
+
+- JSONL file at app/data/feedback/feedback.jsonl
+
+Frontend:
+
+- PublicFeedbackPanel now saves locally and attempts backend sync through /feedback.
+

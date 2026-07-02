@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_BASE } from "../config/api.js";
 
 const STORAGE_KEY = "railyatra_demo_feedback";
 
@@ -17,7 +18,23 @@ export default function PublicFeedbackPanel() {
     }
   }, []);
 
-  function saveFeedback(event) {
+  async function syncFeedbackToBackend(entry) {
+    try {
+      const response = await fetch(`${API_BASE}/feedback`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(entry),
+      });
+
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function saveFeedback(event) {
     event.preventDefault();
 
     const cleanMessage = message.trim();
@@ -38,13 +55,15 @@ export default function PublicFeedbackPanel() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextFeedback));
     setSavedFeedback(nextFeedback);
     setMessage("");
-    setStatus("Feedback saved locally for this demo browser.");
+
+    const backendSaved = await syncFeedbackToBackend(entry);
+    setStatus(backendSaved ? "Feedback saved locally and synced to backend." : "Feedback saved locally. Backend sync failed safely.");
   }
 
   function clearFeedback() {
     localStorage.removeItem(STORAGE_KEY);
     setSavedFeedback([]);
-    setStatus("Saved feedback cleared.");
+    setStatus("Saved feedback cleared from this browser.");
   }
 
   function exportFeedback() {
@@ -62,10 +81,10 @@ export default function PublicFeedbackPanel() {
   return (
     <section className="public-feedback-panel" aria-label="RailYatra feedback capture">
       <div className="public-feedback-panel__intro">
-        <span>Phase 9 feedback capture</span>
+        <span>Phase 10 backend feedback</span>
         <strong>Help improve the public demo</strong>
         <p>
-          Capture quick feedback for bugs, route quality, UI issues and product ideas. This is stored locally in the browser for now.
+          Capture quick feedback for bugs, route quality, UI issues and product ideas. Feedback is saved locally and also synced to the backend when available.
         </p>
       </div>
 
