@@ -23,3 +23,16 @@ Next Phase 11 targets:
 3. Feedback inbox table
 4. Analytics event table
 5. Managed PostgreSQL migration plan implementation
+
+## Admin route gate
+
+Admin dashboard preview is now separated from the public homepage.
+
+Preview URLs:
+
+- http://127.0.0.1:5173/?admin=preview
+- http://127.0.0.1:5173/#admin
+- https://raily-yatra.vercel.app/?admin=preview
+
+The public homepage hides admin preview by default.
+

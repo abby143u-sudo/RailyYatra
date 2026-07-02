@@ -5749,3 +5749,21 @@ li {
     grid-template-columns: 1fr;
   }
 }
+.admin-dashboard-gate {
+  margin-top: 24px;
+}
+
+.admin-dashboard-gate::before {
+  content: "Internal preview mode";
+  display: block;
+  width: min(1120px, calc(100% - 32px));
+  margin: 18px auto -8px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

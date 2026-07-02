@@ -1,4 +1,4 @@
-import AdminDashboardPreviewPanel from "./components/AdminDashboardPreviewPanel.jsx";
+import AdminDashboardGate from "./components/AdminDashboardGate.jsx";
 import { useMemo, useState, useEffect } from "react";
 import "./App.css";
 import PublicDemoFooter from "./components/PublicDemoFooter.jsx";
@@ -4357,7 +4357,7 @@ function App() {
             <PublicProductionReadinessPanel />
       <PublicDemoAnalyticsPanel />
       <PublicFeedbackPanel />
-      <AdminDashboardPreviewPanel />
+      <AdminDashboardGate />
       <PublicDemoFooter />
 </main>
     </div>
