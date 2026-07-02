@@ -92,3 +92,13 @@ Verified:
 
 Next target: request validation and standard API error envelope.
 
+## Standard API error envelope
+
+Added standard backend error handlers for HTTP errors, validation errors and unexpected internal errors.
+
+Smoke script:
+
+- scripts/smoke_phase10_error_envelope.py
+
+Next: verify deployed Render backend after redeploy.
+

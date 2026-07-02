@@ -796,3 +796,6 @@ app.include_router(analytics_router)
 from backend.api.admin_api import router as admin_router
 app.include_router(admin_router)
 
+from backend.api.error_handlers import register_error_handlers
+register_error_handlers(app)
+
