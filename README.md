@@ -199,3 +199,7 @@ Phase 10 security middleware is verified on the deployed Render backend. Securit
 
 Next: database persistence upgrade for feedback and analytics.
 
+## Phase 10 Production Plan
+
+Production database and admin authentication planning docs have been added. Next target: verify deployed SQLite persistence, set/admin-token planning, final Phase 10 QA and Phase 10 final checkpoint.
+

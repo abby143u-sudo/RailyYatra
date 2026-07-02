@@ -169,3 +169,13 @@ Production note:
 
 This is a lightweight runtime persistence layer. For serious production, use managed PostgreSQL or another durable managed database.
 
+## Production DB and admin auth plan
+
+Added Phase 10 planning documents:
+
+- docs/PHASE_10_PRODUCTION_DATABASE_PLAN.md
+- docs/PHASE_10_ADMIN_AUTH_PLAN.md
+- docs/PHASE_10_REMAINING_ROADMAP.md
+
+Next target: verify deployed SQLite persistence and then create the final Phase 10 QA checkpoint.
+
