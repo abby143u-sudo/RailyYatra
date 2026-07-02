@@ -75,3 +75,16 @@ The panel clearly separates what is ready from what is pending:
 - Live fare and seat availability are pending.
 - Production analytics and feedback backend are planned.
 
+## Route result explanation
+
+Added PublicRouteExplanationPanel.
+
+The panel explains:
+
+- Route score
+- Transfer safety
+- Preview warning
+- Best demo usage
+
+This improves demo clarity before deeper route-card redesign.
+

@@ -17,6 +17,7 @@ import PublicFeedbackPanel from "./components/PublicFeedbackPanel.jsx";
 import PublicDemoAnalyticsPanel from "./components/PublicDemoAnalyticsPanel.jsx";
 import PublicSavedDemoSearchesPanel from "./components/PublicSavedDemoSearchesPanel.jsx";
 import PublicProductionReadinessPanel from "./components/PublicProductionReadinessPanel.jsx";
+import PublicRouteExplanationPanel from "./components/PublicRouteExplanationPanel.jsx";
 
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
@@ -4038,7 +4039,8 @@ function App() {
       </PublicDemoInternalPanel>
         <Phase3DirectPreview />
         <Phase3RouteSearchPreview />
-        <div id="recommendations-preview" className="recommendations-preview-section">
+        <PublicRouteExplanationPanel />
+      <div id="recommendations-preview" className="recommendations-preview-section">
         <PublicRecommendationIntro />
         <Phase4RecommendationPreview />
       </div>
