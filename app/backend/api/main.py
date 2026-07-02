@@ -789,3 +789,7 @@ def product_deployment_status():
 
 from backend.api.feedback_api import router as feedback_router
 app.include_router(feedback_router)
+
+from backend.api.analytics_api import router as analytics_router
+app.include_router(analytics_router)
+

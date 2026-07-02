@@ -42,3 +42,17 @@ Frontend:
 
 - PublicFeedbackPanel now saves locally and attempts backend sync through /feedback.
 
+## Backend analytics API
+
+Added server-side analytics API.
+
+Endpoints:
+
+- GET /analytics/health
+- POST /analytics/event
+- GET /analytics/events
+
+## Backend API smoke test
+
+Added scripts/smoke_phase10_backend_api.py to test feedback and analytics endpoints after Render deploy.
+
