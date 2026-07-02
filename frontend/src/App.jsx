@@ -378,32 +378,9 @@ function App() {
 
 
   async function fetchStationSuggestions(value, setter) {
-    const query = String(value || "").trim().toUpperCase();
-
-    if (query.length < 2) {
-      setter([]);
-      return;
-    }
-
-    try {
-      const params = new URLSearchParams({
-        q: query,
-        limit: "8",
-      });
-
-      const res = await fetch(`${API_BASE}/staging/stations?${params.toString()}`);
-
-      if (!res.ok) {
-        setter([]);
-        return;
-      }
-
-      const data = await res.json();
-      setter(Array.isArray(data.stations) ? data.stations : []);
-    } catch {
-      setter([]);
-    }
+    setter([]);
   }
+
 
   function handleMainStationInputChange(event, target) {
     const normalizedValue = String(event?.target?.value || "").toUpperCase();
@@ -4070,8 +4047,8 @@ function App() {
             <input
               value={source}
               onChange={(e) => handleMainStationInputChange(e, "source")}
-              onFocus={() => handleMainStationInputFocus("source")}
-              onKeyUp={(e) => handleMainStationInputKeyUp(e, "source")}
+
+
               placeholder="PNBE or Patna"
             />
 
@@ -4104,8 +4081,8 @@ function App() {
             <input
               value={destination}
               onChange={(e) => handleMainStationInputChange(e, "destination")}
-              onFocus={() => handleMainStationInputFocus("destination")}
-              onKeyUp={(e) => handleMainStationInputKeyUp(e, "destination")}
+
+
               placeholder="NDLS or Delhi"
             />
 
