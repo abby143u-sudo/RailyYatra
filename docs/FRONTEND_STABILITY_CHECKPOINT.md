@@ -25,3 +25,7 @@ A new isolated SafeStationLookupTest component has been added. It tests the stat
 
 The main From/To search now uses SafeStationInput instead of the old crashing suggestion panel. It fetches station suggestions safely from `/staging/stations` and should not blank the page when typing PNBE or NDLS.
 
+## Public page cleanup
+
+The isolated SafeStationLookupTest was used for debugging autocomplete stability. It has now been removed from the public page because the main From/To search uses the safe SafeStationInput component directly.
+
