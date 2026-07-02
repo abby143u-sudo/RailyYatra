@@ -102,3 +102,21 @@ Smoke script:
 
 Next: verify deployed Render backend after redeploy.
 
+## Validation verified
+
+Deployed Render backend now returns the standard API error envelope for validation and not-found errors.
+
+Verified smoke script:
+
+- scripts/smoke_phase10_error_envelope.py
+
+Also rechecked:
+
+- Feedback smoke
+- Analytics smoke
+- Admin smoke
+- Frontend production build
+- Live frontend response
+
+Next target: rate-limit planning and admin protection planning.
+
