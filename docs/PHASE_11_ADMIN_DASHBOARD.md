@@ -44,3 +44,15 @@ The table reads from /admin/demo-summary and shows event type, details, timestam
 
 Next target: admin token input or protected login design.
 
+## Admin token input
+
+Added browser-session admin token input to the admin dashboard preview.
+
+Behavior:
+
+- Token is stored only in sessionStorage.
+- Token is sent as X-RailYatra-Admin-Token.
+- If backend returns 401, the panel asks for the admin token.
+
+Next target: managed PostgreSQL migration implementation plan or final admin dashboard QA.
+
