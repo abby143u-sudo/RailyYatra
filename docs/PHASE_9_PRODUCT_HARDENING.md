@@ -28,3 +28,15 @@ Upcoming items:
 
 Current boundary:
 RailYatra remains a real railway route recommendation preview. Live booking, payment, PNR, live fare and live seat availability are not connected yet.
+
+## Demo analytics foundation
+
+Added browser-local demo analytics through PublicDemoAnalyticsPanel.
+
+Tracked events:
+
+- page_view
+- main_search_submit
+
+This is intentionally local-only for the public demo. Production analytics can be connected later after deciding privacy, consent and measurement needs.
+

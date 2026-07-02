@@ -14,6 +14,7 @@ import PublicDemoInternalPanel from "./components/PublicDemoInternalPanel.jsx";
 import PublicRecommendationIntro from "./components/PublicRecommendationIntro.jsx";
 import SafeStationInput from "./components/SafeStationInput.jsx";
 import PublicFeedbackPanel from "./components/PublicFeedbackPanel.jsx";
+import PublicDemoAnalyticsPanel from "./components/PublicDemoAnalyticsPanel.jsx";
 
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
@@ -4339,7 +4340,8 @@ function App() {
             )}
           </section>
         )}
-            <PublicFeedbackPanel />
+            <PublicDemoAnalyticsPanel />
+      <PublicFeedbackPanel />
       <PublicDemoFooter />
 </main>
     </div>
