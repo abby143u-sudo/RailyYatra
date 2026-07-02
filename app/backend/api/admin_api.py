@@ -15,6 +15,7 @@ def summarize_by_type(entries: list[dict[str, Any]]) -> dict[str, int]:
 @router.get("/admin/health")
 async def admin_health():
     return {
+        "ok": True,
         "service": "admin",
         "status": "ok",
         "scope": "internal_demo_summary",
