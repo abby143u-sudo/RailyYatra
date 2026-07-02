@@ -4854,3 +4854,78 @@ li {
   }
 }
 /* Phase 8 safe station lookup test end */
+
+/* Phase 8 safe main station input start */
+.safe-station-input {
+  position: relative;
+}
+
+.safe-station-input input {
+  width: 100%;
+}
+
+.safe-station-input__hint {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.safe-station-input__panel {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  display: grid;
+  gap: 0.35rem;
+  max-height: 280px;
+  overflow: auto;
+  padding: 0.45rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.16);
+}
+
+.safe-station-input__panel button {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(37, 99, 235, 0.1);
+  border-radius: 14px;
+  color: #0f172a;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.safe-station-input__panel button:hover {
+  border-color: rgba(37, 99, 235, 0.26);
+  background: rgba(239, 246, 255, 0.95);
+}
+
+.safe-station-input__panel strong {
+  min-width: 62px;
+  color: #1d4ed8;
+}
+
+.safe-station-input__panel span {
+  color: #475569;
+}
+
+@media (max-width: 860px) {
+  .safe-station-input__panel {
+    position: static;
+    margin-top: 0.4rem;
+  }
+
+  .safe-station-input__panel button {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}
+/* Phase 8 safe main station input end */

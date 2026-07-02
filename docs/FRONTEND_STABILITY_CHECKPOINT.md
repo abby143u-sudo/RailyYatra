@@ -21,3 +21,7 @@ Build a new isolated station autocomplete component and test it separately befor
 
 A new isolated SafeStationLookupTest component has been added. It tests the station suggestion endpoint separately from the main From/To search so autocomplete can be validated without risking the public demo search form.
 
+## Safe main autocomplete reconnected
+
+The main From/To search now uses SafeStationInput instead of the old crashing suggestion panel. It fetches station suggestions safely from `/staging/stations` and should not blank the page when typing PNBE or NDLS.
+

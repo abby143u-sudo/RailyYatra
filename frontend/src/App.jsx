@@ -13,6 +13,7 @@ import PublicDemoHero from "./components/PublicDemoHero.jsx";
 import PublicDemoInternalPanel from "./components/PublicDemoInternalPanel.jsx";
 import PublicRecommendationIntro from "./components/PublicRecommendationIntro.jsx";
 import SafeStationLookupTest from "./components/SafeStationLookupTest.jsx";
+import SafeStationInput from "./components/SafeStationInput.jsx";
 
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
@@ -4044,204 +4045,68 @@ function App() {
         </header>
 
         <form id="main-search" className="search-card" onSubmit={searchJourney}>
-          <div className="field">
-            <label>From</label>
-            <input
-              value={source}
-              onChange={(e) => handleMainStationInputChange(e, "source")}
-
-
-              placeholder="PNBE or Patna"
-            />
-
-            {sourceSuggestions.length > 0 && (
-              <div className="suggestions-panel">
-                {sourceSuggestions.map((station, index) => (
-                  <button
-                    type="button"
-                    className="suggestion-item"
-                    key={index}
-                    onClick={() => {
-                      setSource(getStationCode(station));
-                      setSourceSuggestions([]);
-                    }}
-                  >
-                    <strong>{getStationCode(station)}</strong>
-                    <span>{getStationName(station)}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <SafeStationInput
+            label="From"
+            value={source}
+            onChange={setSource}
+            placeholder="PNBE or Patna"
+          />
 
           <button type="button" className="swap-btn" onClick={swapStations}>
             ⇅
           </button>
 
-          <div className="field">
-            <label>To</label>
-            <input
-              value={destination}
-              onChange={(e) => handleMainStationInputChange(e, "destination")}
+          <SafeStationInput
+            label="To"
+            value={destination}
+            onChange={setDestination}
+            placeholder="NDLS or Delhi"
+          />
 
+          <div className="filters-row">
+            <label>
+              Train type
+              <select value={trainType} onChange={(event) => setTrainType(event.target.value)}>
+                <option value="All">All</option>
+                <option value="Express">Express</option>
+                <option value="Superfast">Superfast</option>
+                <option value="Passenger">Passenger</option>
+              </select>
+            </label>
 
-              placeholder="NDLS or Delhi"
-            />
+            <label>
+              Class
+              <select value={journeyClass} onChange={(event) => setJourneyClass(event.target.value)}>
+                <option value="SL">SL</option>
+                <option value="3A">3A</option>
+                <option value="2A">2A</option>
+                <option value="1A">1A</option>
+                <option value="CC">CC</option>
+                <option value="2S">2S</option>
+              </select>
+            </label>
 
-            {destinationSuggestions.length > 0 && (
-              <div className="suggestions-panel">
-                {destinationSuggestions.map((station, index) => (
-                  <button
-                    type="button"
-                    className="suggestion-item"
-                    key={index}
-                    onClick={() => {
-                      setDestination(getStationCode(station));
-                      setDestinationSuggestions([]);
-                    }}
-                  >
-                    <strong>{getStationCode(station)}</strong>
-                    <span>{getStationName(station)}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            <label>
+              Quota
+              <select value={quota} onChange={(event) => setQuota(event.target.value)}>
+                <option value="GN">GN</option>
+                <option value="TQ">TQ</option>
+                <option value="LD">LD</option>
+              </select>
+            </label>
 
-          <div className="field">
-            <label>Class</label>
-            <select
-              value={journeyClass}
-              onChange={(e) => setJourneyClass(e.target.value)}
-            >
-              <option value="SL">Sleeper - SL</option>
-              <option value="3A">AC 3 Tier - 3A</option>
-              <option value="2A">AC 2 Tier - 2A</option>
-              <option value="1A">AC First Class - 1A</option>
-              <option value="CC">Chair Car - CC</option>
-              <option value="2S">Second Sitting - 2S</option>
-            </select>
-          </div>
-
-          <div className="advanced-filter-toggle-row">
-            <button
-              type="button"
-              className="advanced-filter-toggle"
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            >
-              {showAdvancedFilters
-                ? "Hide advanced filters"
-                : `Show advanced filters${getAdvancedFilterCount() ? ` (${getAdvancedFilterCount()} active)` : ""}`}
-            </button>
-          </div>
-
-          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
-            <label>Train Type</label>
-            <select
-              value={trainType}
-              onChange={(e) => setTrainType(e.target.value)}
-            >
-              <option value="All">All</option>
-              <option value="Rajdhani">Rajdhani</option>
-              <option value="Superfast">Superfast</option>
-              <option value="Express">Express</option>
-              <option value="Direct only">Direct only</option>
-            </select>
-          </div>
-
-          <div className="field">
-            <label>Journey Date</label>
-            <input
-              type="date"
-              value={journeyDate}
-              onChange={(e) => setJourneyDate(e.target.value)}
-            />
-          </div>
-
-
-          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
-            <label>Quota</label>
-            <select
-              value={quota}
-              onChange={(e) => setQuota(e.target.value)}
-            >
-              <option value="GN">General - GN</option>
-              <option value="TQ">Tatkal - TQ</option>
-              <option value="LD">Ladies - LD</option>
-              <option value="SS">Senior Citizen - SS</option>
-            </select>
-          </div>
-
-          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
-            <label>Max Fare</label>
-            <input
-              type="number"
-              min="1"
-              value={maxFare}
-              onChange={(e) => setMaxFare(e.target.value)}
-              placeholder="Max ₹"
-            />
-          </div>
-
-          <button
-            type="button"
-            className="search-btn secondary"
-            onClick={resetSearchFilters}
-          >
-            Reset Filters
-          </button>
-
-          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
-            <label>Departure Time</label>
-            <select
-              value={departureWindow}
-              onChange={(e) => setDepartureWindow(e.target.value)}
-            >
-              <option value="all">All day</option>
-              <option value="morning">Morning: 5 AM - 12 PM</option>
-              <option value="afternoon">Afternoon: 12 PM - 5 PM</option>
-              <option value="evening">Evening: 5 PM - 9 PM</option>
-              <option value="night">Night: 9 PM - 5 AM</option>
-            </select>
-          </div>
-
-          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
-            <label>Max Transfer Wait</label>
-            <input
-              type="number"
-              min="0"
-              step="0.5"
-              value={maxTransferWait}
-              onChange={(e) => setMaxTransferWait(e.target.value)}
-              placeholder="Hours"
-            />
-          </div>
-
-          <div className={showAdvancedFilters ? "field advanced-filter" : "field advanced-filter advanced-filter-hidden"}>
-            <label>Minimum Score</label>
-            <input
-              type="number"
-              min="1"
-              value={minScore}
-              onChange={(e) => setMinScore(e.target.value)}
-              placeholder="Example: 700"
-            />
-          </div>
-
-          <div className={showAdvancedFilters ? "field checkbox-field advanced-filter" : "field checkbox-field advanced-filter advanced-filter-hidden"}>
-            <label>Hide Unknown Fare</label>
-            <label className="inline-check">
+            <label>
+              Journey date
               <input
-                type="checkbox"
-                checked={hideUnknownFare}
-                onChange={(e) => setHideUnknownFare(e.target.checked)}
+                type="date"
+                value={journeyDate}
+                onChange={(event) => setJourneyDate(event.target.value)}
               />
-              Show only verified fare journeys
             </label>
           </div>
 
-          <button type="submit" className="search-btn">
-            {loading ? "Searching..." : "Search"}
+          <button type="submit" className="search-btn" disabled={loading}>
+            {loading ? "Searching..." : "Search routes"}
           </button>
         </form>
 
