@@ -4738,3 +4738,119 @@ li {
   }
 }
 /* Phase 8 mobile final polish and footer end */
+
+/* Phase 8 safe station lookup test start */
+.safe-station-lookup-test {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0 auto 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+}
+
+.safe-station-lookup-test__header span {
+  display: inline-flex;
+  margin-bottom: 0.35rem;
+  color: #2563eb;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.safe-station-lookup-test__header strong {
+  display: block;
+  color: #0f172a;
+  font-size: 1.15rem;
+  letter-spacing: -0.04em;
+}
+
+.safe-station-lookup-test__header p {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.safe-station-lookup-test__field {
+  display: grid;
+  gap: 0.4rem;
+  color: #334155;
+  font-weight: 900;
+}
+
+.safe-station-lookup-test__field input {
+  min-height: 48px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 16px;
+  color: #0f172a;
+  background: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  outline: none;
+}
+
+.safe-station-lookup-test__field input:focus {
+  border-color: rgba(37, 99, 235, 0.72);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.safe-station-lookup-test__message {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.92rem;
+}
+
+.safe-station-lookup-test__results {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.45rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.safe-station-lookup-test__results button {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(37, 99, 235, 0.1);
+  border-radius: 14px;
+  color: #0f172a;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.safe-station-lookup-test__results button:hover {
+  border-color: rgba(37, 99, 235, 0.26);
+  background: rgba(239, 246, 255, 0.95);
+}
+
+.safe-station-lookup-test__results strong {
+  min-width: 62px;
+  color: #1d4ed8;
+}
+
+.safe-station-lookup-test__results span {
+  color: #475569;
+}
+
+@media (max-width: 860px) {
+  .safe-station-lookup-test {
+    border-radius: 22px;
+  }
+
+  .safe-station-lookup-test__results button {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}
+/* Phase 8 safe station lookup test end */

@@ -16,3 +16,8 @@ Public demo stability is more important than autocomplete at this stage.
 
 Next safe improvement:
 Build a new isolated station autocomplete component and test it separately before reconnecting it to the main search.
+
+## Safe station lookup test
+
+A new isolated SafeStationLookupTest component has been added. It tests the station suggestion endpoint separately from the main From/To search so autocomplete can be validated without risking the public demo search form.
+
