@@ -62,3 +62,16 @@ Capabilities:
 - Demo feedback can be copied as JSON.
 - This supports manual review before adding a real backend feedback database.
 
+## Production readiness checklist
+
+Added PublicProductionReadinessPanel.
+
+The panel clearly separates what is ready from what is pending:
+
+- Route recommendation preview is ready for public demo.
+- Live booking is pending.
+- Payment is pending.
+- PNR is pending.
+- Live fare and seat availability are pending.
+- Production analytics and feedback backend are planned.
+
