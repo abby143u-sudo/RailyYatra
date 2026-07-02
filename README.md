@@ -219,3 +219,7 @@ Phase 11 admin dashboard preview QA is complete. The admin preview is gated behi
 
 Next: managed PostgreSQL migration implementation plan.
 
+## Phase 11 PostgreSQL Migration Plan
+
+Managed PostgreSQL migration planning has been added along with a backend database status endpoint at /admin/database-status. Next: verify deployed database status and complete Phase 11 QA.
+

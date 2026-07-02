@@ -5,6 +5,7 @@ from fastapi import APIRouter
 
 from backend.api.feedback_api import read_feedback_entries
 from backend.api.analytics_api import read_analytics_entries
+from backend.api.database_config import get_database_status
 
 router = APIRouter(tags=["admin"])
 
@@ -74,3 +75,8 @@ async def demo_summary():
             "live_availability": False,
         },
     }
+
+@router.get("/admin/database-status")
+async def database_status():
+    return get_database_status()
+

@@ -71,3 +71,16 @@ Verified:
 
 Next target: managed PostgreSQL migration implementation plan.
 
+## Managed PostgreSQL migration plan
+
+Added managed PostgreSQL migration plan and database status endpoint.
+
+Added:
+
+- app/backend/api/database_config.py
+- GET /admin/database-status
+- scripts/check_phase11_database_status.py
+- docs/PHASE_11_POSTGRES_MIGRATION_PLAN.md
+
+Next target: deployed database status verification and Phase 11 final QA.
+
