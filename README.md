@@ -223,3 +223,9 @@ Next: managed PostgreSQL migration implementation plan.
 
 Managed PostgreSQL migration planning has been added along with a backend database status endpoint at /admin/database-status. Next: verify deployed database status and complete Phase 11 QA.
 
+## Phase 12 Managed PostgreSQL Support Started
+
+Phase 12 has started with hybrid managed PostgreSQL support. Feedback and analytics can use DATABASE_URL when configured, while SQLite remains the fallback for local development.
+
+Next: deploy verification in SQLite fallback mode, then create/set managed PostgreSQL DATABASE_URL on Render.
+

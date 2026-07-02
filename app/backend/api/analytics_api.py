@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from backend.api.demo_store import DEMO_DB, read_analytics_entries, save_analytics_entry
+from backend.api.demo_store import get_store_status, read_analytics_entries, save_analytics_entry
 
 router = APIRouter(tags=["analytics"])
 
@@ -24,7 +24,8 @@ def safe_event_type(value: str) -> str:
 
 @router.get("/analytics/health")
 async def analytics_health():
-    return {"ok": True, "service": "analytics", "status": "ok", "storage": "sqlite", "path": str(DEMO_DB)}
+    store_status = get_store_status()
+    return {"ok": True, "service": "analytics", "status": "ok", "storage": store_status["mode"], "database_url_configured": store_status["database_url_configured"], "path": store_status["sqlite_path"], "runtime_store": store_status["runtime_store"]}
 
 @router.post("/analytics/event")
 async def create_analytics_event(payload: AnalyticsEventPayload):

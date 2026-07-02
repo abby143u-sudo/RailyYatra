@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from backend.api.demo_store import DEMO_DB, read_feedback_entries, save_feedback_entry
+from backend.api.demo_store import get_store_status, read_feedback_entries, save_feedback_entry
 
 router = APIRouter(tags=["feedback"])
 
@@ -24,7 +24,8 @@ def safe_feedback_type(value: str) -> str:
 
 @router.get("/feedback/health")
 async def feedback_health():
-    return {"ok": True, "service": "feedback", "status": "ok", "storage": "sqlite", "path": str(DEMO_DB)}
+    store_status = get_store_status()
+    return {"ok": True, "service": "feedback", "status": "ok", "storage": store_status["mode"], "database_url_configured": store_status["database_url_configured"], "path": store_status["sqlite_path"], "runtime_store": store_status["runtime_store"]}
 
 @router.post("/feedback")
 async def create_feedback(payload: FeedbackPayload):
