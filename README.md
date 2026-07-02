@@ -175,3 +175,9 @@ Completed: feedback capture/export, browser-local analytics, saved demo searches
 
 Next phase: Phase 10 — backend hardening, real feedback API, analytics API, authentication/admin layer and live integration architecture.
 
+## Phase 10
+
+Phase 10 has started: backend hardening, real feedback API, analytics API, admin/internal endpoints, request validation, error envelopes, authentication planning and live integration architecture.
+
+First target: move feedback from browser-local storage to a backend feedback API.
+
