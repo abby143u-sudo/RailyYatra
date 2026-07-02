@@ -161,3 +161,9 @@ Main From/To search uses SafeStationInput. PNBE and NDLS typing should not blank
 
 Next phase: Phase 9 — analytics, user feedback capture, saved searches, and live integration planning.
 
+## Phase 9
+
+Phase 9 has started: product hardening, user feedback capture, demo analytics, saved demo searches and live integration planning.
+
+First Phase 9 feature: public feedback capture panel with browser-local storage.
+
