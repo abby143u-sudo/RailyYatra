@@ -47,6 +47,18 @@ export default function PublicFeedbackPanel() {
     setStatus("Saved feedback cleared.");
   }
 
+  function exportFeedback() {
+    const payload = JSON.stringify(savedFeedback, null, 2);
+
+    if (!savedFeedback.length) {
+      setStatus("No saved feedback to export yet.");
+      return;
+    }
+
+    navigator.clipboard?.writeText(payload);
+    setStatus("Feedback JSON copied to clipboard.");
+  }
+
   return (
     <section className="public-feedback-panel" aria-label="RailYatra feedback capture">
       <div className="public-feedback-panel__intro">
@@ -81,6 +93,7 @@ export default function PublicFeedbackPanel() {
 
         <div className="public-feedback-panel__actions">
           <button type="submit">Save feedback</button>
+          <button type="button" onClick={exportFeedback}>Copy feedback JSON</button>
           <button type="button" onClick={clearFeedback}>Clear saved</button>
         </div>
       </form>

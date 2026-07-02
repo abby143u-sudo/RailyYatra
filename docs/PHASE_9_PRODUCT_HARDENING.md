@@ -52,3 +52,13 @@ Capabilities:
 
 This supports faster public demos and repeated QA testing.
 
+## Feedback export
+
+Added feedback export support.
+
+Capabilities:
+
+- Saved feedback remains browser-local.
+- Demo feedback can be copied as JSON.
+- This supports manual review before adding a real backend feedback database.
+
