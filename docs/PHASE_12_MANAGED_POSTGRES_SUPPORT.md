@@ -43,3 +43,22 @@ Production setup still required:
 
 Important:
 DATABASE_URL must stay in backend environment variables only. Never put it in frontend code.
+
+## SQLite fallback verified
+
+Deployed backend verifies SQLite fallback mode when DATABASE_URL is not configured.
+
+Verified:
+
+- /admin/database-status
+- /feedback/health
+- /analytics/health
+- Phase 12 database mode check
+- SQLite persistence smoke
+- Backend smoke
+- Admin smoke
+- Frontend build
+- Live frontend response
+
+Next step: create managed PostgreSQL and set DATABASE_URL on Render backend.
+
