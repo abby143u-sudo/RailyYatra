@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 from datetime import datetime, timezone
 from urllib.parse import urlparse
+from pathlib import Path
 
 def database_url() -> str:
     return (os.environ.get("DATABASE_URL") or os.environ.get("RAILYATRA_DEMO_DATABASE_URL") or "").strip()
@@ -107,7 +109,14 @@ def verify(url: str) -> dict:
             result["tables"]["admin_audit_logs"]["row_count"] = cursor.fetchone()[0]
     return result
 
+
+def prepare_railway_database() -> None:
+    script = Path(__file__).resolve().parent / "prepare_deploy_database.py"
+    if script.exists():
+        subprocess.run([sys.executable, str(script)], check=True)
+
 def main() -> int:
+    prepare_railway_database()
     url = database_url()
     print("RailYatra Phase 12 PostgreSQL migration")
     if not url:

@@ -239,3 +239,9 @@ Phase 12 is verified: the Render backend now uses managed PostgreSQL through DAT
 
 Next: Phase 13 protected admin auth and audit logs.
 
+## Phase 12.5 Railway Database Health Repair
+
+Added deploy-time railway SQLite preparation so the backend health check can find readable railway tables while PostgreSQL continues to store feedback and analytics persistence.
+
+Next: deploy latest commit and verify /health is healthy.
+
