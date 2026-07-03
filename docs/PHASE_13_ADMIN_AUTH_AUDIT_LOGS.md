@@ -59,3 +59,17 @@ Verified:
 
 Next: configure RAILYATRA_ADMIN_TOKEN and verify protected admin access.
 
+## Protected admin verified
+
+Protected admin access is verified on live Render backend.
+
+Verified:
+
+- Requests without token return 401
+- Requests with X-RailYatra-Admin-Token return 200
+- Admin auth mode is protected_admin_token
+- Audit logs are accessible with token
+- PostgreSQL remains connected
+
+Next: add audit logs table to frontend admin dashboard.
+

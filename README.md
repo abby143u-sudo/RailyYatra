@@ -269,3 +269,9 @@ Phase 13 admin auth and audit logs are verified live. Admin auth status works, a
 
 Next: set RAILYATRA_ADMIN_TOKEN on Render backend and verify protected admin access.
 
+## Protected Admin Access Verified
+
+Protected admin access is now verified on the live Render backend. Admin endpoints reject no-token requests and accept X-RailYatra-Admin-Token. The token lives only in Render backend environment variables.
+
+Next: add audit logs table to the frontend admin dashboard.
+
