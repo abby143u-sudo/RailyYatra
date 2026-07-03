@@ -42,3 +42,20 @@ Verified locally:
 
 Next: deploy latest commit on Render and verify live Phase 13 smoke.
 
+## Live verified
+
+Phase 13 admin auth and audit logs are verified on the live Render backend.
+
+Verified:
+
+- /admin/auth-status
+- /admin/audit-logs
+- Audit log persistence
+- Backend health
+- PostgreSQL mode
+- Admin smoke
+- Backend smoke
+- Frontend build
+
+Next: configure RAILYATRA_ADMIN_TOKEN and verify protected admin access.
+
