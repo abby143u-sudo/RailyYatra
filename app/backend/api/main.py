@@ -315,14 +315,14 @@ def train_detail(train_no: str):
         SELECT
             ts.station_code,
             s.station_name,
-            ts.stop_order,
+            ts.stop_sequence,
             ts.arrival_time,
             ts.departure_time,
             ts.day
         FROM train_stops ts
         LEFT JOIN stations s ON ts.station_code = s.station_code
         WHERE ts.train_no = ?
-        ORDER BY CAST(ts.stop_order AS INTEGER)
+        ORDER BY CAST(ts.stop_sequence AS INTEGER)
         """,
         (train_no,),
     )

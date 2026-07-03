@@ -21,12 +21,12 @@ def find_one_transfer_routes(source, destination, limit=10):
 
     query = f"""
         WITH source_trains AS (
-            SELECT train_no, station_code, stop_order, departure_time, day
+            SELECT train_no, station_code, stop_sequence, departure_time, day
             FROM train_stops
             WHERE station_code = ?
         ),
         destination_trains AS (
-            SELECT train_no, station_code, stop_order, arrival_time, day
+            SELECT train_no, station_code, stop_sequence, arrival_time, day
             FROM train_stops
             WHERE station_code = ?
         )
@@ -52,19 +52,19 @@ def find_one_transfer_routes(source, destination, limit=10):
             d.arrival_time AS destination_arrival,
             d.day AS destination_day,
 
-            CAST(x.stop_order AS INTEGER) - CAST(s.stop_order AS INTEGER) AS first_leg_stops,
-            CAST(d.stop_order AS INTEGER) - CAST(y.stop_order AS INTEGER) AS second_leg_stops
+            CAST(x.stop_sequence AS INTEGER) - CAST(s.stop_sequence AS INTEGER) AS first_leg_stops,
+            CAST(d.stop_sequence AS INTEGER) - CAST(y.stop_sequence AS INTEGER) AS second_leg_stops
         FROM source_trains s
         JOIN train_stops x
             ON s.train_no = x.train_no
-           AND CAST(x.stop_order AS INTEGER) > CAST(s.stop_order AS INTEGER)
+           AND CAST(x.stop_sequence AS INTEGER) > CAST(s.stop_sequence AS INTEGER)
 
         JOIN train_stops y
             ON x.station_code = y.station_code
 
         JOIN destination_trains d
             ON y.train_no = d.train_no
-           AND CAST(d.stop_order AS INTEGER) > CAST(y.stop_order AS INTEGER)
+           AND CAST(d.stop_sequence AS INTEGER) > CAST(y.stop_sequence AS INTEGER)
 
         LEFT JOIN trains t1 ON s.train_no = t1.train_no
         LEFT JOIN trains t2 ON d.train_no = t2.train_no

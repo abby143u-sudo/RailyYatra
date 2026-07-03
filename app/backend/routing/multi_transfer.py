@@ -12,9 +12,9 @@ def load_train_data():
         return _data_cache
 
     stop_rows = fetch_all("""
-        SELECT train_no, station_code, stop_order, arrival_time, departure_time, day
+        SELECT train_no, station_code, stop_sequence, arrival_time, departure_time, day
         FROM train_stops
-        ORDER BY train_no, CAST(stop_order AS INTEGER)
+        ORDER BY train_no, CAST(stop_sequence AS INTEGER)
     """)
 
     train_rows = fetch_all("""
@@ -38,7 +38,7 @@ def load_train_data():
 
         train_routes[train_no].append({
             "station_code": row["station_code"],
-            "stop_order": int(row["stop_order"]),
+            "stop_sequence": int(row["stop_sequence"]),
             "arrival_time": row.get("arrival_time"),
             "departure_time": row.get("departure_time"),
             "day": row.get("day"),
@@ -182,7 +182,7 @@ def find_forward_train_legs(
                 to_station=destination,
                 from_stop=route[start_index],
                 to_stop=destination_stop,
-                stop_count=destination_stop["stop_order"] - route[start_index]["stop_order"] + 1,
+                stop_count=destination_stop["stop_sequence"] - route[start_index]["stop_sequence"] + 1,
                 is_destination=True,
                 transfer_strength=9999,
                 train_info=train_info,
@@ -219,7 +219,7 @@ def find_forward_train_legs(
                 to_station=stop["station_code"],
                 from_stop=route[start_index],
                 to_stop=stop,
-                stop_count=stop["stop_order"] - route[start_index]["stop_order"] + 1,
+                stop_count=stop["stop_sequence"] - route[start_index]["stop_sequence"] + 1,
                 is_destination=False,
                 transfer_strength=candidate["transfer_strength"],
                 train_info=train_info,

@@ -10,13 +10,13 @@ def find_direct_trains(source, destination):
             t.train_name,
             a.departure_time,
             b.arrival_time,
-            CAST(b.stop_order AS INTEGER) - CAST(a.stop_order AS INTEGER) AS stops
+            CAST(b.stop_sequence AS INTEGER) - CAST(a.stop_sequence AS INTEGER) AS stops
         FROM train_stops a
         JOIN train_stops b ON a.train_no = b.train_no
         LEFT JOIN trains t ON a.train_no = t.train_no
         WHERE a.station_code = ?
           AND b.station_code = ?
-          AND CAST(a.stop_order AS INTEGER) < CAST(b.stop_order AS INTEGER)
+          AND CAST(a.stop_sequence AS INTEGER) < CAST(b.stop_sequence AS INTEGER)
           AND b.arrival_time IS NOT NULL
           AND b.arrival_time != 'None'
         """,

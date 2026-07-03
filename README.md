@@ -315,3 +315,7 @@ Added backend CORS middleware for the live Vercel frontend, including OPTIONS pr
 
 Fixed browser CORS blocking for the Vercel frontend and added the missing live-status health endpoint.
 
+## Search CORS Live Status Fix
+
+Fixed the legacy search crash caused by stop_order column mismatch, added live-status health route, and added hard CORS support for the Vercel frontend.
+

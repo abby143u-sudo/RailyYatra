@@ -7,9 +7,9 @@ _graph_cache = None
 
 def build_graph():
     rows = fetch_all("""
-        SELECT train_no, station_code, stop_order, arrival_time, departure_time
+        SELECT train_no, station_code, stop_sequence, arrival_time, departure_time
         FROM train_stops
-        ORDER BY train_no, CAST(stop_order AS INTEGER)
+        ORDER BY train_no, CAST(stop_sequence AS INTEGER)
     """)
 
     graph = nx.DiGraph()
