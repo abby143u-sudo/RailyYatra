@@ -251,3 +251,15 @@ Railway database health is now verified on Render. The backend route engine can 
 
 Next: Phase 13 protected admin auth and admin audit logs.
 
+## Phase 13 Admin Auth and Audit Logs Started
+
+Phase 13 adds admin auth status, optional admin token protection and admin audit log endpoints. Audit logs use PostgreSQL when DATABASE_URL is configured and SQLite fallback locally.
+
+Next: deploy latest commit and verify Phase 13 smoke script.
+
+## Phase 13 Admin API Stabilized
+
+Phase 13 admin API routes were stabilized with explicit imports and clean endpoint definitions. Local admin auth and audit smoke now passes.
+
+Next: deploy latest commit and verify Phase 13 live smoke.
+
