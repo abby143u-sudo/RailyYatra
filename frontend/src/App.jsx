@@ -19,6 +19,7 @@ import PublicDemoAnalyticsPanel from "./components/PublicDemoAnalyticsPanel.jsx"
 import PublicSavedDemoSearchesPanel from "./components/PublicSavedDemoSearchesPanel.jsx";
 import PublicProductionReadinessPanel from "./components/PublicProductionReadinessPanel.jsx";
 import PublicRouteExplanationPanel from "./components/PublicRouteExplanationPanel.jsx";
+import BetaReadinessPanel from "./components/BetaReadinessPanel.jsx";
 
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
@@ -4357,6 +4358,7 @@ function App() {
             <PublicProductionReadinessPanel />
       <PublicDemoAnalyticsPanel />
       <PublicFeedbackPanel />
+      <BetaReadinessPanel />
       <AdminDashboardGate />
       <PublicDemoFooter />
 </main>

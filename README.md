@@ -287,3 +287,9 @@ The protected admin dashboard with audit logs is verified on the live Vercel fro
 
 Next: Phase 15 beta polish.
 
+## Phase 15 Beta Polish Started
+
+Phase 15 adds a public beta readiness panel with health status, persistence status, live status readiness, demo route examples and clear product boundary reminders.
+
+Next: verify the live Vercel beta polish UI.
+

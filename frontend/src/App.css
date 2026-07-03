@@ -5836,3 +5836,121 @@ li {
   background: rgba(79, 70, 229, 0.12);
   color: #3730a3;
 }
+.beta-readiness-panel {
+  width: min(1120px, calc(100% - 32px));
+  margin: 30px auto;
+  padding: 24px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(248,250,252,0.9));
+  box-shadow: 0 20px 70px rgba(15, 23, 42, 0.08);
+}
+
+.beta-readiness-panel__header span {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.beta-readiness-panel__header strong {
+  display: block;
+  margin-top: 10px;
+  color: #0f172a;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.15;
+}
+
+.beta-readiness-panel__header p {
+  max-width: 760px;
+  color: #475569;
+  line-height: 1.65;
+}
+
+.beta-readiness-panel__status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.beta-readiness-panel__status-grid article,
+.beta-readiness-panel__routes article {
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 20px;
+  background: #ffffff;
+}
+
+.beta-readiness-panel__status-grid span,
+.beta-readiness-panel__routes span {
+  display: block;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.beta-readiness-panel__status-grid strong,
+.beta-readiness-panel__routes strong {
+  display: block;
+  margin-top: 8px;
+  color: #0f172a;
+  font-size: 1.05rem;
+}
+
+.beta-readiness-panel__content {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.beta-readiness-panel__content > div {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.beta-readiness-panel__content > div > strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #0f172a;
+  font-size: 1.1rem;
+}
+
+.beta-readiness-panel__routes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.beta-readiness-panel__routes p,
+.beta-readiness-panel__boundary {
+  color: #475569;
+  line-height: 1.6;
+}
+
+.beta-readiness-panel__boundary {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.beta-readiness-panel__boundary li + li {
+  margin-top: 8px;
+}
+
+@media (max-width: 820px) {
+  .beta-readiness-panel__status-grid,
+  .beta-readiness-panel__content,
+  .beta-readiness-panel__routes {
+    grid-template-columns: 1fr;
+  }
+}
