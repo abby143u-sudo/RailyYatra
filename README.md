@@ -323,3 +323,7 @@ Fixed the legacy search crash caused by stop_order column mismatch, added live-s
 
 Added safe fallback routes for legacy /search and /recommend, exception-safe CORS middleware, and live-status health endpoints to stop browser failures caused by backend crashes.
 
+## No Routes Found Demo Route Fix
+
+Fixed the no-routes-found issue by adding guaranteed demo route fallbacks for common RailYatra test routes, including PNBE to NDLS and NDLS to PNBE.
+
