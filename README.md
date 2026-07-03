@@ -245,3 +245,9 @@ Added deploy-time railway SQLite preparation so the backend health check can fin
 
 Next: deploy latest commit and verify /health is healthy.
 
+## Phase 12.5 Railway Health Verified
+
+Railway database health is now verified on Render. The backend route engine can read railway SQLite tables, and PostgreSQL remains connected for feedback and analytics.
+
+Next: Phase 13 protected admin auth and admin audit logs.
+
