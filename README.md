@@ -311,3 +311,7 @@ Production frontend now always uses the Render backend URL and cannot accidental
 
 Added backend CORS middleware for the live Vercel frontend, including OPTIONS preflight and X-RailYatra-Admin-Token support.
 
+## CORS and Live Status Route Fix
+
+Fixed browser CORS blocking for the Vercel frontend and added the missing live-status health endpoint.
+

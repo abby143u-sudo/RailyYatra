@@ -1,3 +1,4 @@
+from backend.api.live_status_api import router as live_status_router
 from backend.api.cors_public_middleware import railyatra_cors_middleware
 from backend.staging.route_engine import search_staging_routes as phase3_search_staging_routes
 from backend.services.official_fare_service import upsert_official_fare
@@ -803,3 +804,22 @@ register_security_middleware(app)
 from backend.api.error_handlers import register_error_handlers
 register_error_handlers(app)
 app.middleware("http")(railyatra_cors_middleware)
+
+
+
+# RailYatra hard CORS for Vercel frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://raily-yatra.vercel.app",
+        "https://rail-yatra.vercel.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_origin_regex=r"https://.*\\.vercel\\.app",
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(live_status_router)
