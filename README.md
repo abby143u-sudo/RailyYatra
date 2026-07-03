@@ -299,3 +299,7 @@ Phase 15 beta polish is verified live on Vercel. The public app now shows beta r
 
 Next: public beta checklist and final demo script.
 
+## Live Frontend Backend Connection Fix
+
+Fixed live Vercel frontend backend connection by removing hardcoded local backend URLs from App.jsx and ensuring production points to the Render backend.
+

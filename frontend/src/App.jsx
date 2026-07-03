@@ -514,7 +514,7 @@ function App() {
       setResult(data);
       addRecentSearch(from, to);
     } catch {
-      setError("Backend not connected. Start FastAPI on port 8000.");
+      setError("Backend connection issue. Render backend may be waking up. Please retry in a few seconds.");
     } finally {
       setLoading(false);
     }
@@ -530,13 +530,13 @@ function App() {
     setFareAdminMessage("");
 
     try {
-      const statsResponse = await fetch("http://127.0.0.1:8000/fares/stats");
+      const statsResponse = await fetch("https://railyyatra-backend.onrender.com/fares/stats");
       const statsData = await statsResponse.json();
 
-      const filesResponse = await fetch("http://127.0.0.1:8000/fares/import/files");
+      const filesResponse = await fetch("https://railyyatra-backend.onrender.com/fares/import/files");
       const filesData = await filesResponse.json();
 
-      const faresResponse = await fetch("http://127.0.0.1:8000/fares?limit=20");
+      const faresResponse = await fetch("https://railyyatra-backend.onrender.com/fares?limit=20");
       const faresData = await faresResponse.json();
 
       setFareStats(statsData);
@@ -559,7 +559,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/fares/import?csv_file=${encodeURIComponent(fileName)}`,
+        `https://railyyatra-backend.onrender.com/fares/import?csv_file=${encodeURIComponent(fileName)}`,
         { method: "POST" }
       );
 
@@ -628,7 +628,7 @@ function App() {
       });
 
       const response = await fetch(
-        `http://127.0.0.1:8000/fare/manual?${params.toString()}`,
+        `https://railyyatra-backend.onrender.com/fare/manual?${params.toString()}`,
         { method: "POST" }
       );
 
@@ -684,7 +684,7 @@ function App() {
       });
 
       const response = await fetch(
-        `http://127.0.0.1:8000/fare/lookup?${params.toString()}`
+        `https://railyyatra-backend.onrender.com/fare/lookup?${params.toString()}`
       );
 
       const data = await response.json();
