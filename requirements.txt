@@ -1,7 +1,7 @@
-psycopg2-binary
 fastapi
 uvicorn[standard]
 pydantic
+psycopg2-binary
 networkx
 python-multipart
 requests
