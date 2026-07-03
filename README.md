@@ -307,3 +307,7 @@ Fixed live Vercel frontend backend connection by removing hardcoded local backen
 
 Production frontend now always uses the Render backend URL and cannot accidentally use a localhost backend API base in Vercel production.
 
+## Vercel CORS Hard Fix
+
+Added backend CORS middleware for the live Vercel frontend, including OPTIONS preflight and X-RailYatra-Admin-Token support.
+

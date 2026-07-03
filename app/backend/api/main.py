@@ -1,3 +1,4 @@
+from backend.api.cors_public_middleware import railyatra_cors_middleware
 from backend.staging.route_engine import search_staging_routes as phase3_search_staging_routes
 from backend.services.official_fare_service import upsert_official_fare
 from backend.services.fare_source_adapter import (
@@ -801,4 +802,4 @@ register_security_middleware(app)
 
 from backend.api.error_handlers import register_error_handlers
 register_error_handlers(app)
-
+app.middleware("http")(railyatra_cors_middleware)
