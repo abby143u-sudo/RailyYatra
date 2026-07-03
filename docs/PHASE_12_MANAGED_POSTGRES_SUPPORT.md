@@ -76,3 +76,21 @@ The migration script creates feedback, analytics_events and admin_audit_logs tab
 
 Next step: create managed PostgreSQL on Render and set DATABASE_URL on the backend service.
 
+## PostgreSQL live verified
+
+Managed PostgreSQL is live on Render backend.
+
+Verified:
+
+- DATABASE_URL configured
+- /admin/database-status reports postgresql mode
+- Feedback write test
+- Analytics write test
+- Admin demo summary read
+- PostgreSQL readiness script
+- Backend smoke
+- Admin smoke
+- Frontend build
+
+Next phase: protected admin auth and admin audit logs.
+
