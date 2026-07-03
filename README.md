@@ -293,3 +293,9 @@ Phase 15 adds a public beta readiness panel with health status, persistence stat
 
 Next: verify the live Vercel beta polish UI.
 
+## Phase 15 Beta Polish Live Verified
+
+Phase 15 beta polish is verified live on Vercel. The public app now shows beta readiness, demo routes and clear product boundary messaging.
+
+Next: public beta checklist and final demo script.
+

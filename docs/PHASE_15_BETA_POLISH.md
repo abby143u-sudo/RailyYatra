@@ -24,3 +24,20 @@ Public boundary shown clearly:
 Next:
 
 Deploy through Vercel and verify live beta polish UI.
+
+## Live verified
+
+Phase 15 beta polish is verified on the live Vercel frontend.
+
+Verified:
+
+- Beta readiness panel
+- Demo route examples
+- Public boundary reminders
+- Backend health status
+- Feedback persistence status
+- Live frontend response
+- Local frontend build
+
+Next: public beta checklist and final demo script.
+
