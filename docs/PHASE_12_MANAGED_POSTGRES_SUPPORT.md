@@ -62,3 +62,17 @@ Verified:
 
 Next step: create managed PostgreSQL and set DATABASE_URL on Render backend.
 
+## PostgreSQL migration script
+
+Added PostgreSQL migration and readiness scripts.
+
+Files:
+
+- scripts/migrate_phase12_postgres_demo_store.py
+- scripts/check_phase12_postgres_readiness.py
+- docs/PHASE_12_POSTGRES_SETUP.md
+
+The migration script creates feedback, analytics_events and admin_audit_logs tables when DATABASE_URL is configured. If DATABASE_URL is not configured, it exits safely and keeps SQLite fallback mode active.
+
+Next step: create managed PostgreSQL on Render and set DATABASE_URL on the backend service.
+
