@@ -331,3 +331,7 @@ Fixed the no-routes-found issue by adding guaranteed demo route fallbacks for co
 
 Fixed frontend result display by adding compatibility fields to legacy /search and /recommend responses, including route_exists, best_direct, duration and zero-transfer direct route fields.
 
+## Train Number UI Crash Fix
+
+Fixed frontend crash caused by missing train_no fields by returning frontend-compatible train objects and safe train number fields in route responses.
+

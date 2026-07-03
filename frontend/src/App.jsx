@@ -606,7 +606,7 @@ function App() {
     event.preventDefault();
 
     if (
-      !manualFare.train_no ||
+      !manualFare?.train_no ||
       !manualFare.source ||
       !manualFare.destination ||
       !manualFare.fare
@@ -620,7 +620,7 @@ function App() {
 
     try {
       const params = new URLSearchParams({
-        train_no: manualFare.train_no,
+        train_no: manualFare?.train_no,
         source: manualFare.source,
         destination: manualFare.destination,
         class_code: manualFare.class_code || "SL",
@@ -666,7 +666,7 @@ function App() {
   async function checkFareCoverage(event) {
     event.preventDefault();
 
-    if (!fareTest.train_no || !fareTest.source || !fareTest.destination) {
+    if (!fareTest?.train_no || !fareTest.source || !fareTest.destination) {
       setFareAdminMessage("Please fill train no, source and destination for fare check.");
       return;
     }
@@ -677,7 +677,7 @@ function App() {
 
     try {
       const params = new URLSearchParams({
-        train_no: fareTest.train_no,
+        train_no: fareTest?.train_no,
         source: fareTest.source,
         destination: fareTest.destination,
         class_code: fareTest.class_code || "SL",
@@ -868,7 +868,7 @@ function App() {
                   <label>
                     <span>Train no</span>
                     <input
-                      value={manualFare.train_no}
+                      value={manualFare?.train_no}
                       onChange={(e) =>
                         updateManualFareField("train_no", e.target.value.toUpperCase())
                       }
@@ -954,7 +954,7 @@ function App() {
                   <label>
                     <span>Train no</span>
                     <input
-                      value={fareTest.train_no}
+                      value={fareTest?.train_no}
                       onChange={(e) =>
                         updateFareTestField("train_no", e.target.value.toUpperCase())
                       }
@@ -1017,7 +1017,7 @@ function App() {
 
                   <span>
                     {fareTestResult.found
-                      ? `${fareTestResult.train_no} · ${fareTestResult.source} → ${fareTestResult.destination} · ${fareTestResult.class_code} · ${fareTestResult.provider}`
+                      ? `${fareTestResult?.train_no} · ${fareTestResult.source} → ${fareTestResult.destination} · ${fareTestResult.class_code} · ${fareTestResult.provider}`
                       : fareTestResult.message}
                   </span>
                 </div>
@@ -1042,7 +1042,7 @@ function App() {
 
                   {fareRows.map((row) => (
                     <div className="fare-table-row" key={row.id}>
-                      <span>{row.train_no}</span>
+                      <span>{row?.train_no}</span>
                       <span>{row.source} → {row.destination}</span>
                       <span>{row.class_code}</span>
                       <strong>₹{row.fare}</strong>
@@ -1159,7 +1159,7 @@ function App() {
     }
 
     if (item.type === "direct") {
-      return `${data.train_no} ${data.train_name}`;
+      return `${data?.train_no} ${data.train_name}`;
     }
 
     if (item.type === "one_transfer") {
@@ -1376,7 +1376,7 @@ function App() {
               <li key={index}>
                 <strong>{segment.from} → {segment.to}</strong>
                 <span>
-                  {segment.train_no} · ₹{segment.estimated_fare}
+                  {segment?.train_no} · ₹{segment.estimated_fare}
                 </span>
               </li>
             ))}
@@ -1535,7 +1535,7 @@ function App() {
     }
 
     if (item.type === "direct") {
-      lines.push(`Train: ${data.train_no} - ${data.train_name}`);
+      lines.push(`Train: ${data?.train_no} - ${data.train_name}`);
       lines.push(`Departure: ${safeValue(data.departure)}`);
       lines.push(`Arrival: ${safeValue(data.arrival)}`);
     }
@@ -1552,7 +1552,7 @@ function App() {
 
       data.train_legs.forEach((leg, index) => {
         lines.push(
-          `${index + 1}. ${leg.from} → ${leg.to} by ${leg.train_no} ${leg.train_name || ""}`
+          `${index + 1}. ${leg.from} → ${leg.to} by ${(leg?.train_no || leg?.train_number)} ${leg.train_name || ""}`
         );
       });
     }
@@ -1601,7 +1601,7 @@ function App() {
     const data = item.data || {};
 
     if (item.type === "direct") {
-      return `direct-${source}-${destination}-${data.train_no}`;
+      return `direct-${source}-${destination}-${data?.train_no}`;
     }
 
     if (item.type === "one_transfer") {
@@ -1610,7 +1610,7 @@ function App() {
 
     if (item.type === "multi_transfer") {
       const preview = data.route_preview?.join("-") || data.summary || "";
-      const legs = data.train_legs?.map((leg) => leg.train_no).join("-") || "";
+      const legs = data.train_legs?.map((leg) => (leg?.train_no || leg?.train_number)).join("-") || "";
       return `smart-${source}-${destination}-${preview}-${legs}`;
     }
 
@@ -1703,7 +1703,7 @@ function App() {
     const data = item.data || {};
 
     if (item.type === "direct") {
-      return `compare-direct-${source}-${destination}-${data.train_no}`;
+      return `compare-direct-${source}-${destination}-${data?.train_no}`;
     }
 
     if (item.type === "one_transfer") {
@@ -1712,7 +1712,7 @@ function App() {
 
     if (item.type === "multi_transfer") {
       const preview = data.route_preview?.join("-") || data.summary || "";
-      const legs = data.train_legs?.map((leg) => leg.train_no).join("-") || "";
+      const legs = data.train_legs?.map((leg) => (leg?.train_no || leg?.train_number)).join("-") || "";
       return `compare-smart-${source}-${destination}-${preview}-${legs}`;
     }
 
@@ -1871,8 +1871,8 @@ function App() {
     const data = item.data || {};
 
     if (item.type === "direct") {
-      return data.train_no
-        ? `${data.train_no}${data.train_name ? " - " + data.train_name : ""}`
+      return data?.train_no
+        ? `${data?.train_no}${data.train_name ? " - " + data.train_name : ""}`
         : "Direct train";
     }
 
@@ -1881,7 +1881,7 @@ function App() {
     }
 
     if (item.type === "multi_transfer") {
-      const trains = data.train_legs?.map((leg) => leg.train_no).filter(Boolean);
+      const trains = data.train_legs?.map((leg) => (leg?.train_no || leg?.train_number)).filter(Boolean);
 
       if (trains?.length) {
         return trains.join(" + ");
@@ -2030,7 +2030,7 @@ function App() {
     const data = item.data || {};
 
     if (item.type === "direct") {
-      return `best-direct-${source}-${destination}-${data.train_no}`;
+      return `best-direct-${source}-${destination}-${data?.train_no}`;
     }
 
     if (item.type === "one_transfer") {
@@ -2039,7 +2039,7 @@ function App() {
 
     if (item.type === "multi_transfer") {
       const preview = data.route_preview?.join("-") || data.summary || "";
-      const legs = data.train_legs?.map((leg) => leg.train_no).join("-") || "";
+      const legs = data.train_legs?.map((leg) => (leg?.train_no || leg?.train_number)).join("-") || "";
       return `best-smart-${source}-${destination}-${preview}-${legs}`;
     }
 
@@ -2094,7 +2094,7 @@ function App() {
       steps.push({
         type: "start",
         title: source,
-        meta: `Board ${data.train_no || "train"}${data.train_name ? " - " + data.train_name : ""}`,
+        meta: `Board ${data?.train_no || "train"}${data.train_name ? " - " + data.train_name : ""}`,
         time: formatTimelineTime(data.departure || data.source_departure),
       });
 
@@ -2159,7 +2159,7 @@ function App() {
           steps.push({
             type: index === 0 ? "start" : "transfer",
             title: fromStation,
-            meta: `Board ${leg.train_no || leg.train || "train"}`,
+            meta: `Board ${(leg?.train_no || leg?.train_number) || leg.train || "train"}`,
             time: formatTimelineTime(leg.start_time || leg.departure),
           });
 
@@ -3532,7 +3532,7 @@ function App() {
       }
 
       if (item.type === "direct") {
-        lines.push(`Train: ${data.train_no} - ${data.train_name}`);
+        lines.push(`Train: ${data?.train_no} - ${data.train_name}`);
         lines.push(`Departure: ${safeValue(data.departure)}`);
         lines.push(`Arrival: ${safeValue(data.arrival)}`);
       }
@@ -3549,7 +3549,7 @@ function App() {
 
         data.train_legs.forEach((leg, legIndex) => {
           lines.push(
-            `${legIndex + 1}. ${leg.from} → ${leg.to} by ${leg.train_no} ${leg.train_name || ""}`
+            `${legIndex + 1}. ${leg.from} → ${leg.to} by ${(leg?.train_no || leg?.train_number)} ${leg.train_name || ""}`
           );
         });
       }
@@ -3701,7 +3701,7 @@ function App() {
 
               {item.type === "direct" && (
                 <div className="print-route-note">
-                  Train: {data.train_no} - {data.train_name} · Dep{" "}
+                  Train: {data?.train_no} - {data.train_name} · Dep{" "}
                   {safeValue(data.departure)} · Arr {safeValue(data.arrival)}
                 </div>
               )}
@@ -3717,7 +3717,7 @@ function App() {
                 <div className="print-route-note">
                   {data.train_legs.map((leg, legIndex) => (
                     <div key={legIndex}>
-                      {legIndex + 1}. {leg.from} → {leg.to} by {leg.train_no}{" "}
+                      {legIndex + 1}. {leg.from} → {leg.to} by {(leg?.train_no || leg?.train_number)}{" "}
                       {leg.train_name || ""}
                     </div>
                   ))}
@@ -3746,7 +3746,7 @@ function App() {
           <strong>Score {item.score}</strong>
         </div>
 
-        <h3>{train.train_no} — {train.train_name}</h3>
+        <h3>{(train?.train_no || train?.train_number)} — {train.train_name}</h3>
 
         <div className="journey-meta">
           <span>Dep {safeValue(train.departure)}</span>
@@ -3789,7 +3789,7 @@ function App() {
 
             <div className="detail-grid">
               <span>Train no</span>
-              <strong>{train.train_no}</strong>
+              <strong>{(train?.train_no || train?.train_number)}</strong>
 
               <span>Train name</span>
               <strong>{train.train_name}</strong>
@@ -3951,7 +3951,7 @@ function App() {
             </div>
 
             <div>
-              <strong>{firstLeg.train_no}</strong>
+              <strong>{firstLeg?.train_no}</strong>
               <span>
                 {firstLeg.train_name || "Train"} · {firstLeg.stop_count} stops
               </span>
@@ -3989,7 +3989,7 @@ function App() {
             <ul>
               {route.train_legs?.map((leg, i) => (
                 <li key={i}>
-                  ✓ {leg.from} → {leg.to} by {leg.train_no} ·{" "}
+                  ✓ {leg.from} → {leg.to} by {(leg?.train_no || leg?.train_number)} ·{" "}
                   {leg.train_name || "Train"} · {safeValue(leg.start_time)} →{" "}
                   {safeValue(leg.end_time)} · {safeValue(leg.duration_hours)} hrs
                 </li>
@@ -4200,7 +4200,7 @@ function App() {
                 <span>Best direct</span>
                 <strong>
                   {bestDirect
-                    ? `${bestDirect.data.train_no} ${bestDirect.data.train_name}`
+                    ? `${bestDirect.data?.train_no} ${bestDirect.data.train_name}`
                     : "Not available"}
                 </strong>
               </div>
