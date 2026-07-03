@@ -339,3 +339,7 @@ Fixed frontend crash caused by missing train_no fields by returning frontend-com
 
 Fixed the route-search blank page by returning frontend-safe train_no fields and adding an AppErrorBoundary so the UI does not fully blank on runtime errors.
 
+## Frontend Train Name Crash Fix
+
+Fixed the route search UI recovery error by normalizing route payloads and guarding train_name reads before rendering.
+
