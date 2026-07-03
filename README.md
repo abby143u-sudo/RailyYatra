@@ -319,3 +319,7 @@ Fixed browser CORS blocking for the Vercel frontend and added the missing live-s
 
 Fixed the legacy search crash caused by stop_order column mismatch, added live-status health route, and added hard CORS support for the Vercel frontend.
 
+## Legacy Search CORS Live Status Hard Fix
+
+Added safe fallback routes for legacy /search and /recommend, exception-safe CORS middleware, and live-status health endpoints to stop browser failures caused by backend crashes.
+

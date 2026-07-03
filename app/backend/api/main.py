@@ -1,3 +1,4 @@
+from backend.api.legacy_search_fallback import router as legacy_search_fallback_router
 from backend.api.live_status_api import router as live_status_router
 from backend.api.cors_public_middleware import railyatra_cors_middleware
 from backend.staging.route_engine import search_staging_routes as phase3_search_staging_routes
@@ -823,3 +824,14 @@ app.add_middleware(
 )
 
 app.include_router(live_status_router)
+
+
+# Replace unstable legacy /search and /recommend with safe fallback routes
+app.router.routes = [
+    route for route in app.router.routes
+    if not (
+        getattr(route, "path", "") in {"/search", "/recommend"}
+        and "GET" in getattr(route, "methods", set())
+    )
+]
+app.include_router(legacy_search_fallback_router)
