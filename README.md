@@ -275,3 +275,9 @@ Protected admin access is now verified on the live Render backend. Admin endpoin
 
 Next: add audit logs table to the frontend admin dashboard.
 
+## Frontend Admin Audit Logs Added
+
+The protected admin dashboard now includes audit logs, admin auth status, feedback and analytics in one token-gated view.
+
+Next: verify the live Vercel admin preview with the admin token.
+
