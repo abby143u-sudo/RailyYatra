@@ -303,3 +303,7 @@ Next: public beta checklist and final demo script.
 
 Fixed live Vercel frontend backend connection by removing hardcoded local backend URLs from App.jsx and ensuring production points to the Render backend.
 
+## Vercel Backend API Base Hard Fix
+
+Production frontend now always uses the Render backend URL and cannot accidentally use a localhost backend API base in Vercel production.
+
