@@ -335,3 +335,7 @@ Fixed frontend result display by adding compatibility fields to legacy /search a
 
 Fixed frontend crash caused by missing train_no fields by returning frontend-compatible train objects and safe train number fields in route responses.
 
+## Blank Page Route Search Fix
+
+Fixed the route-search blank page by returning frontend-safe train_no fields and adding an AppErrorBoundary so the UI does not fully blank on runtime errors.
+
