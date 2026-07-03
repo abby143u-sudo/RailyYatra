@@ -327,3 +327,7 @@ Added safe fallback routes for legacy /search and /recommend, exception-safe COR
 
 Fixed the no-routes-found issue by adding guaranteed demo route fallbacks for common RailYatra test routes, including PNBE to NDLS and NDLS to PNBE.
 
+## Route UI Compatibility Fix
+
+Fixed frontend result display by adding compatibility fields to legacy /search and /recommend responses, including route_exists, best_direct, duration and zero-transfer direct route fields.
+

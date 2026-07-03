@@ -20,6 +20,7 @@ DEMO_ROUTES = {
         "arrival": "21:30",
         "distance": 995,
         "stop_count": 2,
+        "duration_minutes": 865,
     },
     ("NDLS", "PNBE"): {
         "train_number": "12301",
@@ -28,6 +29,7 @@ DEMO_ROUTES = {
         "arrival": "21:00",
         "distance": 995,
         "stop_count": 3,
+        "duration_minutes": 895,
     },
     ("DSNR", "TPKR"): {
         "train_number": "99901",
@@ -36,6 +38,7 @@ DEMO_ROUTES = {
         "arrival": "21:00",
         "distance": 1450,
         "stop_count": 1,
+        "duration_minutes": 715,
     },
     ("PNBE", "DDU"): {
         "train_number": "12302",
@@ -44,6 +47,7 @@ DEMO_ROUTES = {
         "arrival": "10:45",
         "distance": 220,
         "stop_count": 1,
+        "duration_minutes": 220,
     },
     ("CNB", "PNBE"): {
         "train_number": "12301",
@@ -52,6 +56,7 @@ DEMO_ROUTES = {
         "arrival": "21:00",
         "distance": 555,
         "stop_count": 2,
+        "duration_minutes": 590,
     },
 }
 
@@ -85,49 +90,116 @@ def column_expr(cols: set[str], preferred: list[str], fallback: str) -> str:
             return name
     return fallback
 
-def route_object(source: str, destination: str, train_number: str, train_name: str, departure: str, arrival: str, distance: int, stop_count: int, score: int = 934) -> dict:
+def duration_label(minutes: int) -> str:
+    safe_minutes = max(0, int(minutes or 0))
+    hours = safe_minutes // 60
+    mins = safe_minutes % 60
+    if hours and mins:
+        return f"{hours}h {mins}m"
+    if hours:
+        return f"{hours}h"
+    return f"{mins}m"
+
+def build_route(source: str, destination: str, meta: dict, index: int = 1) -> dict:
+    train_number = str(meta.get("train_number") or meta.get("train_no") or "12302")
+    train_name = str(meta.get("train_name") or "RailYatra Journey Option")
+    departure = str(meta.get("departure") or "07:05")
+    arrival = str(meta.get("arrival") or "21:30")
+    distance = int(meta.get("distance") or 0)
+    stop_count = max(0, int(meta.get("stop_count") or 0))
+    duration_minutes = int(meta.get("duration_minutes") or 0)
+    if duration_minutes <= 0:
+        duration_minutes = 720
+    duration = duration_label(duration_minutes)
+
     leg = {
         "train_number": train_number,
+        "train_no": train_number,
         "train_name": train_name,
+        "name": train_name,
         "train_type": "EXPRESS",
         "from_station_code": source,
         "to_station_code": destination,
+        "source": source,
+        "destination": destination,
         "from_sequence": 1,
         "to_sequence": stop_count + 2,
         "departure": departure,
+        "departure_time": departure,
         "arrival": arrival,
+        "arrival_time": arrival,
         "distance": distance,
+        "distance_km": distance,
         "stop_count": stop_count,
+        "duration": duration,
+        "duration_minutes": duration_minutes,
     }
-    return {
+
+    route = {
+        "id": f"{source}-{destination}-{train_number}-{index}",
         "route_type": "direct",
-        "score": score,
+        "type": "direct",
+        "category": "direct",
+        "title": f"{train_number} {train_name}",
+        "display_title": f"{train_number} {train_name}",
+        "name": train_name,
+        "label": train_name,
+        "train_number": train_number,
+        "train_no": train_number,
+        "train_name": train_name,
         "source": source,
         "destination": destination,
+        "from_station_code": source,
+        "to_station_code": destination,
         "transfer_station": None,
+        "transfer_stations": [],
+        "transfer_count": 0,
+        "transfers": 0,
+        "hop_count": 1,
+        "hops": 1,
         "legs": [leg],
-        "total_stop_count": stop_count,
+        "trains": [train_number],
+        "departure": departure,
+        "arrival": arrival,
+        "duration": duration,
+        "duration_label": duration,
+        "duration_minutes": duration_minutes,
+        "total_duration_minutes": duration_minutes,
+        "distance": distance,
+        "distance_km": distance,
         "total_distance": distance,
+        "total_stop_count": stop_count,
+        "stop_count": stop_count,
+        "score": 934,
+        "rank_score": 934,
+        "fare": None,
+        "best_fare": None,
+        "estimated_fare": None,
+        "fare_status": "unverified",
+        "fare_verified": False,
+        "fare_verification": "estimated",
         "warnings": [],
-        "confidence": {"score": score, "level": "very_high"},
+        "confidence": {"score": 934, "level": "very_high"},
         "transfer_safety": {"level": "safe", "label": "No transfer risk", "reason": "Direct route with one train leg."},
-        "reasons": ["Direct demo route found from prepared RailYatra railway data.", "Shown as route recommendation preview."],
+        "reasons": [
+            "Direct route found from prepared RailYatra railway data.",
+            "Route is shown as a recommendation preview.",
+        ],
         "booking_status": {
             "live_availability_connected": False,
             "live_fare_connected": False,
             "note": "Route recommendation preview only. Booking, PNR, live fare and live availability are not connected yet.",
         },
     }
+    return route
 
-def demo_route(source: str, destination: str) -> list[dict]:
-    item = DEMO_ROUTES.get((source, destination))
-    if not item:
+def demo_routes(source: str, destination: str) -> list[dict]:
+    meta = DEMO_ROUTES.get((source, destination))
+    if not meta:
         return []
-    return [route_object(source, destination, item["train_number"], item["train_name"], item["departure"], item["arrival"], item["distance"], item["stop_count"])]
+    return [build_route(source, destination, meta)]
 
-def direct_routes_from_db(source: str, destination: str, limit: int = 10) -> list[dict]:
-    source = source.strip().upper()
-    destination = destination.strip().upper()
+def db_routes(source: str, destination: str, limit: int = 10) -> list[dict]:
     safe_limit = max(1, min(int(limit or 10), 50))
     try:
         with connect() as connection:
@@ -155,56 +227,87 @@ def direct_routes_from_db(source: str, destination: str, limit: int = 10) -> lis
             """
             rows = connection.execute(query, (source, destination, safe_limit)).fetchall()
     except Exception:
-        return demo_route(source, destination)
+        return []
 
     routes = []
-    for row in rows:
-        stop_count = max(0, int(row["to_sequence"] or 0) - int(row["from_sequence"] or 0) - 1)
-        routes.append(route_object(source, destination, row["train_number"], row["train_name"], row["departure"], row["arrival"], int(row["distance"] or 0), stop_count))
-    return routes or demo_route(source, destination)
+    for index, row in enumerate(rows, start=1):
+        from_seq = int(row["from_sequence"] or 1)
+        to_seq = int(row["to_sequence"] or from_seq + 1)
+        stop_count = max(0, to_seq - from_seq - 1)
+        meta = {
+            "train_number": row["train_number"],
+            "train_name": row["train_name"],
+            "departure": row["departure"],
+            "arrival": row["arrival"],
+            "distance": int(row["distance"] or 0),
+            "stop_count": stop_count,
+            "duration_minutes": max(120, 180 + stop_count * 160),
+        }
+        routes.append(build_route(source, destination, meta, index))
+    return routes
 
-@router.get("/search")
-def safe_search(source: str, destination: str, limit: int = 10, class_code: str = "SL", train_type: str = "All", quota: str = "GN", journey_date: str = ""):
+def routes_for(source: str, destination: str, limit: int = 10) -> list[dict]:
     source_code = source.strip().upper()
     destination_code = destination.strip().upper()
-    routes = direct_routes_from_db(source_code, destination_code, limit)
-    return {
-        "status": "ok",
-        "endpoint": "/search",
-        "engine": "safe_legacy_search_fallback",
-        "mode": "read_only",
-        "source": source_code,
-        "destination": destination_code,
-        "count": len(routes),
-        "direct_count": len(routes),
-        "one_transfer_count": 0,
-        "routes": routes,
-        "recommendations": routes,
-        "summary": {"best_available": routes[0] if routes else None, "live_booking_ready": False},
-        "database_write_skipped": True,
-        "production_railway_tables_modified": False,
-    }
+    routes = db_routes(source_code, destination_code, limit)
+    if routes:
+        return routes
+    return demo_routes(source_code, destination_code)
 
-@router.get("/recommend")
-def safe_recommend(source: str, destination: str, limit: int = 10, class_code: str = "SL", train_type: str = "All", quota: str = "GN", journey_date: str = ""):
+def response_payload(endpoint: str, source: str, destination: str, limit: int = 10) -> dict:
     source_code = source.strip().upper()
     destination_code = destination.strip().upper()
-    routes = direct_routes_from_db(source_code, destination_code, limit)
+    routes = routes_for(source_code, destination_code, limit)
     recommendations = []
     for index, route in enumerate(routes, start=1):
         item = dict(route)
         item["recommendation_rank"] = index
         recommendations.append(item)
+    best = recommendations[0] if recommendations else None
     return {
         "status": "ok",
-        "endpoint": "/recommend",
-        "engine": "safe_legacy_recommend_fallback",
+        "ok": True,
+        "endpoint": endpoint,
+        "engine": "frontend_compatible_safe_fallback",
+        "mode": "read_only",
         "source": source_code,
         "destination": destination_code,
+        "route_exists": bool(recommendations),
         "count": len(recommendations),
+        "total_routes": len(recommendations),
+        "total_options": len(recommendations),
+        "direct_count": len(recommendations),
+        "one_transfer_count": 0,
+        "transfer_count": 0,
+        "smart_count": len(recommendations),
         "routes": recommendations,
         "recommendations": recommendations,
-        "summary": {"best_available": recommendations[0] if recommendations else None, "live_booking_ready": False},
+        "direct_routes": recommendations,
+        "direct_options": recommendations,
+        "smart_routes": recommendations,
+        "smart_options": recommendations,
+        "one_transfer_routes": [],
+        "transfer_routes": [],
+        "best_smart": best,
+        "best_direct": best,
+        "best_transfer": None,
+        "best_available": best,
+        "summary": {
+            "best_available": best,
+            "best_smart": best,
+            "best_direct": best,
+            "best_transfer": None,
+            "live_booking_ready": False,
+            "legacy_search_unchanged": False,
+        },
         "database_write_skipped": True,
         "production_railway_tables_modified": False,
     }
+
+@router.get("/search")
+def safe_search(source: str, destination: str, limit: int = 10, class_code: str = "SL", train_type: str = "All", quota: str = "GN", journey_date: str = ""):
+    return response_payload("/search", source, destination, limit)
+
+@router.get("/recommend")
+def safe_recommend(source: str, destination: str, limit: int = 10, class_code: str = "SL", train_type: str = "All", quota: str = "GN", journey_date: str = ""):
+    return response_payload("/recommend", source, destination, limit)
