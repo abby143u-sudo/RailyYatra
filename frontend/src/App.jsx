@@ -3737,7 +3737,7 @@ function App() {
   }
 
   function renderDirectCard(item, index) {
-    const train = item.data;
+    const train = item.data || item || {};
 
     const cardId = `direct-${index}`;
 
@@ -3815,7 +3815,7 @@ function App() {
   }
 
   function renderTransferCard(item, index) {
-    const route = item.data;
+    const route = item.data || item || {};
 
     const cardId = `transfer-${index}`;
 
@@ -3908,7 +3908,7 @@ function App() {
   }
 
   function renderSmartRouteCard(item, index) {
-    const route = item.data;
+    const route = item.data || item || {};
     const firstLeg = route.train_legs?.[0];
 
     const cardId = `smart-${index}`;
