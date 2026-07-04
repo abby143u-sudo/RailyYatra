@@ -112,7 +112,7 @@ def main() -> int:
             if flags.get(key) is not False:
                 failures.append(f"{key} not false")
 
-    route = f"{BACKEND_URL}/recommend-v2?source=LTT&destination=VVH&direct_limit=3&transfer_limit=1"
+    route = f"{BACKEND_URL}/recommend-v2?source=DSNR&destination=TPKR&direct_limit=3&transfer_limit=1"
     print(f"Checking backend JSON: {route}")
     status, payload, body = fetch_json(route)
     if status != 200 or not isinstance(payload, dict):
