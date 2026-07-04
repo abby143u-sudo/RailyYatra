@@ -1554,7 +1554,7 @@ function App() {
 
       data.train_legs.forEach((leg, index) => {
         lines.push(
-          `${index + 1}. ${leg.from} → ${leg.to} by ${(leg?.train_no || leg?.train_number)} ${(leg?.train_name || leg?.name || "RailYatra Journey Option") || ""}`
+          `${index + 1}. ${leg?.from} → ${leg?.to} by ${(leg?.train_no || leg?.train_number)} ${(leg?.train_name || leg?.name || "RailYatra Journey Option") || ""}`
         );
       });
     }
@@ -2143,26 +2143,26 @@ function App() {
       if (legs.length) {
         legs.forEach((leg, index) => {
           const fromStation =
-            leg.from ||
-            leg.source ||
-            leg.start_station ||
-            leg.start ||
+            leg?.from ||
+            leg?.source ||
+            leg?.start_station ||
+            leg?.start ||
             data.route_preview?.[index] ||
             `Stop ${index + 1}`;
 
           const toStation =
-            leg.to ||
-            leg.destination ||
-            leg.end_station ||
-            leg.end ||
+            leg?.to ||
+            leg?.destination ||
+            leg?.end_station ||
+            leg?.end ||
             data.route_preview?.[index + 1] ||
             `Stop ${index + 2}`;
 
           steps.push({
             type: index === 0 ? "start" : "transfer",
             title: fromStation,
-            meta: `Board ${(leg?.train_no || leg?.train_number) || leg.train || "train"}`,
-            time: formatTimelineTime(leg.start_time || leg.departure),
+            meta: `Board ${(leg?.train_no || leg?.train_number) || leg?.train || "train"}`,
+            time: formatTimelineTime(leg?.start_time || leg?.departure || leg?.departure_time),
           });
 
           if (index === legs.length - 1) {
@@ -2170,7 +2170,7 @@ function App() {
               type: "end",
               title: toStation,
               meta: "Arrive at destination",
-              time: formatTimelineTime(leg.end_time || leg.arrival),
+              time: formatTimelineTime(leg?.end_time || leg?.arrival || leg?.arrival_time),
             });
           }
         });
@@ -3551,7 +3551,7 @@ function App() {
 
         data.train_legs.forEach((leg, legIndex) => {
           lines.push(
-            `${legIndex + 1}. ${leg.from} → ${leg.to} by ${(leg?.train_no || leg?.train_number)} ${(leg?.train_name || leg?.name || "RailYatra Journey Option") || ""}`
+            `${legIndex + 1}. ${leg?.from} → ${leg?.to} by ${(leg?.train_no || leg?.train_number)} ${(leg?.train_name || leg?.name || "RailYatra Journey Option") || ""}`
           );
         });
       }
@@ -3719,7 +3719,7 @@ function App() {
                 <div className="print-route-note">
                   {data.train_legs.map((leg, legIndex) => (
                     <div key={legIndex}>
-                      {legIndex + 1}. {leg.from} → {leg.to} by {(leg?.train_no || leg?.train_number)}{" "}
+                      {legIndex + 1}. {leg?.from} → {leg?.to} by {(leg?.train_no || leg?.train_number)}{" "}
                       {(leg?.train_name || leg?.name || "RailYatra Journey Option") || ""}
                     </div>
                   ))}
@@ -3751,10 +3751,10 @@ function App() {
         <h3>{(train?.train_no || train?.train_number)} — {(train?.train_name || train?.name || "RailYatra Journey Option")}</h3>
 
         <div className="journey-meta">
-          <span>Dep {safeValue(train.departure)}</span>
-          <span>Arr {safeValue(train.arrival)}</span>
-          <span>{safeValue(train.duration_hours)} hrs</span>
-          <span>{safeValue(train.stops)} stops</span>
+          <span>Dep {safeValue(train?.departure || train?.departure_time || train?.source_departure)}</span>
+          <span>Arr {safeValue(train?.arrival || train?.arrival_time || train?.destination_arrival)}</span>
+          <span>{safeValue(train?.duration_hours)} hrs</span>
+          <span>{safeValue(train?.stops)} stops</span>
         </div>
 
         {renderRouteTags(item)}
@@ -3784,7 +3784,7 @@ function App() {
             <div className="section-title">Why recommended</div>
 
             <ul>
-              {train.reasons?.map((reason, i) => (
+              {train?.reasons?.map((reason, i) => (
                 <li key={i}>✓ {reason}</li>
               ))}
             </ul>
@@ -3797,16 +3797,16 @@ function App() {
               <strong>{(train?.train_name || train?.name || "RailYatra Journey Option")}</strong>
 
               <span>Departure</span>
-              <strong>{safeValue(train.departure)}</strong>
+              <strong>{safeValue(train?.departure || train?.departure_time || train?.source_departure)}</strong>
 
               <span>Arrival</span>
-              <strong>{safeValue(train.arrival)}</strong>
+              <strong>{safeValue(train?.arrival || train?.arrival_time || train?.destination_arrival)}</strong>
 
               <span>Duration</span>
-              <strong>{safeValue(train.duration_hours)} hrs</strong>
+              <strong>{safeValue(train?.duration_hours)} hrs</strong>
 
               <span>Stops</span>
-              <strong>{safeValue(train.stops)}</strong>
+              <strong>{safeValue(train?.stops)}</strong>
             </div>
           </div>
         )}
@@ -3991,9 +3991,9 @@ function App() {
             <ul>
               {route.train_legs?.map((leg, i) => (
                 <li key={i}>
-                  ✓ {leg.from} → {leg.to} by {(leg?.train_no || leg?.train_number)} ·{" "}
-                  {(leg?.train_name || leg?.name || "RailYatra Journey Option") || "Train"} · {safeValue(leg.start_time)} →{" "}
-                  {safeValue(leg.end_time)} · {safeValue(leg.duration_hours)} hrs
+                  ✓ {leg?.from} → {leg?.to} by {(leg?.train_no || leg?.train_number)} ·{" "}
+                  {(leg?.train_name || leg?.name || "RailYatra Journey Option") || "Train"} · {safeValue(leg?.start_time)} →{" "}
+                  {safeValue(leg?.end_time)} · {safeValue(leg?.duration_hours)} hrs
                 </li>
               ))}
             </ul>

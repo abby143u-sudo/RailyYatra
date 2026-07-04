@@ -391,14 +391,15 @@ export default function Phase3RouteSearchPreview() {
                   </div>
 
                   <div className="phase3-route-search-legs">
-                    {(route.legs || []).map((leg, legIndex) => {
-                      const stopKey = `${leg.train_number}-${leg.from_sequence}-${leg.to_sequence}`;
+                    {(route.legs || []).filter(Boolean).map((rawLeg, legIndex) => {
+                      const leg = rawLeg || {};
+                      const stopKey = `${leg.train_number || "unknown"}-${leg.from_sequence || "from"}-${leg.to_sequence || "to"}`;
                       const details = stopDetails[stopKey];
 
                       return (
                         <div
                           className="phase3-route-search-leg"
-                          key={`${leg.train_number}-${leg.from_station_code}-${leg.to_station_code}-${legIndex}`}
+                          key={`${leg.train_number || "train"}-${leg.from_station_code || "from"}-${leg.to_station_code || "to"}-${legIndex}`}
                         >
                           <div>
                             <strong>{displayValue(leg.train_number)}</strong>
@@ -414,12 +415,12 @@ export default function Phase3RouteSearchPreview() {
 
                           <div>
                             <span>Departure</span>
-                            <strong>{displayValue(leg.departure)}</strong>
+                            <strong>{displayValue(leg.departure || leg.departure_time)}</strong>
                           </div>
 
                           <div>
                             <span>Arrival</span>
-                            <strong>{displayValue(leg.arrival)}</strong>
+                            <strong>{displayValue(leg.arrival || leg.arrival_time)}</strong>
                           </div>
 
                           <div className="phase3-route-search-stop-action">
@@ -441,23 +442,27 @@ export default function Phase3RouteSearchPreview() {
                                 </p>
                               )}
 
-                              {!details.loading && !details.error && details.stops.length === 0 && (
+                              {!details.loading && !details.error && (details.stops || []).length === 0 && (
                                 <p>No stop details found for this leg.</p>
                               )}
 
-                              {!details.loading && !details.error && details.stops.length > 0 && (
+                              {!details.loading && !details.error && (details.stops || []).length > 0 && (
                                 <div className="phase3-route-search-stop-list">
-                                  {details.stops.map((stop) => (
-                                    <div
-                                      className="phase3-route-search-stop-row"
-                                      key={`${leg.train_number}-${stop.station_code}-${stop.stop_sequence}`}
-                                    >
-                                      <span>{stop.stop_sequence}</span>
-                                      <strong>{stop.station_code}</strong>
-                                      <span>Arr: {displayValue(stop.arrival)}</span>
-                                      <span>Dep: {displayValue(stop.departure)}</span>
-                                    </div>
-                                  ))}
+                                  {(details.stops || []).filter(Boolean).map((rawStop, stopIndex) => {
+                                    const stop = rawStop || {};
+
+                                    return (
+                                      <div
+                                        className="phase3-route-search-stop-row"
+                                        key={`${leg.train_number || "train"}-${stop.station_code || "station"}-${stop.stop_sequence || stopIndex}`}
+                                      >
+                                        <span>{displayValue(stop.stop_sequence)}</span>
+                                        <strong>{displayValue(stop.station_code)}</strong>
+                                        <span>Arr: {displayValue(stop.arrival || stop.arrival_time)}</span>
+                                        <span>Dep: {displayValue(stop.departure || stop.departure_time)}</span>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
