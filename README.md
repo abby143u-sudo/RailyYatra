@@ -357,3 +357,7 @@ RailYatra is ready for controlled public beta testing as a route recommendation 
 
 Next: Phase 17 real data quality, station autocomplete polish and investor demo materials.
 
+## Phase 17 Data Quality and Station Autocomplete Started
+
+Phase 17 adds data-quality APIs, station autocomplete checks, safe demo route listings and a frontend data quality panel for public beta confidence.
+

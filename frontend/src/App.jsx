@@ -1,3 +1,4 @@
+import DataQualityPanel from "./components/DataQualityPanel.jsx";
 import AdminDashboardGate from "./components/AdminDashboardGate.jsx";
 import { useMemo, useState, useEffect } from "react";
 import "./App.css";
@@ -4360,6 +4361,7 @@ function App() {
       <PublicDemoAnalyticsPanel />
       <PublicFeedbackPanel />
       <BetaReadinessPanel />
+      <DataQualityPanel />
       <AdminDashboardGate />
       <PublicDemoFooter />
 </main>

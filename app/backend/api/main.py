@@ -1,3 +1,4 @@
+from backend.api.data_quality_api import router as data_quality_router
 from backend.api.legacy_search_fallback import router as legacy_search_fallback_router
 from backend.api.live_status_api import router as live_status_router
 from backend.api.cors_public_middleware import railyatra_cors_middleware
@@ -835,3 +836,5 @@ app.router.routes = [
     )
 ]
 app.include_router(legacy_search_fallback_router)
+
+app.include_router(data_quality_router)
