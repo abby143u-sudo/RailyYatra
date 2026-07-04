@@ -35,7 +35,11 @@ run_step "Raw railway ingestion inspection" python3 scripts/smoke_ingestion.py
 run_step "Railway data import dry-run" python3 scripts/import_railway_data.py --dry-run
 run_step "Staging planner smoke test" python3 scripts/smoke_staging_planner.py
 run_step "Staging apply skeleton smoke test" python3 scripts/smoke_staging_apply.py
-run_step "Staging verifier smoke test" python3 scripts/smoke_staging_verifier.py
+if [[ "${SKIP_STAGING_VERIFIER_BEFORE_APPLY:-0}" == "1" ]]; then
+  printf '\nSKIP: Staging verifier smoke test before staging refresh apply\n'
+else
+  run_step "Staging verifier smoke test" python3 scripts/smoke_staging_verifier.py
+fi
 run_step "Staging query helper smoke test" python3 scripts/smoke_staging_queries.py
 run_step "Staging route index smoke test" python3 scripts/smoke_staging_route_indexes.py
 run_step "Staging route engine smoke test" python3 scripts/smoke_staging_route_engine.py

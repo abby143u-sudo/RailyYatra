@@ -22,6 +22,8 @@ import PublicProductionReadinessPanel from "./components/PublicProductionReadine
 import PublicRouteExplanationPanel from "./components/PublicRouteExplanationPanel.jsx";
 import BetaReadinessPanel from "./components/BetaReadinessPanel.jsx";
 import { normalizeRoute, normalizeSearchPayload } from "./utils/routeNormalize.js";
+const fallbackApiBase = "http://127.0.0.1:8000";
+const fallbackApiBaseNote = fallbackApiBase;
 
 const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
