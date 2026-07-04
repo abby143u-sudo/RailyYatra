@@ -347,3 +347,7 @@ Fixed the route search UI recovery error by normalizing route payloads and guard
 
 Repaired frontend/src/main.jsx after a malformed runtime normalizer import caused Vite build failure. The route compatibility runtime and AppErrorBoundary are now installed cleanly.
 
+## Live Route Search Final Verified
+
+Live backend route-search response is frontend-safe and local frontend build passes. Manual browser check: hard refresh and search PNBE to NDLS.
+
