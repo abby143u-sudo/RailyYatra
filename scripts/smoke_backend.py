@@ -61,7 +61,7 @@ def run_get(
 
 
 def main() -> None:
-    route_paths = {route.path for route in app.routes}
+    route_paths = {getattr(route, 'path', None) for route in app.routes if getattr(route, 'path', None)}
     passed = 0
     skipped = 0
 
