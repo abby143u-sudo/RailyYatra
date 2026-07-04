@@ -351,3 +351,9 @@ Repaired frontend/src/main.jsx after a malformed runtime normalizer import cause
 
 Live backend route-search response is frontend-safe and local frontend build passes. Manual browser check: hard refresh and search PNBE to NDLS.
 
+## Phase 16 Public Beta Checklist
+
+RailYatra is ready for controlled public beta testing as a route recommendation preview. Live booking, payment, PNR, live fare and live availability remain outside the current product boundary.
+
+Next: Phase 17 real data quality, station autocomplete polish and investor demo materials.
+
