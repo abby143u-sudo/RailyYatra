@@ -5,6 +5,7 @@ import AppErrorBoundary from "./components/AppErrorBoundary.jsx";
 import { installRailYatraRouteCompatibility } from "./utils/routeCompatibilityRuntime.js";
 import "./index.css";
 import BetaFeedbackWidget from "./components/BetaFeedbackWidget.jsx";
+import AdminBetaFeedbackPanel from "./components/AdminBetaFeedbackPanel.jsx";
 
 installRailYatraRouteCompatibility();
 
@@ -14,6 +15,7 @@ createRoot(document.getElementById("root")).render(
       <>
       <App />
       <BetaFeedbackWidget />
+      <AdminBetaFeedbackPanel />
     </>
     </AppErrorBoundary>
   </StrictMode>

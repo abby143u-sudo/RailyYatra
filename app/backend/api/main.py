@@ -944,12 +944,12 @@ async def create_beta_feedback(payload: _Phase18FeedbackPayload, request: _Phase
 
 
 @app.get("/admin/beta-feedback")
-def list_beta_feedback():
-    expected_token = _phase18_os.getenv("RAILYATRA_ADMIN_TOKEN", "")
+def list_beta_feedback(request: _Phase18Request):
+    expected_token = _phase18_os.getenv("RAILYATRA_ADMIN_TOKEN", "").strip()
+    provided_token = request.headers.get("x-admin-token", "").strip()
 
-    if expected_token:
-        # Public listing stays blocked unless admin token support is added on frontend/admin later.
-        pass
+    if expected_token and provided_token != expected_token:
+        raise _Phase18HTTPException(status_code=401, detail="Admin token required.")
 
     _phase18_ensure_feedback_table()
 
