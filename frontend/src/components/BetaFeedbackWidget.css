@@ -1,0 +1,80 @@
+.beta-feedback-widget {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 9999;
+  font-family: inherit;
+}
+
+.beta-feedback-button {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: #111827;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+}
+
+.beta-feedback-panel {
+  width: min(360px, calc(100vw - 36px));
+  margin-bottom: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+}
+
+.beta-feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.beta-feedback-header button {
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.beta-feedback-panel label {
+  display: block;
+  margin: 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.beta-feedback-panel textarea,
+.beta-feedback-panel input,
+.beta-feedback-panel select {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.beta-feedback-submit {
+  width: 100%;
+  margin-top: 8px;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.beta-feedback-status {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #374151;
+}

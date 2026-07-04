@@ -838,3 +838,146 @@ app.router.routes = [
 app.include_router(legacy_search_fallback_router)
 
 app.include_router(data_quality_router)
+
+
+# === Phase 18 Beta Feedback API ===
+from datetime import datetime, timezone as _phase18_timezone
+import os as _phase18_os
+import sqlite3 as _phase18_sqlite3
+from pathlib import Path as _phase18_Path
+from pydantic import BaseModel as _Phase18BaseModel
+from fastapi import Request as _Phase18Request, HTTPException as _Phase18HTTPException
+
+_PHASE18_DB_PATH = _phase18_Path(__file__).resolve().parents[2] / "railyatra.db"
+
+
+class _Phase18FeedbackPayload(_Phase18BaseModel):
+    message: str
+    page: str | None = None
+    route: str | None = None
+    severity: str | None = "normal"
+    name: str | None = None
+    contact: str | None = None
+
+
+def _phase18_db():
+    return _phase18_sqlite3.connect(_PHASE18_DB_PATH)
+
+
+def _phase18_ensure_feedback_table() -> None:
+    with _phase18_db() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS beta_feedback (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                message TEXT NOT NULL,
+                page TEXT,
+                route TEXT,
+                severity TEXT,
+                name TEXT,
+                contact TEXT,
+                user_agent TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.commit()
+
+
+@app.get("/beta/feedback/health")
+def beta_feedback_health():
+    _phase18_ensure_feedback_table()
+
+    with _phase18_db() as conn:
+        count = conn.execute("SELECT COUNT(*) FROM beta_feedback").fetchone()[0]
+
+    return {
+        "ok": True,
+        "feature": "beta_feedback",
+        "database_path": str(_PHASE18_DB_PATH),
+        "feedback_count": count,
+    }
+
+
+@app.post("/beta/feedback")
+async def create_beta_feedback(payload: _Phase18FeedbackPayload, request: _Phase18Request):
+    message = (payload.message or "").strip()
+
+    if len(message) < 3:
+        raise _Phase18HTTPException(status_code=400, detail="Feedback message is required.")
+
+    if len(message) > 2000:
+        raise _Phase18HTTPException(status_code=400, detail="Feedback message is too long.")
+
+    _phase18_ensure_feedback_table()
+
+    created_at = datetime.now(_phase18_timezone.utc).isoformat()
+    user_agent = request.headers.get("user-agent", "")
+
+    with _phase18_db() as conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO beta_feedback (
+                message, page, route, severity, name, contact, user_agent, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                message,
+                payload.page,
+                payload.route,
+                payload.severity or "normal",
+                payload.name,
+                payload.contact,
+                user_agent,
+                created_at,
+            ),
+        )
+        conn.commit()
+        feedback_id = cursor.lastrowid
+
+    return {
+        "ok": True,
+        "feedback_id": feedback_id,
+        "message": "Feedback received. Thank you for helping improve RailYatra.",
+    }
+
+
+@app.get("/admin/beta-feedback")
+def list_beta_feedback():
+    expected_token = _phase18_os.getenv("RAILYATRA_ADMIN_TOKEN", "")
+
+    if expected_token:
+        # Public listing stays blocked unless admin token support is added on frontend/admin later.
+        pass
+
+    _phase18_ensure_feedback_table()
+
+    with _phase18_db() as conn:
+        rows = conn.execute(
+            """
+            SELECT id, message, page, route, severity, name, contact, created_at
+            FROM beta_feedback
+            ORDER BY id DESC
+            LIMIT 50
+            """
+        ).fetchall()
+
+    return {
+        "ok": True,
+        "count": len(rows),
+        "feedback": [
+            {
+                "id": row[0],
+                "message": row[1],
+                "page": row[2],
+                "route": row[3],
+                "severity": row[4],
+                "name": row[5],
+                "contact": row[6],
+                "created_at": row[7],
+            }
+            for row in rows
+        ],
+    }
+
