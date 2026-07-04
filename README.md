@@ -343,3 +343,7 @@ Fixed the route-search blank page by returning frontend-safe train_no fields and
 
 Fixed the route search UI recovery error by normalizing route payloads and guarding train_name reads before rendering.
 
+## main.jsx Build Repair
+
+Repaired frontend/src/main.jsx after a malformed runtime normalizer import caused Vite build failure. The route compatibility runtime and AppErrorBoundary are now installed cleanly.
+

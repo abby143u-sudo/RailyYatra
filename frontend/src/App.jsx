@@ -1160,7 +1160,7 @@ function App() {
     }
 
     if (item.type === "direct") {
-      return `${data?.train_no} ${data.train_name}`;
+      return `${data?.train_no} ${data?.train_name}`;
     }
 
     if (item.type === "one_transfer") {
@@ -1536,15 +1536,15 @@ function App() {
     }
 
     if (item.type === "direct") {
-      lines.push(`Train: ${data?.train_no} - ${data.train_name}`);
+      lines.push(`Train: ${data?.train_no} - ${data?.train_name}`);
       lines.push(`Departure: ${safeValue(data.departure)}`);
       lines.push(`Arrival: ${safeValue(data.arrival)}`);
     }
 
     if (item.type === "one_transfer") {
-      lines.push(`First train: ${data.first_train} - ${data.first_train_name}`);
+      lines.push(`First train: ${data.first_train} - ${data?.first_train_name}`);
       lines.push(`Transfer at: ${data.transfer_station}`);
-      lines.push(`Second train: ${data.second_train} - ${data.second_train_name}`);
+      lines.push(`Second train: ${data.second_train} - ${data?.second_train_name}`);
       lines.push(`Wait time: ${safeValue(data.transfer_wait_hours)} hrs`);
     }
 
@@ -1873,7 +1873,7 @@ function App() {
 
     if (item.type === "direct") {
       return data?.train_no
-        ? `${data?.train_no}${data.train_name ? " - " + data.train_name : ""}`
+        ? `${data?.train_no}${data?.train_name ? " - " + data?.train_name : ""}`
         : "Direct train";
     }
 
@@ -2095,7 +2095,7 @@ function App() {
       steps.push({
         type: "start",
         title: source,
-        meta: `Board ${data?.train_no || "train"}${data.train_name ? " - " + data.train_name : ""}`,
+        meta: `Board ${data?.train_no || "train"}${data?.train_name ? " - " + data?.train_name : ""}`,
         time: formatTimelineTime(data.departure || data.source_departure),
       });
 
@@ -3533,15 +3533,15 @@ function App() {
       }
 
       if (item.type === "direct") {
-        lines.push(`Train: ${data?.train_no} - ${data.train_name}`);
+        lines.push(`Train: ${data?.train_no} - ${data?.train_name}`);
         lines.push(`Departure: ${safeValue(data.departure)}`);
         lines.push(`Arrival: ${safeValue(data.arrival)}`);
       }
 
       if (item.type === "one_transfer") {
-        lines.push(`First train: ${data.first_train} - ${data.first_train_name}`);
+        lines.push(`First train: ${data.first_train} - ${data?.first_train_name}`);
         lines.push(`Transfer at: ${data.transfer_station}`);
-        lines.push(`Second train: ${data.second_train} - ${data.second_train_name}`);
+        lines.push(`Second train: ${data.second_train} - ${data?.second_train_name}`);
         lines.push(`Wait time: ${safeValue(data.transfer_wait_hours)} hrs`);
       }
 
@@ -3702,7 +3702,7 @@ function App() {
 
               {item.type === "direct" && (
                 <div className="print-route-note">
-                  Train: {data?.train_no} - {data.train_name} · Dep{" "}
+                  Train: {data?.train_no} - {data?.train_name} · Dep{" "}
                   {safeValue(data.departure)} · Arr {safeValue(data.arrival)}
                 </div>
               )}
@@ -3830,7 +3830,7 @@ function App() {
         </h3>
 
         <p className="muted">
-          {route.first_train_name} → {route.second_train_name}
+          {route?.first_train_name} → {route?.second_train_name}
         </p>
 
         <div className="timeline">
@@ -3883,13 +3883,13 @@ function App() {
 
             <div className="detail-grid">
               <span>First train</span>
-              <strong>{route.first_train} — {route.first_train_name}</strong>
+              <strong>{route.first_train} — {route?.first_train_name}</strong>
 
               <span>Transfer station</span>
               <strong>{route.transfer_station} — {route.transfer_station_name}</strong>
 
               <span>Second train</span>
-              <strong>{route.second_train} — {route.second_train_name}</strong>
+              <strong>{route.second_train} — {route?.second_train_name}</strong>
 
               <span>First leg</span>
               <strong>{safeValue(route.first_leg_duration_hours)} hrs</strong>
@@ -3954,7 +3954,7 @@ function App() {
             <div>
               <strong>{firstLeg?.train_no}</strong>
               <span>
-                {firstLeg.train_name || "Train"} · {firstLeg.stop_count} stops
+                {firstLeg?.train_name || "Train"} · {firstLeg.stop_count} stops
               </span>
             </div>
 
@@ -4201,7 +4201,7 @@ function App() {
                 <span>Best direct</span>
                 <strong>
                   {bestDirect
-                    ? `${bestDirect.data?.train_no} ${bestDirect.data.train_name}`
+                    ? `${bestDirect.data?.train_no} ${bestDirect.data?.train_name}`
                     : "Not available"}
                 </strong>
               </div>
