@@ -171,3 +171,41 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.admin-feedback-toolbar {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.admin-feedback-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-feedback-filters button {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.admin-feedback-filters button.active {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+.admin-feedback-search {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 14px;
+}

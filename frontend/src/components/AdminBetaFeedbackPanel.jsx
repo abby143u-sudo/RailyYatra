@@ -13,9 +13,7 @@ function getApiBase() {
   const host = window.location.hostname;
   const isLocalFrontend = host === "localhost" || host === "127.0.0.1";
 
-  if (isLocalFrontend) {
-    return envBase || LOCAL_API_BASE;
-  }
+  if (isLocalFrontend) return envBase || LOCAL_API_BASE;
 
   if (envBase && !envBase.includes("localhost") && !envBase.includes("127.0.0.1")) {
     return envBase;
@@ -27,29 +25,72 @@ function getApiBase() {
 function shouldOpenAdminPanel() {
   const hash = window.location.hash;
   const params = new URLSearchParams(window.location.search);
-
   return hash === "#admin-feedback" || params.get("adminFeedback") === "1";
 }
 
 const STATUS_OPTIONS = ["new", "reviewed", "resolved"];
+const FILTER_OPTIONS = ["all", "new", "reviewed", "resolved"];
 
 export default function AdminBetaFeedbackPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [token, setToken] = useState("");
   const [feedback, setFeedback] = useState([]);
-  const [status, setStatus] = useState("idle");
+  const [loadStatus, setLoadStatus] = useState("idle");
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchText, setSearchText] = useState("");
 
   const apiBase = useMemo(() => getApiBase(), []);
 
-  useEffect(() => {
-    const syncOpenState = () => {
-      setIsOpen(shouldOpenAdminPanel());
+  const counts = useMemo(() => {
+    const result = {
+      all: feedback.length,
+      new: 0,
+      reviewed: 0,
+      resolved: 0,
     };
 
-    syncOpenState();
+    feedback.forEach((item) => {
+      const itemStatus = item.status || "new";
+      if (result[itemStatus] !== undefined) {
+        result[itemStatus] += 1;
+      }
+    });
 
+    return result;
+  }, [feedback]);
+
+  const filteredFeedback = useMemo(() => {
+    const query = searchText.trim().toLowerCase();
+
+    return feedback.filter((item) => {
+      const itemStatus = item.status || "new";
+      const matchesStatus = statusFilter === "all" || itemStatus === statusFilter;
+
+      const searchableText = [
+        item.message,
+        item.page,
+        item.route,
+        item.severity,
+        item.name,
+        item.contact,
+        item.created_at,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      const matchesSearch = !query || searchableText.includes(query);
+
+      return matchesStatus && matchesSearch;
+    });
+  }, [feedback, statusFilter, searchText]);
+
+  useEffect(() => {
+    const syncOpenState = () => setIsOpen(shouldOpenAdminPanel());
+
+    syncOpenState();
     window.addEventListener("hashchange", syncOpenState);
     window.addEventListener("popstate", syncOpenState);
 
@@ -63,12 +104,12 @@ export default function AdminBetaFeedbackPanel() {
     const adminToken = token.trim();
 
     if (!adminToken) {
-      setStatus("error");
+      setLoadStatus("error");
       setError("Admin token paste karo.");
       return;
     }
 
-    setStatus("loading");
+    setLoadStatus("loading");
     setError("");
 
     try {
@@ -94,9 +135,9 @@ export default function AdminBetaFeedbackPanel() {
       }
 
       setFeedback(Array.isArray(data?.feedback) ? data.feedback : []);
-      setStatus("success");
+      setLoadStatus("success");
     } catch (err) {
-      setStatus("error");
+      setLoadStatus("error");
       setError(err?.message || "Could not load feedback.");
     }
   }
@@ -105,7 +146,7 @@ export default function AdminBetaFeedbackPanel() {
     const adminToken = token.trim();
 
     if (!adminToken) {
-      setStatus("error");
+      setLoadStatus("error");
       setError("Admin token paste karo.");
       return;
     }
@@ -141,8 +182,10 @@ export default function AdminBetaFeedbackPanel() {
           item.id === feedbackId ? { ...item, status: nextStatus } : item
         )
       );
+
+      setLoadStatus("success");
     } catch (err) {
-      setStatus("error");
+      setLoadStatus("error");
       setError(err?.message || "Could not update feedback status.");
     } finally {
       setUpdatingId(null);
@@ -180,26 +223,57 @@ export default function AdminBetaFeedbackPanel() {
             placeholder="Paste admin token"
           />
 
-          <button type="button" onClick={loadFeedback} disabled={status === "loading"}>
-            {status === "loading" ? "Loading..." : "Load feedback"}
+          <button type="button" onClick={loadFeedback} disabled={loadStatus === "loading"}>
+            {loadStatus === "loading" ? "Loading..." : "Load feedback"}
           </button>
         </div>
 
-        {status === "error" && (
+        {feedback.length > 0 && (
+          <div className="admin-feedback-toolbar">
+            <div className="admin-feedback-filters">
+              {FILTER_OPTIONS.map((option) => (
+                <button
+                  type="button"
+                  key={option}
+                  className={statusFilter === option ? "active" : ""}
+                  onClick={() => setStatusFilter(option)}
+                >
+                  {option} ({counts[option] || 0})
+                </button>
+              ))}
+            </div>
+
+            <input
+              className="admin-feedback-search"
+              type="search"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              placeholder="Search feedback..."
+            />
+          </div>
+        )}
+
+        {loadStatus === "error" && (
           <div className="admin-feedback-error">
             Could not load feedback: {error}
           </div>
         )}
 
-        {status === "success" && feedback.length === 0 && (
+        {loadStatus === "success" && feedback.length === 0 && (
           <div className="admin-feedback-empty">
             No feedback yet on live backend.
           </div>
         )}
 
-        {status === "success" && feedback.length > 0 && (
+        {loadStatus === "success" && feedback.length > 0 && filteredFeedback.length === 0 && (
+          <div className="admin-feedback-empty">
+            No feedback matches this filter.
+          </div>
+        )}
+
+        {loadStatus === "success" && filteredFeedback.length > 0 && (
           <div className="admin-feedback-list">
-            {feedback.map((item) => (
+            {filteredFeedback.map((item) => (
               <div className="admin-feedback-item" key={item.id}>
                 <div className="admin-feedback-item-top">
                   <strong>#{item.id}</strong>
