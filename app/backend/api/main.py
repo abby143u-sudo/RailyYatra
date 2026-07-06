@@ -860,6 +860,36 @@ class _Phase18FeedbackPayload(_Phase18BaseModel):
     contact: str | None = None
 
 
+class _Phase19FeedbackStatusPayload(_Phase18BaseModel):
+    status: str
+
+
+def _phase18_extract_admin_token(request: _Phase18Request) -> str:
+    provided_token = (
+        request.headers.get("X-RailYatra-Admin-Token", "").strip()
+        or request.headers.get("x-railyatra-admin-token", "").strip()
+        or request.headers.get("x-admin-token", "").strip()
+        or request.query_params.get("token", "").strip()
+    )
+
+    authorization = request.headers.get("authorization", "").strip()
+    if not provided_token and authorization.lower().startswith("bearer "):
+        provided_token = authorization.split(" ", 1)[1].strip()
+
+    return provided_token
+
+
+def _phase18_require_admin(request: _Phase18Request) -> None:
+    expected_token = _phase18_os.getenv("RAILYATRA_ADMIN_TOKEN", "").strip()
+    provided_token = _phase18_extract_admin_token(request)
+
+    if expected_token and provided_token != expected_token:
+        raise _Phase18HTTPException(status_code=401, detail="Admin token required.")
+
+    if not expected_token:
+        raise _Phase18HTTPException(status_code=500, detail="Admin token is not configured.")
+
+
 def _phase18_db():
     return _phase18_sqlite3.connect(_PHASE18_DB_PATH)
 
@@ -877,10 +907,16 @@ def _phase18_ensure_feedback_table() -> None:
                 name TEXT,
                 contact TEXT,
                 user_agent TEXT,
+                status TEXT NOT NULL DEFAULT 'new',
                 created_at TEXT NOT NULL
             )
             """
         )
+        try:
+            conn.execute("ALTER TABLE beta_feedback ADD COLUMN status TEXT NOT NULL DEFAULT 'new'")
+        except _phase18_sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                raise
         conn.commit()
 
 
@@ -945,28 +981,14 @@ async def create_beta_feedback(payload: _Phase18FeedbackPayload, request: _Phase
 
 @app.get("/admin/beta-feedback")
 def list_beta_feedback(request: _Phase18Request):
-    expected_token = _phase18_os.getenv("RAILYATRA_ADMIN_TOKEN", "").strip()
-
-    provided_token = (
-        request.headers.get("X-RailYatra-Admin-Token", "").strip()
-        or request.headers.get("x-railyatra-admin-token", "").strip()
-        or request.headers.get("x-admin-token", "").strip()
-        or request.query_params.get("token", "").strip()
-    )
-
-    authorization = request.headers.get("authorization", "").strip()
-    if not provided_token and authorization.lower().startswith("bearer "):
-        provided_token = authorization.split(" ", 1)[1].strip()
-
-    if expected_token and provided_token != expected_token:
-        raise _Phase18HTTPException(status_code=401, detail="Admin token required.")
+    _phase18_require_admin(request)
 
     _phase18_ensure_feedback_table()
 
     with _phase18_db() as conn:
         rows = conn.execute(
             """
-            SELECT id, message, page, route, severity, name, contact, created_at
+            SELECT id, message, page, route, severity, status, name, contact, created_at
             FROM beta_feedback
             ORDER BY id DESC
             LIMIT 50
@@ -983,11 +1005,49 @@ def list_beta_feedback(request: _Phase18Request):
                 "page": row[2],
                 "route": row[3],
                 "severity": row[4],
-                "name": row[5],
-                "contact": row[6],
-                "created_at": row[7],
+                "status": row[5] or "new",
+                "name": row[6],
+                "contact": row[7],
+                "created_at": row[8],
             }
             for row in rows
         ],
+    }
+
+
+@app.patch("/admin/beta-feedback/{feedback_id}/status")
+def update_beta_feedback_status(
+    feedback_id: int,
+    payload: _Phase19FeedbackStatusPayload,
+    request: _Phase18Request,
+):
+    _phase18_require_admin(request)
+
+    status = (payload.status or "").strip().lower()
+    allowed_statuses = {"new", "reviewed", "resolved"}
+
+    if status not in allowed_statuses:
+        raise _Phase18HTTPException(
+            status_code=400,
+            detail="Status must be one of: new, reviewed, resolved.",
+        )
+
+    _phase18_ensure_feedback_table()
+
+    with _phase18_db() as conn:
+        cursor = conn.execute(
+            "UPDATE beta_feedback SET status = ? WHERE id = ?",
+            (status, feedback_id),
+        )
+        conn.commit()
+
+    if cursor.rowcount == 0:
+        raise _Phase18HTTPException(status_code=404, detail="Feedback not found.")
+
+    return {
+        "ok": True,
+        "feedback_id": feedback_id,
+        "status": status,
+        "message": "Feedback status updated.",
     }
 

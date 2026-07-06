@@ -31,12 +31,15 @@ function shouldOpenAdminPanel() {
   return hash === "#admin-feedback" || params.get("adminFeedback") === "1";
 }
 
+const STATUS_OPTIONS = ["new", "reviewed", "resolved"];
+
 export default function AdminBetaFeedbackPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [token, setToken] = useState("");
   const [feedback, setFeedback] = useState([]);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
 
   const apiBase = useMemo(() => getApiBase(), []);
 
@@ -78,13 +81,7 @@ export default function AdminBetaFeedbackPanel() {
       });
 
       const text = await response.text();
-      let data = null;
-
-      try {
-        data = text ? JSON.parse(text) : null;
-      } catch {
-        data = null;
-      }
+      const data = text ? JSON.parse(text) : null;
 
       if (!response.ok) {
         const message =
@@ -101,6 +98,54 @@ export default function AdminBetaFeedbackPanel() {
     } catch (err) {
       setStatus("error");
       setError(err?.message || "Could not load feedback.");
+    }
+  }
+
+  async function updateFeedbackStatus(feedbackId, nextStatus) {
+    const adminToken = token.trim();
+
+    if (!adminToken) {
+      setStatus("error");
+      setError("Admin token paste karo.");
+      return;
+    }
+
+    setUpdatingId(feedbackId);
+    setError("");
+
+    try {
+      const response = await fetch(`${apiBase}/admin/beta-feedback/${feedbackId}/status`, {
+        method: "PATCH",
+        headers: {
+          "X-RailYatra-Admin-Token": adminToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+
+      if (!response.ok) {
+        const message =
+          data?.error?.message ||
+          data?.detail ||
+          text ||
+          `Request failed with status ${response.status}`;
+
+        throw new Error(message);
+      }
+
+      setFeedback((items) =>
+        items.map((item) =>
+          item.id === feedbackId ? { ...item, status: nextStatus } : item
+        )
+      );
+    } catch (err) {
+      setStatus("error");
+      setError(err?.message || "Could not update feedback status.");
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -158,12 +203,28 @@ export default function AdminBetaFeedbackPanel() {
               <div className="admin-feedback-item" key={item.id}>
                 <div className="admin-feedback-item-top">
                   <strong>#{item.id}</strong>
-                  <span>{item.severity || "normal"}</span>
+                  <span className={`admin-feedback-status admin-feedback-status-${item.status || "new"}`}>
+                    {item.status || "new"}
+                  </span>
                 </div>
 
                 <p>{item.message}</p>
 
+                <div className="admin-feedback-status-actions">
+                  {STATUS_OPTIONS.map((option) => (
+                    <button
+                      type="button"
+                      key={option}
+                      disabled={updatingId === item.id || (item.status || "new") === option}
+                      onClick={() => updateFeedbackStatus(item.id, option)}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="admin-feedback-meta">
+                  <span>Severity: {item.severity || "normal"}</span>
                   <span>Page: {item.page || "-"}</span>
                   <span>Route: {item.route || "-"}</span>
                   <span>Name: {item.name || "-"}</span>
