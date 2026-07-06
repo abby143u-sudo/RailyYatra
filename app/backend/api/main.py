@@ -946,7 +946,17 @@ async def create_beta_feedback(payload: _Phase18FeedbackPayload, request: _Phase
 @app.get("/admin/beta-feedback")
 def list_beta_feedback(request: _Phase18Request):
     expected_token = _phase18_os.getenv("RAILYATRA_ADMIN_TOKEN", "").strip()
-    provided_token = request.headers.get("x-admin-token", "").strip()
+
+    provided_token = (
+        request.headers.get("X-RailYatra-Admin-Token", "").strip()
+        or request.headers.get("x-railyatra-admin-token", "").strip()
+        or request.headers.get("x-admin-token", "").strip()
+        or request.query_params.get("token", "").strip()
+    )
+
+    authorization = request.headers.get("authorization", "").strip()
+    if not provided_token and authorization.lower().startswith("bearer "):
+        provided_token = authorization.split(" ", 1)[1].strip()
 
     if expected_token and provided_token != expected_token:
         raise _Phase18HTTPException(status_code=401, detail="Admin token required.")
