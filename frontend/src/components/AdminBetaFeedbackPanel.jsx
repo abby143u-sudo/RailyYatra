@@ -13,16 +13,22 @@ function getApiBase() {
   const host = window.location.hostname;
   const isLocalFrontend = host === "localhost" || host === "127.0.0.1";
 
-  // On Vercel/live site, never use localhost even if env is wrong.
-  if (!isLocalFrontend && envBase && !envBase.includes("localhost") && !envBase.includes("127.0.0.1")) {
-    return envBase;
-  }
-
   if (isLocalFrontend) {
     return envBase || LOCAL_API_BASE;
   }
 
+  if (envBase && !envBase.includes("localhost") && !envBase.includes("127.0.0.1")) {
+    return envBase;
+  }
+
   return LIVE_API_BASE;
+}
+
+function shouldOpenAdminPanel() {
+  const hash = window.location.hash;
+  const params = new URLSearchParams(window.location.search);
+
+  return hash === "#admin-feedback" || params.get("adminFeedback") === "1";
 }
 
 export default function AdminBetaFeedbackPanel() {
@@ -35,21 +41,27 @@ export default function AdminBetaFeedbackPanel() {
   const apiBase = useMemo(() => getApiBase(), []);
 
   useEffect(() => {
-    const syncHash = () => {
-      setIsOpen(window.location.hash === "#admin-feedback");
+    const syncOpenState = () => {
+      setIsOpen(shouldOpenAdminPanel());
     };
 
-    syncHash();
-    window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
+    syncOpenState();
+
+    window.addEventListener("hashchange", syncOpenState);
+    window.addEventListener("popstate", syncOpenState);
+
+    return () => {
+      window.removeEventListener("hashchange", syncOpenState);
+      window.removeEventListener("popstate", syncOpenState);
+    };
   }, []);
 
   async function loadFeedback() {
     const adminToken = token.trim();
 
     if (!adminToken) {
-      setError("Admin token paste karo.");
       setStatus("error");
+      setError("Admin token paste karo.");
       return;
     }
 
@@ -80,6 +92,7 @@ export default function AdminBetaFeedbackPanel() {
           data?.detail ||
           text ||
           `Request failed with status ${response.status}`;
+
         throw new Error(message);
       }
 
@@ -106,7 +119,7 @@ export default function AdminBetaFeedbackPanel() {
             type="button"
             className="admin-feedback-close"
             onClick={() => {
-              window.location.hash = "";
+              window.history.pushState("", document.title, window.location.pathname);
               setIsOpen(false);
             }}
           >
