@@ -851,6 +851,7 @@ from fastapi import (
 from pydantic import BaseModel as _Phase18BaseModel
 
 from backend.api.beta_feedback_store import (
+    beta_feedback_status_counts,
     beta_feedback_store_status,
     count_beta_feedback,
     list_beta_feedback_entries,
@@ -925,6 +926,23 @@ def beta_feedback_health():
             else None
         ),
         "feedback_count": feedback_count,
+    }
+
+
+@app.get("/admin/beta-feedback/summary")
+def beta_feedback_summary(request: _Phase18Request):
+    _phase18_require_admin(request)
+
+    store = beta_feedback_store_status()
+    counts = beta_feedback_status_counts()
+
+    return {
+        "ok": True,
+        "storage_mode": store["mode"],
+        "database_url_configured": store[
+            "database_url_configured"
+        ],
+        "counts": counts,
     }
 
 
