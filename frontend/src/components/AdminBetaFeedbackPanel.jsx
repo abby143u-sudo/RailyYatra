@@ -40,6 +40,7 @@ export default function AdminBetaFeedbackPanel() {
   const [updatingId, setUpdatingId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
+  const [serverSummary, setServerSummary] = useState(null);
 
   const apiBase = useMemo(() => getApiBase(), []);
 
@@ -135,6 +136,32 @@ export default function AdminBetaFeedbackPanel() {
       }
 
       setFeedback(Array.isArray(data?.feedback) ? data.feedback : []);
+
+      const summaryResponse = await fetch(
+        `${apiBase}/admin/beta-feedback/summary`,
+        {
+          method: "GET",
+          headers: {
+            "X-RailYatra-Admin-Token": adminToken,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const summaryText = await summaryResponse.text();
+      const summaryData = summaryText ? JSON.parse(summaryText) : null;
+
+      if (!summaryResponse.ok) {
+        const summaryMessage =
+          summaryData?.error?.message ||
+          summaryData?.detail ||
+          summaryText ||
+          `Summary request failed with status ${summaryResponse.status}`;
+
+        throw new Error(summaryMessage);
+      }
+
+      setServerSummary(summaryData?.counts || null);
       setLoadStatus("success");
     } catch (err) {
       setLoadStatus("error");
@@ -183,6 +210,22 @@ export default function AdminBetaFeedbackPanel() {
         )
       );
 
+      const summaryResponse = await fetch(
+        `${apiBase}/admin/beta-feedback/summary`,
+        {
+          method: "GET",
+          headers: {
+            "X-RailYatra-Admin-Token": adminToken,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (summaryResponse.ok) {
+        const summaryData = await summaryResponse.json();
+        setServerSummary(summaryData?.counts || null);
+      }
+
       setLoadStatus("success");
     } catch (err) {
       setLoadStatus("error");
@@ -227,6 +270,22 @@ export default function AdminBetaFeedbackPanel() {
             {loadStatus === "loading" ? "Loading..." : "Load feedback"}
           </button>
         </div>
+
+        {serverSummary && (
+          <div className="admin-feedback-summary-grid">
+            {[
+              ["Total", "total"],
+              ["New", "new"],
+              ["Reviewed", "reviewed"],
+              ["Resolved", "resolved"],
+            ].map(([label, key]) => (
+              <div className="admin-feedback-summary-card" key={key}>
+                <span>{label}</span>
+                <strong>{serverSummary[key] ?? 0}</strong>
+              </div>
+            ))}
+          </div>
+        )}
 
         {feedback.length > 0 && (
           <div className="admin-feedback-toolbar">

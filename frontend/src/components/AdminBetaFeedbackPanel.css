@@ -209,3 +209,38 @@
   border-radius: 12px;
   font-size: 14px;
 }
+
+.admin-feedback-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.admin-feedback-summary-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
+  background: #f9fafb;
+}
+
+.admin-feedback-summary-card span {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-feedback-summary-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #111827;
+  font-size: 26px;
+}
+
+@media (max-width: 640px) {
+  .admin-feedback-summary-grid {
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+  }
+}
