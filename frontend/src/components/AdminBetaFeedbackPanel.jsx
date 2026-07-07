@@ -89,6 +89,18 @@ export default function AdminBetaFeedbackPanel() {
   }, [feedback, statusFilter, searchText]);
 
   useEffect(() => {
+    if (!isOpen || !token.trim()) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      loadFeedback();
+    }, 30000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isOpen, token]);
+
+  useEffect(() => {
     const syncOpenState = () => setIsOpen(shouldOpenAdminPanel());
 
     syncOpenState();
