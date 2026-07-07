@@ -251,6 +251,43 @@ def list_beta_feedback_entries(
     ]
 
 
+
+def beta_feedback_status_counts() -> dict[str, int]:
+    ensure_beta_feedback_table()
+
+    query = """
+        SELECT status, COUNT(*)
+        FROM beta_feedback
+        GROUP BY status
+    """
+
+    with database_connection() as connection:
+        if postgres_enabled():
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+                rows = cursor.fetchall()
+        else:
+            rows = connection.execute(query).fetchall()
+
+    counts = {
+        "total": 0,
+        "new": 0,
+        "reviewed": 0,
+        "resolved": 0,
+    }
+
+    for raw_status, raw_count in rows:
+        status = str(raw_status or "new").strip().lower()
+        count = int(raw_count or 0)
+
+        counts["total"] += count
+
+        if status in {"new", "reviewed", "resolved"}:
+            counts[status] = count
+
+    return counts
+
+
 def set_beta_feedback_status(
     feedback_id: int,
     status: str,
