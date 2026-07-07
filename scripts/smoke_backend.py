@@ -83,19 +83,47 @@ def main() -> None:
         run_get(client, "/health")
         passed += 1
 
-        if "/stations" in route_paths:
-            run_get(client, "/stations", params={"q": "PNBE"})
-            passed += 1
-        else:
-            print("SKIP  GET /stations -> route not available")
+        ci_mode = os.environ.get(
+            "RAILYATRA_CI",
+            "",
+        ).strip().lower() in {"1", "true", "yes"}
+
+        if ci_mode:
+            print(
+                "SKIP  GET /stations -> "
+                "production railway database unavailable in CI"
+            )
             skipped += 1
 
-        run_get(
-            client,
-            "/search",
-            params={"source": "PNBE", "destination": "NDLS"},
-        )
-        passed += 1
+            print(
+                "SKIP  GET /search -> "
+                "production railway database unavailable in CI"
+            )
+            skipped += 1
+        else:
+            if "/stations" in route_paths:
+                run_get(
+                    client,
+                    "/stations",
+                    params={"q": "PNBE"},
+                )
+                passed += 1
+            else:
+                print(
+                    "SKIP  GET /stations -> "
+                    "route not available"
+                )
+                skipped += 1
+
+            run_get(
+                client,
+                "/search",
+                params={
+                    "source": "PNBE",
+                    "destination": "NDLS",
+                },
+            )
+            passed += 1
 
     print(f"Backend smoke test complete: {passed} passed, {skipped} skipped")
 

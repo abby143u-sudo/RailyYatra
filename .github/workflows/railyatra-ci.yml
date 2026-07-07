@@ -56,6 +56,7 @@ jobs:
       - name: Make scripts executable
         run: |
           chmod +x scripts/check_all.sh
+          chmod +x scripts/check_ci.sh
           chmod +x scripts/smoke_beta_feedback.py
 
       - name: Python syntax check
@@ -64,8 +65,5 @@ jobs:
             app/backend/api/main.py \
             app/backend/api/beta_feedback_store.py
 
-      - name: Beta feedback regression test
-        run: python scripts/smoke_beta_feedback.py
-
-      - name: Run complete RailYatra checks
-        run: ./scripts/check_all.sh
+      - name: Run CI-safe RailYatra checks
+        run: ./scripts/check_ci.sh
