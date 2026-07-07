@@ -50,6 +50,7 @@ run_step "Render backend readiness smoke test" python3 scripts/smoke_render_back
 run_step "Frontend API config smoke test" python3 scripts/smoke_frontend_api_config.py
 run_step "Public demo banner smoke test" python3 scripts/smoke_public_demo_banner.py
 run_step "Beta checklist smoke test" python3 scripts/smoke_beta_checklist.py
+run_step "Beta feedback smoke test" python3 scripts/smoke_beta_feedback.py
 run_step "Frontend beta checklist smoke test" python3 scripts/smoke_frontend_beta_checklist.py
 run_step "Frontend product status smoke test" python3 scripts/smoke_frontend_product_status.py
 run_step "Frontend recommend-v2 smoke test" python3 scripts/smoke_frontend_recommend_v2.py
