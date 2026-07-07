@@ -1,0 +1,66 @@
+name: RailYatra CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: railyatra-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Backend and frontend checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      PYTHONUNBUFFERED: "1"
+      RAILYATRA_ADMIN_TOKEN: "github-actions-test-token"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/check_all.sh
+          chmod +x scripts/smoke_beta_feedback.py
+
+      - name: Python syntax check
+        run: |
+          python -m py_compile \
+            app/backend/api/main.py \
+            app/backend/api/beta_feedback_store.py
+
+      - name: Beta feedback regression test
+        run: python scripts/smoke_beta_feedback.py
+
+      - name: Run complete RailYatra checks
+        run: ./scripts/check_all.sh
