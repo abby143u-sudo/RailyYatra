@@ -199,14 +199,104 @@ def save_beta_feedback(entry: dict[str, Any]) -> int:
         return int(cursor.lastrowid)
 
 
+def _feedback_filter_clause(
+    status_filter: str | None,
+    search_query: str | None,
+    placeholder: str,
+) -> tuple[str, tuple[Any, ...]]:
+    conditions: list[str] = []
+    params: list[Any] = []
+
+    normalized_status = str(status_filter or "").strip().lower()
+    normalized_search = str(search_query or "").strip().lower()
+
+    if normalized_status and normalized_status != "all":
+        conditions.append(
+            f"LOWER(COALESCE(status, 'new')) = {placeholder}"
+        )
+        params.append(normalized_status)
+
+    if normalized_search:
+        searchable_columns = [
+            "message",
+            "page",
+            "route",
+            "severity",
+            "status",
+            "name",
+            "contact",
+            "created_at",
+        ]
+
+        search_conditions = [
+            (
+                f"LOWER(COALESCE({column}, '')) "
+                f"LIKE {placeholder}"
+            )
+            for column in searchable_columns
+        ]
+
+        conditions.append(
+            "(" + " OR ".join(search_conditions) + ")"
+        )
+
+        search_value = f"%{normalized_search}%"
+        params.extend(
+            [search_value] * len(searchable_columns)
+        )
+
+    clause = ""
+
+    if conditions:
+        clause = " WHERE " + " AND ".join(conditions)
+
+    return clause, tuple(params)
+
+
+def count_beta_feedback_entries(
+    status_filter: str | None = None,
+    search_query: str | None = None,
+) -> int:
+    ensure_beta_feedback_table()
+
+    placeholder = "%s" if postgres_enabled() else "?"
+
+    clause, params = _feedback_filter_clause(
+        status_filter=status_filter,
+        search_query=search_query,
+        placeholder=placeholder,
+    )
+
+    query = "SELECT COUNT(*) FROM beta_feedback" + clause
+
+    with database_connection() as connection:
+        if postgres_enabled():
+            with connection.cursor() as cursor:
+                cursor.execute(query, params)
+                return int(cursor.fetchone()[0])
+
+        row = connection.execute(query, params).fetchone()
+        return int(row[0])
+
+
 def list_beta_feedback_entries(
     limit: int = 25,
     offset: int = 0,
+    status_filter: str | None = None,
+    search_query: str | None = None,
 ) -> list[dict[str, Any]]:
     ensure_beta_feedback_table()
 
     safe_limit = max(1, min(int(limit or 25), 100))
     safe_offset = max(0, int(offset or 0))
+
+    placeholder = "%s" if postgres_enabled() else "?"
+
+    clause, filter_params = _feedback_filter_clause(
+        status_filter=status_filter,
+        search_query=search_query,
+        placeholder=placeholder,
+    )
 
     query = """
         SELECT
@@ -220,21 +310,29 @@ def list_beta_feedback_entries(
             contact,
             created_at
         FROM beta_feedback
-        ORDER BY id DESC
     """
+
+    query += clause
+    query += " ORDER BY id DESC"
 
     with database_connection() as connection:
         if postgres_enabled():
             with connection.cursor() as cursor:
                 cursor.execute(
                     query + " LIMIT %s OFFSET %s",
-                    (safe_limit, safe_offset),
+                    filter_params + (
+                        safe_limit,
+                        safe_offset,
+                    ),
                 )
                 rows = cursor.fetchall()
         else:
             rows = connection.execute(
                 query + " LIMIT ? OFFSET ?",
-                (safe_limit, safe_offset),
+                filter_params + (
+                    safe_limit,
+                    safe_offset,
+                ),
             ).fetchall()
 
     return [

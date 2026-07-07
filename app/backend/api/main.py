@@ -851,6 +851,7 @@ from fastapi import (
 from pydantic import BaseModel as _Phase18BaseModel
 
 from backend.api.beta_feedback_store import (
+    count_beta_feedback_entries,
     delete_beta_feedback,
     beta_feedback_status_counts,
     beta_feedback_store_status,
@@ -997,6 +998,8 @@ def list_beta_feedback(
     request: _Phase18Request,
     page: int = 1,
     page_size: int = 25,
+    status: str | None = None,
+    q: str | None = None,
 ):
     _phase18_require_admin(request)
 
@@ -1006,7 +1009,38 @@ def list_beta_feedback(
         min(int(page_size or 25), 100),
     )
 
-    total = count_beta_feedback()
+    normalized_status = (
+        str(status or "").strip().lower()
+    )
+
+    if normalized_status in {"", "all"}:
+        normalized_status = None
+    elif normalized_status not in {
+        "new",
+        "reviewed",
+        "resolved",
+    }:
+        raise _Phase18HTTPException(
+            status_code=400,
+            detail=(
+                "Status filter must be one of: "
+                "all, new, reviewed, resolved."
+            ),
+        )
+
+    search_query = str(q or "").strip()
+
+    if len(search_query) > 200:
+        raise _Phase18HTTPException(
+            status_code=400,
+            detail="Search query is too long.",
+        )
+
+    total = count_beta_feedback_entries(
+        status_filter=normalized_status,
+        search_query=search_query,
+    )
+
     total_pages = max(
         1,
         (total + safe_page_size - 1) // safe_page_size,
@@ -1020,6 +1054,8 @@ def list_beta_feedback(
     feedback = list_beta_feedback_entries(
         limit=safe_page_size,
         offset=offset,
+        status_filter=normalized_status,
+        search_query=search_query,
     )
 
     return {
@@ -1031,6 +1067,10 @@ def list_beta_feedback(
         "total_pages": total_pages,
         "has_previous": safe_page > 1,
         "has_next": safe_page < total_pages,
+        "filters": {
+            "status": normalized_status or "all",
+            "q": search_query,
+        },
         "feedback": feedback,
     }
 

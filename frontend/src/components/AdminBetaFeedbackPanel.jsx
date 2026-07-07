@@ -160,39 +160,15 @@ export default function AdminBetaFeedbackPanel() {
 
   const apiBase = useMemo(() => getApiBase(), []);
 
-  const filteredFeedback = useMemo(() => {
-    const query = searchText.trim().toLowerCase();
-
-    return feedback.filter((item) => {
-      const itemStatus = item.status || "new";
-
-      const matchesStatus =
-        statusFilter === "all" ||
-        itemStatus === statusFilter;
-
-      const searchableText = [
-        item.message,
-        item.page,
-        item.route,
-        item.severity,
-        item.status,
-        item.name,
-        item.contact,
-        item.created_at,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      return (
-        matchesStatus &&
-        (!query || searchableText.includes(query))
-      );
-    });
-  }, [feedback, searchText, statusFilter]);
+  const filteredFeedback = feedback;
 
   const loadFeedback = useCallback(
-    async (requestedPage = page, quiet = false) => {
+    async (
+      requestedPage = page,
+      quiet = false,
+      requestedStatus = statusFilter,
+      requestedSearch = searchText
+    ) => {
       const adminToken = token.trim();
 
       if (!adminToken) {
@@ -213,10 +189,31 @@ export default function AdminBetaFeedbackPanel() {
           Number(requestedPage) || 1
         );
 
+        const queryParams = new URLSearchParams({
+          page: String(safeRequestedPage),
+          page_size: String(PAGE_SIZE),
+        });
+
+        if (
+          requestedStatus &&
+          requestedStatus !== "all"
+        ) {
+          queryParams.set(
+            "status",
+            requestedStatus
+          );
+        }
+
+        const normalizedSearch =
+          String(requestedSearch || "").trim();
+
+        if (normalizedSearch) {
+          queryParams.set("q", normalizedSearch);
+        }
+
         const feedbackUrl =
-          `${apiBase}/admin/beta-feedback` +
-          `?page=${safeRequestedPage}` +
-          `&page_size=${PAGE_SIZE}`;
+          `${apiBase}/admin/beta-feedback?` +
+          queryParams.toString();
 
         const response = await fetch(feedbackUrl, {
           method: "GET",
@@ -300,7 +297,7 @@ export default function AdminBetaFeedbackPanel() {
         );
       }
     },
-    [apiBase, page, token]
+    [apiBase, page, searchText, statusFilter, token]
   );
 
   useEffect(() => {
@@ -348,7 +345,12 @@ export default function AdminBetaFeedbackPanel() {
       )
     );
 
-    await loadFeedback(safePage);
+    await loadFeedback(
+      safePage,
+      false,
+      statusFilter,
+      searchText
+    );
   }
 
   async function updateFeedbackStatus(
@@ -561,9 +563,16 @@ export default function AdminBetaFeedbackPanel() {
                       ? "active"
                       : ""
                   }
-                  onClick={() =>
-                    setStatusFilter(option)
-                  }
+                  onClick={() => {
+                    setStatusFilter(option);
+                    setPage(1);
+                    loadFeedback(
+                      1,
+                      false,
+                      option,
+                      searchText
+                    );
+                  }}
                 >
                   {option}
                 </button>
@@ -579,6 +588,23 @@ export default function AdminBetaFeedbackPanel() {
               }
               placeholder="Search current page..."
             />
+
+            <button
+              type="button"
+              className="admin-feedback-apply-search"
+              disabled={loadStatus === "loading"}
+              onClick={() => {
+                setPage(1);
+                loadFeedback(
+                  1,
+                  false,
+                  statusFilter,
+                  searchText
+                );
+              }}
+            >
+              Apply search
+            </button>
 
             <div className="admin-feedback-export-actions">
               <button
