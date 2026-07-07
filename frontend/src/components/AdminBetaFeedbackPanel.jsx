@@ -1,21 +1,40 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import "./AdminBetaFeedbackPanel.css";
 
 const LOCAL_API_BASE = "http://127.0.0.1:8000";
 const LIVE_API_BASE = "https://railyyatra-backend.onrender.com";
+const PAGE_SIZE = 25;
+
+const STATUS_OPTIONS = ["new", "reviewed", "resolved"];
+const FILTER_OPTIONS = ["all", "new", "reviewed", "resolved"];
 
 function cleanBaseUrl(value) {
   return String(value || "").replace(/\/+$/, "");
 }
 
 function getApiBase() {
-  const envBase = cleanBaseUrl(import.meta.env.VITE_RAILYATRA_API_BASE);
+  const envBase = cleanBaseUrl(
+    import.meta.env.VITE_RAILYATRA_API_BASE
+  );
+
   const host = window.location.hostname;
-  const isLocalFrontend = host === "localhost" || host === "127.0.0.1";
+  const isLocal =
+    host === "localhost" || host === "127.0.0.1";
 
-  if (isLocalFrontend) return envBase || LOCAL_API_BASE;
+  if (isLocal) {
+    return envBase || LOCAL_API_BASE;
+  }
 
-  if (envBase && !envBase.includes("localhost") && !envBase.includes("127.0.0.1")) {
+  if (
+    envBase &&
+    !envBase.includes("localhost") &&
+    !envBase.includes("127.0.0.1")
+  ) {
     return envBase;
   }
 
@@ -23,13 +42,99 @@ function getApiBase() {
 }
 
 function shouldOpenAdminPanel() {
-  const hash = window.location.hash;
   const params = new URLSearchParams(window.location.search);
-  return hash === "#admin-feedback" || params.get("adminFeedback") === "1";
+
+  return (
+    window.location.hash === "#admin-feedback" ||
+    params.get("adminFeedback") === "1"
+  );
 }
 
-const STATUS_OPTIONS = ["new", "reviewed", "resolved"];
-const FILTER_OPTIONS = ["all", "new", "reviewed", "resolved"];
+async function readResponse(response) {
+  const text = await response.text();
+
+  if (!text) {
+    return {
+      text: "",
+      data: null,
+    };
+  }
+
+  try {
+    return {
+      text,
+      data: JSON.parse(text),
+    };
+  } catch {
+    return {
+      text,
+      data: null,
+    };
+  }
+}
+
+function responseError(response, result, fallback) {
+  return (
+    result.data?.error?.message ||
+    result.data?.detail ||
+    result.text ||
+    fallback ||
+    `Request failed with status ${response.status}`
+  );
+}
+
+function csvEscape(value) {
+  const safeValue = String(value ?? "");
+  return `"${safeValue.replaceAll('"', '""')}"`;
+}
+
+function exportCsv(items, filename) {
+  const headers = [
+    "id",
+    "status",
+    "severity",
+    "message",
+    "page",
+    "route",
+    "name",
+    "contact",
+    "created_at",
+  ];
+
+  const rows = items.map((item) => [
+    item.id,
+    item.status || "new",
+    item.severity || "normal",
+    item.message || "",
+    item.page || "",
+    item.route || "",
+    item.name || "",
+    item.contact || "",
+    item.created_at || "",
+  ]);
+
+  const csv = [
+    headers.map(csvEscape).join(","),
+    ...rows.map((row) => row.map(csvEscape).join(",")),
+  ].join("\n");
+
+  const blob = new Blob(
+    [csv],
+    { type: "text/csv;charset=utf-8" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+}
 
 export default function AdminBetaFeedbackPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,39 +147,35 @@ export default function AdminBetaFeedbackPanel() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [serverSummary, setServerSummary] = useState(null);
+  const [page, setPage] = useState(1);
+
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: PAGE_SIZE,
+    total: 0,
+    totalPages: 1,
+    hasPrevious: false,
+    hasNext: false,
+  });
 
   const apiBase = useMemo(() => getApiBase(), []);
-
-  const counts = useMemo(() => {
-    const result = {
-      all: feedback.length,
-      new: 0,
-      reviewed: 0,
-      resolved: 0,
-    };
-
-    feedback.forEach((item) => {
-      const itemStatus = item.status || "new";
-      if (result[itemStatus] !== undefined) {
-        result[itemStatus] += 1;
-      }
-    });
-
-    return result;
-  }, [feedback]);
 
   const filteredFeedback = useMemo(() => {
     const query = searchText.trim().toLowerCase();
 
     return feedback.filter((item) => {
       const itemStatus = item.status || "new";
-      const matchesStatus = statusFilter === "all" || itemStatus === statusFilter;
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        itemStatus === statusFilter;
 
       const searchableText = [
         item.message,
         item.page,
         item.route,
         item.severity,
+        item.status,
         item.name,
         item.contact,
         item.created_at,
@@ -83,11 +184,146 @@ export default function AdminBetaFeedbackPanel() {
         .join(" ")
         .toLowerCase();
 
-      const matchesSearch = !query || searchableText.includes(query);
-
-      return matchesStatus && matchesSearch;
+      return (
+        matchesStatus &&
+        (!query || searchableText.includes(query))
+      );
     });
-  }, [feedback, statusFilter, searchText]);
+  }, [feedback, searchText, statusFilter]);
+
+  const loadFeedback = useCallback(
+    async (requestedPage = page, quiet = false) => {
+      const adminToken = token.trim();
+
+      if (!adminToken) {
+        setLoadStatus("error");
+        setError("Admin token paste karo.");
+        return;
+      }
+
+      if (!quiet) {
+        setLoadStatus("loading");
+      }
+
+      setError("");
+
+      try {
+        const safeRequestedPage = Math.max(
+          1,
+          Number(requestedPage) || 1
+        );
+
+        const feedbackUrl =
+          `${apiBase}/admin/beta-feedback` +
+          `?page=${safeRequestedPage}` +
+          `&page_size=${PAGE_SIZE}`;
+
+        const response = await fetch(feedbackUrl, {
+          method: "GET",
+          headers: {
+            "X-RailYatra-Admin-Token": adminToken,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const result = await readResponse(response);
+
+        if (!response.ok) {
+          throw new Error(
+            responseError(
+              response,
+              result,
+              "Could not load feedback."
+            )
+          );
+        }
+
+        const data = result.data || {};
+
+        setFeedback(
+          Array.isArray(data.feedback)
+            ? data.feedback
+            : []
+        );
+
+        const responsePage = Number(data.page) || 1;
+        const totalPages = Math.max(
+          1,
+          Number(data.total_pages) || 1
+        );
+
+        setPage(responsePage);
+
+        setPagination({
+          page: responsePage,
+          pageSize:
+            Number(data.page_size) || PAGE_SIZE,
+          total: Number(data.total) || 0,
+          totalPages,
+          hasPrevious: Boolean(data.has_previous),
+          hasNext: Boolean(data.has_next),
+        });
+
+        const summaryResponse = await fetch(
+          `${apiBase}/admin/beta-feedback/summary`,
+          {
+            method: "GET",
+            headers: {
+              "X-RailYatra-Admin-Token": adminToken,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const summaryResult =
+          await readResponse(summaryResponse);
+
+        if (!summaryResponse.ok) {
+          throw new Error(
+            responseError(
+              summaryResponse,
+              summaryResult,
+              "Could not load summary."
+            )
+          );
+        }
+
+        setServerSummary(
+          summaryResult.data?.counts || null
+        );
+
+        setLoadStatus("success");
+      } catch (err) {
+        setLoadStatus("error");
+        setError(
+          err?.message || "Could not load feedback."
+        );
+      }
+    },
+    [apiBase, page, token]
+  );
+
+  useEffect(() => {
+    const syncOpenState = () => {
+      setIsOpen(shouldOpenAdminPanel());
+    };
+
+    syncOpenState();
+
+    window.addEventListener("hashchange", syncOpenState);
+    window.addEventListener("popstate", syncOpenState);
+
+    return () => {
+      window.removeEventListener(
+        "hashchange",
+        syncOpenState
+      );
+      window.removeEventListener(
+        "popstate",
+        syncOpenState
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (!isOpen || !token.trim()) {
@@ -95,94 +331,30 @@ export default function AdminBetaFeedbackPanel() {
     }
 
     const intervalId = window.setInterval(() => {
-      loadFeedback();
+      loadFeedback(page, true);
     }, 30000);
 
-    return () => window.clearInterval(intervalId);
-  }, [isOpen, token]);
-
-  useEffect(() => {
-    const syncOpenState = () => setIsOpen(shouldOpenAdminPanel());
-
-    syncOpenState();
-    window.addEventListener("hashchange", syncOpenState);
-    window.addEventListener("popstate", syncOpenState);
-
     return () => {
-      window.removeEventListener("hashchange", syncOpenState);
-      window.removeEventListener("popstate", syncOpenState);
+      window.clearInterval(intervalId);
     };
-  }, []);
+  }, [isOpen, loadFeedback, page, token]);
 
-  async function loadFeedback() {
-    const adminToken = token.trim();
+  async function changePage(nextPage) {
+    const safePage = Math.max(
+      1,
+      Math.min(
+        Number(nextPage) || 1,
+        pagination.totalPages
+      )
+    );
 
-    if (!adminToken) {
-      setLoadStatus("error");
-      setError("Admin token paste karo.");
-      return;
-    }
-
-    setLoadStatus("loading");
-    setError("");
-
-    try {
-      const response = await fetch(`${apiBase}/admin/beta-feedback`, {
-        method: "GET",
-        headers: {
-          "X-RailYatra-Admin-Token": adminToken,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
-
-      if (!response.ok) {
-        const message =
-          data?.error?.message ||
-          data?.detail ||
-          text ||
-          `Request failed with status ${response.status}`;
-
-        throw new Error(message);
-      }
-
-      setFeedback(Array.isArray(data?.feedback) ? data.feedback : []);
-
-      const summaryResponse = await fetch(
-        `${apiBase}/admin/beta-feedback/summary`,
-        {
-          method: "GET",
-          headers: {
-            "X-RailYatra-Admin-Token": adminToken,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const summaryText = await summaryResponse.text();
-      const summaryData = summaryText ? JSON.parse(summaryText) : null;
-
-      if (!summaryResponse.ok) {
-        const summaryMessage =
-          summaryData?.error?.message ||
-          summaryData?.detail ||
-          summaryText ||
-          `Summary request failed with status ${summaryResponse.status}`;
-
-        throw new Error(summaryMessage);
-      }
-
-      setServerSummary(summaryData?.counts || null);
-      setLoadStatus("success");
-    } catch (err) {
-      setLoadStatus("error");
-      setError(err?.message || "Could not load feedback.");
-    }
+    await loadFeedback(safePage);
   }
 
-  async function updateFeedbackStatus(feedbackId, nextStatus) {
+  async function updateFeedbackStatus(
+    feedbackId,
+    nextStatus
+  ) {
     const adminToken = token.trim();
 
     if (!adminToken) {
@@ -195,54 +367,39 @@ export default function AdminBetaFeedbackPanel() {
     setError("");
 
     try {
-      const response = await fetch(`${apiBase}/admin/beta-feedback/${feedbackId}/status`, {
-        method: "PATCH",
-        headers: {
-          "X-RailYatra-Admin-Token": adminToken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: nextStatus }),
-      });
-
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
-
-      if (!response.ok) {
-        const message =
-          data?.error?.message ||
-          data?.detail ||
-          text ||
-          `Request failed with status ${response.status}`;
-
-        throw new Error(message);
-      }
-
-      setFeedback((items) =>
-        items.map((item) =>
-          item.id === feedbackId ? { ...item, status: nextStatus } : item
-        )
-      );
-
-      const summaryResponse = await fetch(
-        `${apiBase}/admin/beta-feedback/summary`,
+      const response = await fetch(
+        `${apiBase}/admin/beta-feedback/${feedbackId}/status`,
         {
-          method: "GET",
+          method: "PATCH",
           headers: {
             "X-RailYatra-Admin-Token": adminToken,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            status: nextStatus,
+          }),
         }
       );
 
-      if (summaryResponse.ok) {
-        const summaryData = await summaryResponse.json();
-        setServerSummary(summaryData?.counts || null);
+      const result = await readResponse(response);
+
+      if (!response.ok) {
+        throw new Error(
+          responseError(
+            response,
+            result,
+            "Could not update feedback status."
+          )
+        );
       }
 
-      setLoadStatus("success");
+      await loadFeedback(page, true);
     } catch (err) {
       setLoadStatus("error");
-      setError(err?.message || "Could not update feedback status.");
+      setError(
+        err?.message ||
+          "Could not update feedback status."
+      );
     } finally {
       setUpdatingId(null);
     }
@@ -258,10 +415,13 @@ export default function AdminBetaFeedbackPanel() {
     }
 
     const confirmed = window.confirm(
-      `Delete feedback #${feedbackId}? This cannot be undone.`
+      `Delete feedback #${feedbackId}? ` +
+        "This cannot be undone."
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
     setDeletingId(feedbackId);
     setError("");
@@ -278,52 +438,37 @@ export default function AdminBetaFeedbackPanel() {
         }
       );
 
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
+      const result = await readResponse(response);
 
       if (!response.ok) {
-        const message =
-          data?.error?.message ||
-          data?.detail ||
-          text ||
-          `Delete failed with status ${response.status}`;
-
-        throw new Error(message);
+        throw new Error(
+          responseError(
+            response,
+            result,
+            "Could not delete feedback."
+          )
+        );
       }
 
-      setFeedback((items) =>
-        items.filter((item) => item.id !== feedbackId)
-      );
+      const targetPage =
+        feedback.length === 1 && page > 1
+          ? page - 1
+          : page;
 
-      setServerSummary((current) => {
-        if (!current) return current;
-
-        const deletedItem = feedback.find(
-          (item) => item.id === feedbackId
-        );
-
-        const deletedStatus = deletedItem?.status || "new";
-
-        return {
-          ...current,
-          total: Math.max(0, (current.total || 0) - 1),
-          [deletedStatus]: Math.max(
-            0,
-            (current[deletedStatus] || 0) - 1
-          ),
-        };
-      });
-
-      setLoadStatus("success");
+      await loadFeedback(targetPage, true);
     } catch (err) {
       setLoadStatus("error");
-      setError(err?.message || "Could not delete feedback.");
+      setError(
+        err?.message || "Could not delete feedback."
+      );
     } finally {
       setDeletingId(null);
     }
   }
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="admin-feedback-panel">
@@ -338,7 +483,11 @@ export default function AdminBetaFeedbackPanel() {
             type="button"
             className="admin-feedback-close"
             onClick={() => {
-              window.history.pushState("", document.title, window.location.pathname);
+              window.history.pushState(
+                "",
+                document.title,
+                window.location.pathname
+              );
               setIsOpen(false);
             }}
           >
@@ -350,12 +499,32 @@ export default function AdminBetaFeedbackPanel() {
           <input
             type="password"
             value={token}
-            onChange={(event) => setToken(event.target.value)}
+            onChange={(event) => {
+              setToken(event.target.value);
+              setPage(1);
+            }}
             placeholder="Paste admin token"
           />
 
-          <button type="button" onClick={loadFeedback} disabled={loadStatus === "loading"}>
-            {loadStatus === "loading" ? "Loading..." : "Load feedback"}
+          <button
+            type="button"
+            disabled={loadStatus === "loading"}
+            onClick={() => loadFeedback(page)}
+          >
+            {loadStatus === "loading"
+              ? "Loading..."
+              : "Load feedback"}
+          </button>
+
+          <button
+            type="button"
+            disabled={
+              loadStatus === "loading" ||
+              !token.trim()
+            }
+            onClick={() => loadFeedback(page)}
+          >
+            Refresh
           </button>
         </div>
 
@@ -367,9 +536,14 @@ export default function AdminBetaFeedbackPanel() {
               ["Reviewed", "reviewed"],
               ["Resolved", "resolved"],
             ].map(([label, key]) => (
-              <div className="admin-feedback-summary-card" key={key}>
+              <div
+                className="admin-feedback-summary-card"
+                key={key}
+              >
                 <span>{label}</span>
-                <strong>{serverSummary[key] ?? 0}</strong>
+                <strong>
+                  {serverSummary[key] ?? 0}
+                </strong>
               </div>
             ))}
           </div>
@@ -382,10 +556,16 @@ export default function AdminBetaFeedbackPanel() {
                 <button
                   type="button"
                   key={option}
-                  className={statusFilter === option ? "active" : ""}
-                  onClick={() => setStatusFilter(option)}
+                  className={
+                    statusFilter === option
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    setStatusFilter(option)
+                  }
                 >
-                  {option} ({counts[option] || 0})
+                  {option}
                 </button>
               ))}
             </div>
@@ -394,9 +574,38 @@ export default function AdminBetaFeedbackPanel() {
               className="admin-feedback-search"
               type="search"
               value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Search feedback..."
+              onChange={(event) =>
+                setSearchText(event.target.value)
+              }
+              placeholder="Search current page..."
             />
+
+            <div className="admin-feedback-export-actions">
+              <button
+                type="button"
+                onClick={() =>
+                  exportCsv(
+                    feedback,
+                    `railyatra-feedback-page-${page}.csv`
+                  )
+                }
+              >
+                Export page CSV
+              </button>
+
+              <button
+                type="button"
+                disabled={filteredFeedback.length === 0}
+                onClick={() =>
+                  exportCsv(
+                    filteredFeedback,
+                    `railyatra-feedback-filtered-page-${page}.csv`
+                  )
+                }
+              >
+                Export filtered CSV
+              </button>
+            </div>
           </div>
         )}
 
@@ -406,68 +615,145 @@ export default function AdminBetaFeedbackPanel() {
           </div>
         )}
 
-        {loadStatus === "success" && feedback.length === 0 && (
-          <div className="admin-feedback-empty">
-            No feedback yet on live backend.
-          </div>
-        )}
+        {loadStatus === "success" &&
+          pagination.total === 0 && (
+            <div className="admin-feedback-empty">
+              No feedback yet on live backend.
+            </div>
+          )}
 
-        {loadStatus === "success" && feedback.length > 0 && filteredFeedback.length === 0 && (
-          <div className="admin-feedback-empty">
-            No feedback matches this filter.
-          </div>
-        )}
+        {loadStatus === "success" &&
+          feedback.length > 0 &&
+          filteredFeedback.length === 0 && (
+            <div className="admin-feedback-empty">
+              No feedback matches this filter on the
+              current page.
+            </div>
+          )}
 
-        {loadStatus === "success" && filteredFeedback.length > 0 && (
-          <div className="admin-feedback-list">
-            {filteredFeedback.map((item) => (
-              <div className="admin-feedback-item" key={item.id}>
-                <div className="admin-feedback-item-top">
-                  <strong>#{item.id}</strong>
+        {loadStatus === "success" &&
+          filteredFeedback.length > 0 && (
+            <div className="admin-feedback-list">
+              {filteredFeedback.map((item) => (
+                <div
+                  className="admin-feedback-item"
+                  key={item.id}
+                >
+                  <div className="admin-feedback-item-top">
+                    <strong>#{item.id}</strong>
 
-                  <div className="admin-feedback-item-actions">
-                    <span className={`admin-feedback-status admin-feedback-status-${item.status || "new"}`}>
-                      {item.status || "new"}
+                    <div className="admin-feedback-item-actions">
+                      <span
+                        className={
+                          "admin-feedback-status " +
+                          `admin-feedback-status-${
+                            item.status || "new"
+                          }`
+                        }
+                      >
+                        {item.status || "new"}
+                      </span>
+
+                      <button
+                        type="button"
+                        className="admin-feedback-delete-button"
+                        disabled={deletingId === item.id}
+                        onClick={() =>
+                          deleteFeedback(item.id)
+                        }
+                      >
+                        {deletingId === item.id
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <p>{item.message}</p>
+
+                  <div className="admin-feedback-status-actions">
+                    {STATUS_OPTIONS.map((option) => (
+                      <button
+                        type="button"
+                        key={option}
+                        disabled={
+                          updatingId === item.id ||
+                          (item.status || "new") ===
+                            option
+                        }
+                        onClick={() =>
+                          updateFeedbackStatus(
+                            item.id,
+                            option
+                          )
+                        }
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="admin-feedback-meta">
+                    <span>
+                      Severity:{" "}
+                      {item.severity || "normal"}
                     </span>
-
-                    <button
-                      type="button"
-                      className="admin-feedback-delete-button"
-                      disabled={deletingId === item.id}
-                      onClick={() => deleteFeedback(item.id)}
-                    >
-                      {deletingId === item.id ? "Deleting..." : "Delete"}
-                    </button>
+                    <span>
+                      Page: {item.page || "-"}
+                    </span>
+                    <span>
+                      Route: {item.route || "-"}
+                    </span>
+                    <span>
+                      Name: {item.name || "-"}
+                    </span>
+                    <span>
+                      Contact: {item.contact || "-"}
+                    </span>
+                    <span>
+                      {item.created_at || ""}
+                    </span>
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
 
-                <p>{item.message}</p>
+        {loadStatus === "success" &&
+          pagination.total > 0 && (
+            <div className="admin-feedback-pagination">
+              <button
+                type="button"
+                disabled={!pagination.hasPrevious}
+                onClick={() =>
+                  changePage(page - 1)
+                }
+              >
+                ← Previous
+              </button>
 
-                <div className="admin-feedback-status-actions">
-                  {STATUS_OPTIONS.map((option) => (
-                    <button
-                      type="button"
-                      key={option}
-                      disabled={updatingId === item.id || (item.status || "new") === option}
-                      onClick={() => updateFeedbackStatus(item.id, option)}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
+              <div>
+                <strong>
+                  Page {pagination.page} of{" "}
+                  {pagination.totalPages}
+                </strong>
 
-                <div className="admin-feedback-meta">
-                  <span>Severity: {item.severity || "normal"}</span>
-                  <span>Page: {item.page || "-"}</span>
-                  <span>Route: {item.route || "-"}</span>
-                  <span>Name: {item.name || "-"}</span>
-                  <span>Contact: {item.contact || "-"}</span>
-                  <span>{item.created_at || ""}</span>
-                </div>
+                <span>
+                  {pagination.total} total feedback
+                </span>
               </div>
-            ))}
-          </div>
-        )}
+
+              <button
+                type="button"
+                disabled={!pagination.hasNext}
+                onClick={() =>
+                  changePage(page + 1)
+                }
+              >
+                Next →
+              </button>
+            </div>
+          )}
       </div>
     </div>
   );

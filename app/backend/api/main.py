@@ -993,14 +993,44 @@ async def create_beta_feedback(
 
 
 @app.get("/admin/beta-feedback")
-def list_beta_feedback(request: _Phase18Request):
+def list_beta_feedback(
+    request: _Phase18Request,
+    page: int = 1,
+    page_size: int = 25,
+):
     _phase18_require_admin(request)
 
-    feedback = list_beta_feedback_entries(limit=50)
+    safe_page = max(1, int(page or 1))
+    safe_page_size = max(
+        1,
+        min(int(page_size or 25), 100),
+    )
+
+    total = count_beta_feedback()
+    total_pages = max(
+        1,
+        (total + safe_page_size - 1) // safe_page_size,
+    )
+
+    if safe_page > total_pages:
+        safe_page = total_pages
+
+    offset = (safe_page - 1) * safe_page_size
+
+    feedback = list_beta_feedback_entries(
+        limit=safe_page_size,
+        offset=offset,
+    )
 
     return {
         "ok": True,
         "count": len(feedback),
+        "total": total,
+        "page": safe_page,
+        "page_size": safe_page_size,
+        "total_pages": total_pages,
+        "has_previous": safe_page > 1,
+        "has_next": safe_page < total_pages,
         "feedback": feedback,
     }
 

@@ -200,11 +200,13 @@ def save_beta_feedback(entry: dict[str, Any]) -> int:
 
 
 def list_beta_feedback_entries(
-    limit: int = 50,
+    limit: int = 25,
+    offset: int = 0,
 ) -> list[dict[str, Any]]:
     ensure_beta_feedback_table()
 
-    safe_limit = max(1, min(int(limit or 50), 500))
+    safe_limit = max(1, min(int(limit or 25), 100))
+    safe_offset = max(0, int(offset or 0))
 
     query = """
         SELECT
@@ -225,14 +227,14 @@ def list_beta_feedback_entries(
         if postgres_enabled():
             with connection.cursor() as cursor:
                 cursor.execute(
-                    query + " LIMIT %s",
-                    (safe_limit,),
+                    query + " LIMIT %s OFFSET %s",
+                    (safe_limit, safe_offset),
                 )
                 rows = cursor.fetchall()
         else:
             rows = connection.execute(
-                query + " LIMIT ?",
-                (safe_limit,),
+                query + " LIMIT ? OFFSET ?",
+                (safe_limit, safe_offset),
             ).fetchall()
 
     return [
@@ -249,7 +251,6 @@ def list_beta_feedback_entries(
         }
         for row in rows
     ]
-
 
 
 def beta_feedback_status_counts() -> dict[str, int]:
