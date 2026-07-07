@@ -334,3 +334,14 @@
   cursor: not-allowed;
 }
 
+
+.admin-feedback-clear-token {
+  border: 1px solid #d1d5db !important;
+  background: #ffffff !important;
+  color: #4b5563 !important;
+}
+
+.admin-feedback-clear-token:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

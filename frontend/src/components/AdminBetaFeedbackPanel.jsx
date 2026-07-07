@@ -138,7 +138,15 @@ function exportCsv(items, filename) {
 
 export default function AdminBetaFeedbackPanel() {
   const [isOpen, setIsOpen] = useState(false);
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => {
+    try {
+      return sessionStorage.getItem(
+        "railyatra_admin_token"
+      ) || "";
+    } catch {
+      return "";
+    }
+  });
   const [feedback, setFeedback] = useState([]);
   const [loadStatus, setLoadStatus] = useState("idle");
   const [error, setError] = useState("");
@@ -299,6 +307,23 @@ export default function AdminBetaFeedbackPanel() {
     },
     [apiBase, page, searchText, statusFilter, token]
   );
+
+  useEffect(() => {
+    try {
+      if (token.trim()) {
+        sessionStorage.setItem(
+          "railyatra_admin_token",
+          token.trim()
+        );
+      } else {
+        sessionStorage.removeItem(
+          "railyatra_admin_token"
+        );
+      }
+    } catch {
+      // Session storage may be unavailable.
+    }
+  }, [token]);
 
   useEffect(() => {
     const syncOpenState = () => {
@@ -527,6 +552,22 @@ export default function AdminBetaFeedbackPanel() {
             onClick={() => loadFeedback(page)}
           >
             Refresh
+          </button>
+
+          <button
+            type="button"
+            className="admin-feedback-clear-token"
+            disabled={!token.trim()}
+            onClick={() => {
+              setToken("");
+              setFeedback([]);
+              setServerSummary(null);
+              setPage(1);
+              setLoadStatus("idle");
+              setError("");
+            }}
+          >
+            Clear token
           </button>
         </div>
 
