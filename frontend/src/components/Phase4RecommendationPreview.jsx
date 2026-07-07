@@ -346,49 +346,135 @@ export default function Phase4RecommendationPreview() {
                     </div>
                   </div>
 
-                  <div className="phase4-reasons-box">
-                    <span>Why recommended</span>
-                    <ul>
-                      {(route.reasons || []).map((reason) => (
-                        <li key={reason}>{reason}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="phase4-leg-list">
-                    {(route.legs || []).map((leg, index) => (
-                      <div
-                        className="phase4-leg-row"
-                        key={`${route.recommendation_rank}-${leg.train_number}-${index}`}
-                      >
-                        <div>
-                          <span>Train</span>
-                          <strong>{displayValue(leg.train_number)}</strong>
-                        </div>
-                        <div>
-                          <span>Name</span>
-                          <strong>{displayValue(leg.train_name, "Train name unavailable")}</strong>
-                        </div>
-                        <div>
-                          <span>Route</span>
-                          <strong>
-                            {displayValue(leg.from_station_code)} → {displayValue(leg.to_station_code)}
-                          </strong>
-                        </div>
-                        <div>
-                          <span>Time</span>
-                          <strong>
-                            {displayValue(leg.departure)} → {displayValue(leg.arrival)}
-                          </strong>
-                        </div>
+                  {route.legs?.[0] && (
+                    <div className="phase4-primary-leg-preview">
+                      <div>
+                        <span>Primary train</span>
+                        <strong>
+                          {displayValue(route.legs[0].train_number)} ·{" "}
+                          {displayValue(
+                            route.legs[0].train_name,
+                            "Train name unavailable"
+                          )}
+                        </strong>
                       </div>
-                    ))}
-                  </div>
 
-                  <div className="phase4-booking-warning">
-                    <strong>Live booking not connected yet.</strong>
-                    <span>{route.booking_status?.note}</span>
-                  </div>
+                      <div>
+                        <span>Journey time</span>
+                        <strong>
+                          {displayValue(route.legs[0].departure)} →{" "}
+                          {displayValue(route.legs[0].arrival)}
+                        </strong>
+                      </div>
+                    </div>
+                  )}
+
+                  <details className="phase4-journey-details">
+                    <summary>
+                      <span>Journey details</span>
+                      <small>
+                        {(route.legs || []).length}{" "}
+                        {(route.legs || []).length === 1
+                          ? "train leg"
+                          : "train legs"}{" "}
+                        · {displayValue(route.transfer_safety?.label)}
+                      </small>
+                    </summary>
+
+                    <div className="phase4-journey-details__content">
+                      <div className="phase4-safety-detail">
+                        <span>Transfer safety</span>
+                        <strong>
+                          {displayValue(route.transfer_safety?.label)}
+                        </strong>
+                        <p>
+                          {displayValue(
+                            route.transfer_safety?.reason,
+                            "Transfer safety details unavailable."
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="phase4-reasons-box">
+                        <span>Why recommended</span>
+                        <ul>
+                          {(route.reasons || []).map((reason) => (
+                            <li key={reason}>{reason}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="phase4-leg-list">
+                        {(route.legs || []).map((leg, index) => (
+                          <div
+                            className="phase4-leg-row"
+                            key={`${route.recommendation_rank}-${leg.train_number}-${index}`}
+                          >
+                            <div>
+                              <span>Train</span>
+                              <strong>
+                                {displayValue(leg.train_number)}
+                              </strong>
+                            </div>
+
+                            <div>
+                              <span>Name</span>
+                              <strong>
+                                {displayValue(
+                                  leg.train_name,
+                                  "Train name unavailable"
+                                )}
+                              </strong>
+                            </div>
+
+                            <div>
+                              <span>Route</span>
+                              <strong>
+                                {displayValue(
+                                  leg.from_station_code
+                                )}{" "}
+                                →{" "}
+                                {displayValue(
+                                  leg.to_station_code
+                                )}
+                              </strong>
+                            </div>
+
+                            <div>
+                              <span>Time</span>
+                              <strong>
+                                {displayValue(leg.departure)} →{" "}
+                                {displayValue(leg.arrival)}
+                              </strong>
+                            </div>
+
+                            <div>
+                              <span>Distance</span>
+                              <strong>
+                                {displayValue(leg.distance)} km
+                              </strong>
+                            </div>
+
+                            <div>
+                              <span>Stops</span>
+                              <strong>
+                                {displayValue(leg.stop_count)}
+                              </strong>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="phase4-booking-warning">
+                        <strong>
+                          Live booking not connected yet.
+                        </strong>
+                        <span>
+                          {route.booking_status?.note}
+                        </span>
+                      </div>
+                    </div>
+                  </details>
                 </article>
               ))}
             </div>

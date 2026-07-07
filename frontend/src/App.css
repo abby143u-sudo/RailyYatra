@@ -6056,3 +6056,133 @@ li {
     grid-template-columns: 1fr;
   }
 }
+
+/* Phase 24 journey details start */
+.phase4-primary-leg-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.phase4-primary-leg-preview > div {
+  padding: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 14px;
+  background: rgba(239, 246, 255, 0.68);
+}
+
+.phase4-primary-leg-preview span,
+.phase4-safety-detail span {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.phase4-primary-leg-preview strong {
+  color: #0f172a;
+  font-size: 0.94rem;
+}
+
+.phase4-journey-details {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.phase4-journey-details summary {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  padding: 14px 46px 14px 14px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.phase4-journey-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.phase4-journey-details summary::after {
+  content: "⌄";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  font-size: 1.25rem;
+  transform: translateY(-50%);
+  transition: transform 160ms ease;
+}
+
+.phase4-journey-details[open] summary::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.phase4-journey-details summary span {
+  color: #0f172a;
+  font-weight: 900;
+}
+
+.phase4-journey-details summary small {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.phase4-journey-details[open] summary {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(248, 250, 252, 0.88);
+}
+
+.phase4-journey-details__content {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.phase4-safety-detail {
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.phase4-safety-detail strong {
+  display: block;
+  color: #0f172a;
+}
+
+.phase4-safety-detail p {
+  margin: 6px 0 0;
+  color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.phase4-journey-details .phase4-leg-list {
+  margin-top: 0;
+}
+
+.phase4-journey-details .phase4-leg-row {
+  grid-template-columns:
+    0.65fr
+    1.35fr
+    1fr
+    1fr
+    0.7fr
+    0.55fr;
+}
+
+@media (max-width: 900px) {
+  .phase4-primary-leg-preview,
+  .phase4-journey-details .phase4-leg-row {
+    grid-template-columns: 1fr;
+  }
+}
+/* Phase 24 journey details end */
