@@ -13,17 +13,28 @@ APP_DIR = REPO_ROOT / "app"
 def ensure_test_runtime() -> None:
     try:
         import fastapi  # noqa: F401
-        import httpx  # noqa: F401
-    except ModuleNotFoundError as exc:
+        from fastapi.testclient import TestClient as _TestClient  # noqa: F401
+    except (ImportError, RuntimeError) as exc:
         venv_python = REPO_ROOT / "venv" / "bin" / "python"
-        if venv_python.is_file() and Path(sys.executable).resolve() != venv_python.resolve():
+
+        if (
+            venv_python.is_file()
+            and Path(sys.executable).resolve()
+            != venv_python.resolve()
+        ):
             os.execv(
                 str(venv_python),
-                [str(venv_python), str(Path(__file__).resolve()), *sys.argv[1:]],
+                [
+                    str(venv_python),
+                    str(Path(__file__).resolve()),
+                    *sys.argv[1:],
+                ],
             )
+
         raise SystemExit(
-            "FastAPI TestClient dependencies are missing. Install app/requirements.txt "
-            "and httpx in the active Python environment."
+            "FastAPI TestClient runtime is unavailable. "
+            "Install app/requirements.txt and httpx2. "
+            f"Original error: {exc}"
         ) from exc
 
 
