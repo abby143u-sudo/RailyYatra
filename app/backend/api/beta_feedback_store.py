@@ -288,6 +288,30 @@ def beta_feedback_status_counts() -> dict[str, int]:
     return counts
 
 
+
+def delete_beta_feedback(feedback_id: int) -> bool:
+    ensure_beta_feedback_table()
+
+    with database_connection() as connection:
+        if postgres_enabled():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "DELETE FROM beta_feedback WHERE id = %s",
+                    (feedback_id,),
+                )
+                deleted = cursor.rowcount > 0
+
+            connection.commit()
+            return deleted
+
+        cursor = connection.execute(
+            "DELETE FROM beta_feedback WHERE id = ?",
+            (feedback_id,),
+        )
+        connection.commit()
+        return cursor.rowcount > 0
+
+
 def set_beta_feedback_status(
     feedback_id: int,
     status: str,

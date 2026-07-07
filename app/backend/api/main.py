@@ -851,6 +851,7 @@ from fastapi import (
 from pydantic import BaseModel as _Phase18BaseModel
 
 from backend.api.beta_feedback_store import (
+    delete_beta_feedback,
     beta_feedback_status_counts,
     beta_feedback_store_status,
     count_beta_feedback,
@@ -1040,5 +1041,26 @@ def update_beta_feedback_status(
         "feedback_id": feedback_id,
         "status": status,
         "message": "Feedback status updated.",
+    }
+
+@app.delete("/admin/beta-feedback/{feedback_id}")
+def remove_beta_feedback(
+    feedback_id: int,
+    request: _Phase18Request,
+):
+    _phase18_require_admin(request)
+
+    deleted = delete_beta_feedback(feedback_id)
+
+    if not deleted:
+        raise _Phase18HTTPException(
+            status_code=404,
+            detail="Feedback not found.",
+        )
+
+    return {
+        "ok": True,
+        "feedback_id": feedback_id,
+        "message": "Feedback deleted.",
     }
 
