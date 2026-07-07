@@ -38,6 +38,7 @@ export default function AdminBetaFeedbackPanel() {
   const [loadStatus, setLoadStatus] = useState("idle");
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [serverSummary, setServerSummary] = useState(null);
@@ -247,6 +248,81 @@ export default function AdminBetaFeedbackPanel() {
     }
   }
 
+  async function deleteFeedback(feedbackId) {
+    const adminToken = token.trim();
+
+    if (!adminToken) {
+      setLoadStatus("error");
+      setError("Admin token paste karo.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete feedback #${feedbackId}? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingId(feedbackId);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${apiBase}/admin/beta-feedback/${feedbackId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "X-RailYatra-Admin-Token": adminToken,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+
+      if (!response.ok) {
+        const message =
+          data?.error?.message ||
+          data?.detail ||
+          text ||
+          `Delete failed with status ${response.status}`;
+
+        throw new Error(message);
+      }
+
+      setFeedback((items) =>
+        items.filter((item) => item.id !== feedbackId)
+      );
+
+      setServerSummary((current) => {
+        if (!current) return current;
+
+        const deletedItem = feedback.find(
+          (item) => item.id === feedbackId
+        );
+
+        const deletedStatus = deletedItem?.status || "new";
+
+        return {
+          ...current,
+          total: Math.max(0, (current.total || 0) - 1),
+          [deletedStatus]: Math.max(
+            0,
+            (current[deletedStatus] || 0) - 1
+          ),
+        };
+      });
+
+      setLoadStatus("success");
+    } catch (err) {
+      setLoadStatus("error");
+      setError(err?.message || "Could not delete feedback.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   if (!isOpen) return null;
 
   return (
@@ -348,9 +424,21 @@ export default function AdminBetaFeedbackPanel() {
               <div className="admin-feedback-item" key={item.id}>
                 <div className="admin-feedback-item-top">
                   <strong>#{item.id}</strong>
-                  <span className={`admin-feedback-status admin-feedback-status-${item.status || "new"}`}>
-                    {item.status || "new"}
-                  </span>
+
+                  <div className="admin-feedback-item-actions">
+                    <span className={`admin-feedback-status admin-feedback-status-${item.status || "new"}`}>
+                      {item.status || "new"}
+                    </span>
+
+                    <button
+                      type="button"
+                      className="admin-feedback-delete-button"
+                      disabled={deletingId === item.id}
+                      onClick={() => deleteFeedback(item.id)}
+                    >
+                      {deletingId === item.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
                 </div>
 
                 <p>{item.message}</p>

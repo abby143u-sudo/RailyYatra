@@ -244,3 +244,25 @@
     grid-template-columns: repeat(2, minmax(110px, 1fr));
   }
 }
+
+.admin-feedback-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-feedback-delete-button {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-feedback-delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
