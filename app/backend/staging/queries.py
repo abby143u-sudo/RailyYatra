@@ -91,20 +91,52 @@ def find_train_by_number(train_number: str) -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
-def get_train_stops(train_number: str, limit: int = 200) -> list[dict[str, Any]]:
+def get_train_stops(
+    train_number: str,
+    limit: int = 200,
+) -> list[dict[str, Any]]:
     number = train_number.strip()
+    safe_limit = max(1, min(int(limit), 500))
 
     with get_connection() as conn:
+        table_info = conn.execute(
+            "PRAGMA table_info(staging_train_stops)"
+        ).fetchall()
+
+        columns = {
+            str(row[1])
+            for row in table_info
+        }
+
+        if "day_offset" in columns:
+            day_expression = "day_offset"
+        elif "day" in columns:
+            day_expression = "day AS day_offset"
+        else:
+            day_expression = "0 AS day_offset"
+
+        order_expression = (
+            "stop_sequence, id"
+            if "id" in columns
+            else "stop_sequence"
+        )
+
         rows = conn.execute(
-            """
-            SELECT train_number, station_code, stop_sequence,
-                   arrival, departure, distance, day_offset
+            f"""
+            SELECT
+                train_number,
+                station_code,
+                stop_sequence,
+                arrival,
+                departure,
+                distance,
+                {day_expression}
             FROM staging_train_stops
             WHERE train_number = ?
-            ORDER BY stop_sequence, id
+            ORDER BY {order_expression}
             LIMIT ?
             """,
-            (number, limit),
+            (number, safe_limit),
         ).fetchall()
 
     return to_dicts(rows)
