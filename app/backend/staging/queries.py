@@ -98,6 +98,15 @@ def get_train_stops(
     number = train_number.strip()
     safe_limit = max(1, min(int(limit), 500))
 
+    def choose_column(
+        available: set[str],
+        candidates: list[str],
+    ) -> str | None:
+        for candidate in candidates:
+            if candidate in available:
+                return candidate
+        return None
+
     with get_connection() as conn:
         table_info = conn.execute(
             "PRAGMA table_info(staging_train_stops)"
@@ -108,34 +117,87 @@ def get_train_stops(
             for row in table_info
         }
 
-        if "day_offset" in columns:
-            day_expression = "day_offset"
-        elif "day" in columns:
-            day_expression = "day AS day_offset"
-        else:
-            day_expression = "0 AS day_offset"
+        if not columns:
+            return []
 
-        order_expression = (
-            "stop_sequence, id"
-            if "id" in columns
-            else "stop_sequence"
+        train_column = choose_column(
+            columns,
+            ["train_number", "train_no"],
+        )
+        station_column = choose_column(
+            columns,
+            ["station_code", "station"],
+        )
+        sequence_column = choose_column(
+            columns,
+            [
+                "stop_sequence",
+                "stop_order",
+                "sequence",
+            ],
         )
 
-        rows = conn.execute(
-            f"""
+        arrival_column = choose_column(
+            columns,
+            ["arrival", "arrival_time"],
+        )
+        departure_column = choose_column(
+            columns,
+            ["departure", "departure_time"],
+        )
+        distance_column = choose_column(
+            columns,
+            [
+                "distance",
+                "distance_km",
+                "distance_from_source",
+            ],
+        )
+        day_column = choose_column(
+            columns,
+            ["day_offset", "day"],
+        )
+
+        required = {
+            "train": train_column,
+            "station": station_column,
+            "sequence": sequence_column,
+        }
+
+        if any(value is None for value in required.values()):
+            return []
+
+        def select_expression(
+            column: str | None,
+            alias: str,
+            fallback: str = "NULL",
+        ) -> str:
+            if column:
+                return f'"{column}" AS "{alias}"'
+            return f'{fallback} AS "{alias}"'
+
+        order_parts = [f'"{sequence_column}"']
+
+        if "id" in columns:
+            order_parts.append('"id"')
+
+        query = f"""
             SELECT
-                train_number,
-                station_code,
-                stop_sequence,
-                arrival,
-                departure,
-                distance,
-                {day_expression}
+                {select_expression(train_column, "train_number")},
+                {select_expression(station_column, "station_code")},
+                {select_expression(sequence_column, "stop_sequence")},
+                {select_expression(arrival_column, "arrival")},
+                {select_expression(departure_column, "departure")},
+                {select_expression(distance_column, "distance", "0")},
+                {select_expression(day_column, "day_offset", "0")}
             FROM staging_train_stops
-            WHERE train_number = ?
-            ORDER BY {order_expression}
+            WHERE "{train_column}" = ?
+            ORDER BY {", ".join(order_parts)}
             LIMIT ?
-            """,
+        """
+
+        rows = conn.execute(
+            query,
             (number, safe_limit),
         ).fetchall()
 
