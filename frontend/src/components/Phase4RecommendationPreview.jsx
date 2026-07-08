@@ -46,6 +46,7 @@ export default function Phase4RecommendationPreview() {
   const [destination, setDestination] = useState("VVH");
   const [sourceSuggestions, setSourceSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+  const [stopDetails, setStopDetails] = useState({});
   const [state, setState] = useState({
     loading: false,
     error: "",
@@ -149,6 +150,8 @@ export default function Phase4RecommendationPreview() {
       return;
     }
 
+    setStopDetails({});
+
     setState({
       loading: true,
       error: "",
@@ -182,6 +185,109 @@ export default function Phase4RecommendationPreview() {
         error: error instanceof Error ? error.message : "Unable to reach recommend-v2 engine",
         data: null,
       });
+    }
+  }
+
+  async function toggleTrainStops(
+    trainNumber,
+    fromSequence,
+    toSequence
+  ) {
+    const key =
+      `${trainNumber}-${fromSequence}-${toSequence}`;
+
+    const existing = stopDetails[key];
+
+    if (existing?.open) {
+      setStopDetails((current) => ({
+        ...current,
+        [key]: {
+          ...current[key],
+          open: false,
+        },
+      }));
+      return;
+    }
+
+    if (existing?.stops?.length) {
+      setStopDetails((current) => ({
+        ...current,
+        [key]: {
+          ...current[key],
+          open: true,
+        },
+      }));
+      return;
+    }
+
+    setStopDetails((current) => ({
+      ...current,
+      [key]: {
+        loading: true,
+        error: "",
+        open: true,
+        stops: [],
+      },
+    }));
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/staging/trains/` +
+        `${encodeURIComponent(trainNumber)}/stops?limit=500`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const allStops = Array.isArray(data.stops)
+        ? data.stops
+        : [];
+
+      const start = Number(fromSequence);
+      const end = Number(toSequence);
+
+      const rangeAvailable =
+        Number.isFinite(start) &&
+        Number.isFinite(end);
+
+      const visibleStops = rangeAvailable
+        ? allStops.filter((stop) => {
+            const sequence = Number(
+              stop.stop_sequence
+            );
+
+            return (
+              Number.isFinite(sequence) &&
+              sequence >= start &&
+              sequence <= end
+            );
+          })
+        : allStops;
+
+      setStopDetails((current) => ({
+        ...current,
+        [key]: {
+          loading: false,
+          error: "",
+          open: true,
+          stops: visibleStops,
+        },
+      }));
+    } catch (error) {
+      setStopDetails((current) => ({
+        ...current,
+        [key]: {
+          loading: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unable to load train stops",
+          open: true,
+          stops: [],
+        },
+      }));
     }
   }
 
@@ -405,64 +511,216 @@ export default function Phase4RecommendationPreview() {
                       </div>
 
                       <div className="phase4-leg-list">
-                        {(route.legs || []).map((leg, index) => (
-                          <div
-                            className="phase4-leg-row"
-                            key={`${route.recommendation_rank}-${leg.train_number}-${index}`}
-                          >
-                            <div>
-                              <span>Train</span>
-                              <strong>
-                                {displayValue(leg.train_number)}
-                              </strong>
-                            </div>
+                        {(route.legs || []).map((leg, index) => {
+                          const stopKey =
+                            `${leg.train_number}-` +
+                            `${leg.from_sequence}-` +
+                            `${leg.to_sequence}`;
 
-                            <div>
-                              <span>Name</span>
-                              <strong>
-                                {displayValue(
-                                  leg.train_name,
-                                  "Train name unavailable"
-                                )}
-                              </strong>
-                            </div>
+                          const details =
+                            stopDetails[stopKey];
 
-                            <div>
-                              <span>Route</span>
-                              <strong>
-                                {displayValue(
-                                  leg.from_station_code
-                                )}{" "}
-                                →{" "}
-                                {displayValue(
-                                  leg.to_station_code
-                                )}
-                              </strong>
-                            </div>
+                          return (
+                            <div
+                              className="phase4-leg-block"
+                              key={
+                                `${route.recommendation_rank}-` +
+                                `${leg.train_number}-${index}`
+                              }
+                            >
+                              <div className="phase4-leg-row">
+                                <div>
+                                  <span>Train</span>
+                                  <strong>
+                                    {displayValue(
+                                      leg.train_number
+                                    )}
+                                  </strong>
+                                </div>
 
-                            <div>
-                              <span>Time</span>
-                              <strong>
-                                {displayValue(leg.departure)} →{" "}
-                                {displayValue(leg.arrival)}
-                              </strong>
-                            </div>
+                                <div>
+                                  <span>Name</span>
+                                  <strong>
+                                    {displayValue(
+                                      leg.train_name,
+                                      "Train name unavailable"
+                                    )}
+                                  </strong>
+                                </div>
 
-                            <div>
-                              <span>Distance</span>
-                              <strong>
-                                {displayValue(leg.distance)} km
-                              </strong>
-                            </div>
+                                <div>
+                                  <span>Route</span>
+                                  <strong>
+                                    {displayValue(
+                                      leg.from_station_code
+                                    )}{" "}
+                                    →{" "}
+                                    {displayValue(
+                                      leg.to_station_code
+                                    )}
+                                  </strong>
+                                </div>
 
-                            <div>
-                              <span>Stops</span>
-                              <strong>
-                                {displayValue(leg.stop_count)}
-                              </strong>
+                                <div>
+                                  <span>Time</span>
+                                  <strong>
+                                    {displayValue(
+                                      leg.departure
+                                    )}{" "}
+                                    →{" "}
+                                    {displayValue(
+                                      leg.arrival
+                                    )}
+                                  </strong>
+                                </div>
+
+                                <div>
+                                  <span>Distance</span>
+                                  <strong>
+                                    {displayValue(
+                                      leg.distance
+                                    )}{" "}
+                                    km
+                                  </strong>
+                                </div>
+
+                                <div>
+                                  <span>Stops</span>
+                                  <strong>
+                                    {displayValue(
+                                      leg.stop_count
+                                    )}
+                                  </strong>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                className="phase4-stop-toggle"
+                                onClick={() =>
+                                  toggleTrainStops(
+                                    leg.train_number,
+                                    leg.from_sequence,
+                                    leg.to_sequence
+                                  )
+                                }
+                                disabled={
+                                  !leg.train_number ||
+                                  details?.loading
+                                }
+                              >
+                                {details?.loading
+                                  ? "Loading stops..."
+                                  : details?.open
+                                    ? "Hide intermediate stops"
+                                    : "View intermediate stops"}
+                              </button>
+
+                              {details?.open && (
+                                <div className="phase4-stop-panel">
+                                  {details.error && (
+                                    <p className="phase4-stop-error">
+                                      Could not load stops:{" "}
+                                      {details.error}
+                                    </p>
+                                  )}
+
+                                  {!details.loading &&
+                                    !details.error &&
+                                    details.stops.length === 0 && (
+                                      <p className="phase4-stop-empty">
+                                        No stop details found for
+                                        this train leg.
+                                      </p>
+                                    )}
+
+                                  {details.stops.length > 0 && (
+                                    <div className="phase4-stop-list">
+                                      {details.stops.map(
+                                        (stop, stopIndex) => {
+                                          const isBoarding =
+                                            stopIndex === 0;
+
+                                          const isDestination =
+                                            stopIndex ===
+                                            details.stops.length -
+                                              1;
+
+                                          return (
+                                            <div
+                                              className={
+                                                "phase4-stop-row"
+                                              }
+                                              key={
+                                                `${stop.station_code}-` +
+                                                `${stop.stop_sequence}-` +
+                                                stopIndex
+                                              }
+                                            >
+                                              <div className="phase4-stop-marker">
+                                                <span />
+                                              </div>
+
+                                              <div className="phase4-stop-station">
+                                                <strong>
+                                                  {displayValue(
+                                                    stop.station_code
+                                                  )}
+                                                </strong>
+
+                                                <small>
+                                                  Stop{" "}
+                                                  {displayValue(
+                                                    stop.stop_sequence
+                                                  )}
+                                                  {isBoarding
+                                                    ? " · Boarding"
+                                                    : ""}
+                                                  {isDestination
+                                                    ? " · Destination"
+                                                    : ""}
+                                                </small>
+                                              </div>
+
+                                              <div>
+                                                <span>Arrival</span>
+                                                <strong>
+                                                  {displayValue(
+                                                    stop.arrival
+                                                  )}
+                                                </strong>
+                                              </div>
+
+                                              <div>
+                                                <span>Departure</span>
+                                                <strong>
+                                                  {displayValue(
+                                                    stop.departure
+                                                  )}
+                                                </strong>
+                                              </div>
+
+                                              <div>
+                                                <span>Day</span>
+                                                <strong>
+                                                  Day{" "}
+                                                  {Number(
+                                                    stop.day_offset ||
+                                                      0
+                                                  ) + 1}
+                                                </strong>
+                                              </div>
+                                            </div>
+                                          );
+                                        }
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       <div className="phase4-booking-warning">

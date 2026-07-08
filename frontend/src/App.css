@@ -6186,3 +6186,157 @@ li {
   }
 }
 /* Phase 24 journey details end */
+
+/* Phase 24 intermediate stops start */
+.phase4-leg-block {
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.phase4-leg-block .phase4-leg-row {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.phase4-stop-toggle {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0;
+  color: #1d4ed8;
+  background: rgba(239, 246, 255, 0.76);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 900;
+  cursor: pointer;
+  text-align: left;
+}
+
+.phase4-stop-toggle:hover {
+  background: rgba(219, 234, 254, 0.84);
+}
+
+.phase4-stop-toggle:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.phase4-stop-panel {
+  padding: 12px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(248, 250, 252, 0.88);
+}
+
+.phase4-stop-list {
+  display: grid;
+}
+
+.phase4-stop-row {
+  display: grid;
+  grid-template-columns:
+    22px
+    minmax(110px, 1.3fr)
+    repeat(3, minmax(75px, 0.7fr));
+  gap: 10px;
+  align-items: center;
+  min-height: 64px;
+}
+
+.phase4-stop-marker {
+  position: relative;
+  align-self: stretch;
+}
+
+.phase4-stop-marker::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  width: 2px;
+  background: #bfdbfe;
+}
+
+.phase4-stop-marker span {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 5px;
+  width: 12px;
+  height: 12px;
+  border: 3px solid #2563eb;
+  border-radius: 50%;
+  background: #ffffff;
+  transform: translateY(-50%);
+}
+
+.phase4-stop-row:first-child
+.phase4-stop-marker::before {
+  top: 50%;
+}
+
+.phase4-stop-row:last-child
+.phase4-stop-marker::before {
+  bottom: 50%;
+}
+
+.phase4-stop-row > div:not(.phase4-stop-marker) {
+  display: grid;
+  gap: 3px;
+}
+
+.phase4-stop-row span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.phase4-stop-row strong {
+  color: #0f172a;
+  font-size: 0.86rem;
+}
+
+.phase4-stop-station small {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.phase4-stop-error,
+.phase4-stop-empty {
+  margin: 0;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+}
+
+.phase4-stop-error {
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.phase4-stop-empty {
+  color: #475569;
+  background: #f8fafc;
+}
+
+@media (max-width: 760px) {
+  .phase4-stop-row {
+    grid-template-columns:
+      22px
+      minmax(0, 1fr)
+      minmax(65px, 0.7fr);
+  }
+
+  .phase4-stop-row > div:nth-child(4),
+  .phase4-stop-row > div:nth-child(5) {
+    grid-column: 2 / -1;
+    padding-bottom: 4px;
+  }
+}
+/* Phase 24 intermediate stops end */
