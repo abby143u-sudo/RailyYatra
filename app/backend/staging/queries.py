@@ -73,16 +73,93 @@ def search_stations(query: str, limit: int = 10) -> list[dict[str, Any]]:
     return to_dicts(rows)
 
 
-def find_train_by_number(train_number: str) -> dict[str, Any] | None:
+def find_train_by_number(
+    train_number: str,
+) -> dict[str, Any] | None:
     number = train_number.strip()
 
+    def choose_column(
+        available: set[str],
+        candidates: list[str],
+    ) -> str | None:
+        for candidate in candidates:
+            if candidate in available:
+                return candidate
+        return None
+
     with get_connection() as conn:
+        table_info = conn.execute(
+            "PRAGMA table_info(staging_trains)"
+        ).fetchall()
+
+        columns = {
+            str(row[1])
+            for row in table_info
+        }
+
+        if not columns:
+            return None
+
+        number_column = choose_column(
+            columns,
+            ["train_number", "train_no"],
+        )
+        name_column = choose_column(
+            columns,
+            ["train_name", "name"],
+        )
+        source_column = choose_column(
+            columns,
+            ["source_station_code", "source"],
+        )
+        destination_column = choose_column(
+            columns,
+            [
+                "destination_station_code",
+                "destination",
+            ],
+        )
+        type_column = choose_column(
+            columns,
+            ["train_type", "type"],
+        )
+
+        if number_column is None:
+            return None
+
+        def select_expression(
+            column: str | None,
+            alias: str,
+        ) -> str:
+            if column:
+                return f'"{column}" AS "{alias}"'
+            return f'NULL AS "{alias}"'
+
         row = conn.execute(
-            """
-            SELECT train_number, train_name, source_station_code,
-                   destination_station_code, train_type
+            f"""
+            SELECT
+                {select_expression(
+                    number_column,
+                    "train_number",
+                )},
+                {select_expression(
+                    name_column,
+                    "train_name",
+                )},
+                {select_expression(
+                    source_column,
+                    "source_station_code",
+                )},
+                {select_expression(
+                    destination_column,
+                    "destination_station_code",
+                )},
+                {select_expression(
+                    type_column,
+                    "train_type",
+                )}
             FROM staging_trains
-            WHERE train_number = ?
+            WHERE "{number_column}" = ?
             LIMIT 1
             """,
             (number,),
