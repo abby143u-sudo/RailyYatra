@@ -160,12 +160,14 @@ def recommend_staging_routes(
     destination_station_code: str,
     direct_limit: int = 8,
     transfer_limit: int = 2,
+    journey_date: str | None = None,
 ) -> dict[str, Any]:
     result = search_staging_routes(
         source_station_code=source_station_code,
         destination_station_code=destination_station_code,
         direct_limit=direct_limit,
         transfer_limit=transfer_limit,
+        journey_date=journey_date,
     )
 
     routes = result.get("routes", [])
@@ -183,6 +185,7 @@ def recommend_staging_routes(
         "engine": "phase_4_recommendation_engine",
         "source": result.get("source"),
         "destination": result.get("destination"),
+        "journey_date": result.get("journey_date"),
         "count": len(enriched_routes),
         "direct_count": direct_count,
         "one_transfer_count": transfer_count,

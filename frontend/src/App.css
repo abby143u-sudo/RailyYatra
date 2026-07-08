@@ -6404,3 +6404,65 @@ li {
   }
 }
 /* Phase 24 transfer connection end */
+
+/* Phase 25 journey date and timing start */
+.phase4-recommend-form {
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(160px, 0.7fr)
+    auto;
+}
+
+.phase4-recommend-date-field input {
+  text-transform: none;
+  min-height: 44px;
+}
+
+.phase4-recommend-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.phase4-journey-timing {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 14px;
+  background: rgba(239, 246, 255, 0.8);
+}
+
+.phase4-journey-timing > div {
+  display: grid;
+  gap: 4px;
+}
+
+.phase4-journey-timing span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.phase4-journey-timing strong {
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.phase4-journey-timing p {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .phase4-recommend-form,
+  .phase4-recommend-summary,
+  .phase4-journey-timing {
+    grid-template-columns: 1fr;
+  }
+}
+/* Phase 25 journey date and timing end */

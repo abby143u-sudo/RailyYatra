@@ -1,3 +1,4 @@
+from datetime import date
 from backend.api.data_quality_api import router as data_quality_router
 from backend.api.legacy_search_fallback import router as legacy_search_fallback_router
 from backend.api.live_status_api import router as live_status_router
@@ -672,7 +673,13 @@ except NameError:
 
 
 @app.get("/search-v2")
-def search_v2(source: str, destination: str, direct_limit: int = 8, transfer_limit: int = 3):
+def search_v2(
+    source: str,
+    destination: str,
+    direct_limit: int = 8,
+    transfer_limit: int = 3,
+    journey_date: date | None = None,
+):
     source_code = source.upper().strip()
     destination_code = destination.upper().strip()
 
@@ -697,6 +704,11 @@ def search_v2(source: str, destination: str, direct_limit: int = 8, transfer_lim
         destination_station_code=destination_code,
         direct_limit=safe_direct_limit,
         transfer_limit=safe_transfer_limit,
+        journey_date=(
+            journey_date.isoformat()
+            if journey_date
+            else None
+        ),
     )
 
     return {
@@ -706,6 +718,7 @@ def search_v2(source: str, destination: str, direct_limit: int = 8, transfer_lim
         "mode": result.get("mode"),
         "source": result.get("source"),
         "destination": result.get("destination"),
+        "journey_date": result.get("journey_date"),
         "count": result.get("count"),
         "direct_count": result.get("direct_count"),
         "one_transfer_count": result.get("one_transfer_count"),
@@ -723,7 +736,13 @@ from backend.staging.recommendation_engine import (
 
 
 @app.get("/recommend-v2")
-def recommend_v2(source: str, destination: str, direct_limit: int = 8, transfer_limit: int = 2):
+def recommend_v2(
+    source: str,
+    destination: str,
+    direct_limit: int = 8,
+    transfer_limit: int = 2,
+    journey_date: date | None = None,
+):
     source_code = source.upper().strip()
     destination_code = destination.upper().strip()
 
@@ -749,6 +768,11 @@ def recommend_v2(source: str, destination: str, direct_limit: int = 8, transfer_
         destination_station_code=destination_code,
         direct_limit=safe_direct_limit,
         transfer_limit=safe_transfer_limit,
+        journey_date=(
+            journey_date.isoformat()
+            if journey_date
+            else None
+        ),
     )
 # --- Phase 4 recommendation-v2 API end ---
 

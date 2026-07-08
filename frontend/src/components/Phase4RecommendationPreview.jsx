@@ -5,6 +5,32 @@ function cleanStationCode(value) {
   return value.trim().toUpperCase();
 }
 
+function localDateValue() {
+  const now = new Date();
+  const localNow = new Date(
+    now.getTime() - now.getTimezoneOffset() * 60000
+  );
+
+  return localNow.toISOString().slice(0, 10);
+}
+
+function formatDateTime(value) {
+  if (!value) {
+    return "—";
+  }
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return displayValue(value);
+  }
+
+  return parsed.toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 function displayValue(value, fallback = "—") {
   if (value === undefined || value === null || value === "") {
     return fallback;
@@ -44,6 +70,10 @@ function routeLabel(routeType) {
 export default function Phase4RecommendationPreview() {
   const [source, setSource] = useState("LTT");
   const [destination, setDestination] = useState("VVH");
+  const [journeyDate, setJourneyDate] = useState(
+    localDateValue()
+  );
+  const minimumJourneyDate = localDateValue();
   const [sourceSuggestions, setSourceSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [stopDetails, setStopDetails] = useState({});
@@ -162,6 +192,7 @@ export default function Phase4RecommendationPreview() {
       const params = new URLSearchParams({
         source: sourceCode,
         destination: destinationCode,
+        journey_date: journeyDate,
         direct_limit: "5",
         transfer_limit: "2",
       });
@@ -360,6 +391,19 @@ export default function Phase4RecommendationPreview() {
           )}
         </label>
 
+        <label className="phase4-recommend-date-field">
+          <span>Journey date</span>
+          <input
+            type="date"
+            value={journeyDate}
+            min={minimumJourneyDate}
+            onChange={(event) =>
+              setJourneyDate(event.target.value)
+            }
+            required
+          />
+        </label>
+
         <button type="submit" disabled={state.loading}>
           {state.loading ? "Ranking..." : "Get recommendations"}
         </button>
@@ -393,6 +437,13 @@ export default function Phase4RecommendationPreview() {
             <div>
               <span>One transfer</span>
               <strong>{state.data.one_transfer_count}</strong>
+            </div>
+
+            <div>
+              <span>Journey date</span>
+              <strong>
+                {displayValue(state.data.journey_date)}
+              </strong>
             </div>
           </div>
 
@@ -472,6 +523,56 @@ export default function Phase4RecommendationPreview() {
                           {displayValue(route.legs[0].arrival)}
                         </strong>
                       </div>
+                    </div>
+                  )}
+
+                  {route.journey_timing?.status ===
+                    "estimated" && (
+                    <div className="phase4-journey-timing">
+                      <div>
+                        <span>Departure</span>
+                        <strong>
+                          {formatDateTime(
+                            route.journey_timing
+                              .departure_datetime
+                          )}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Arrival</span>
+                        <strong>
+                          {formatDateTime(
+                            route.journey_timing
+                              .arrival_datetime
+                          )}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Total journey time</span>
+                        <strong>
+                          {displayValue(
+                            route.journey_timing
+                              .total_duration_label,
+                            "Unavailable"
+                          )}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Timetable status</span>
+                        <strong>Estimated</strong>
+                      </div>
+
+                      <p>
+                        {displayValue(
+                          route.journey_timing
+                            .operating_day_validation
+                            ?.reason,
+                          "Running-day verification unavailable."
+                        )}
+                      </p>
                     </div>
                   )}
 

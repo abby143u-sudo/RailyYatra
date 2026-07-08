@@ -4,6 +4,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from backend.staging.timetable import enrich_route_timing
+
 
 APP_DIR = Path(__file__).resolve().parents[2]
 DB_PATH = APP_DIR / "railyatra.db"
@@ -32,6 +34,7 @@ def find_direct_routes(
     source_station_code: str,
     destination_station_code: str,
     limit: int = 10,
+    journey_date: str | None = None,
 ) -> list[dict[str, Any]]:
     source = source_station_code.upper().strip()
     destination = destination_station_code.upper().strip()
@@ -50,6 +53,8 @@ def find_direct_routes(
                 s2.stop_sequence AS destination_sequence,
                 s1.departure AS departure,
                 s2.arrival AS arrival,
+                s1.day_offset AS source_day_offset,
+                s2.day_offset AS destination_day_offset,
                 COALESCE(s2.distance, 0) - COALESCE(s1.distance, 0) AS distance,
                 s2.stop_sequence - s1.stop_sequence AS stop_count
             FROM staging_train_stops s1
@@ -87,6 +92,12 @@ def find_direct_routes(
                         "to_sequence": row["destination_sequence"],
                         "departure": row["departure"],
                         "arrival": row["arrival"],
+                        "from_day_offset": safe_int(
+                            row["source_day_offset"]
+                        ),
+                        "to_day_offset": safe_int(
+                            row["destination_day_offset"]
+                        ),
                         "distance": safe_int(row["distance"]),
                         "stop_count": safe_int(row["stop_count"]),
                     }
@@ -97,7 +108,10 @@ def find_direct_routes(
             }
         )
 
-    return routes
+    return [
+        enrich_route_timing(route, journey_date)
+        for route in routes
+    ]
 
 
 def load_first_leg_candidates(
@@ -118,6 +132,8 @@ def load_first_leg_candidates(
             s2.stop_sequence AS transfer_arrival_sequence,
             s1.departure AS first_departure,
             s2.arrival AS first_arrival,
+            s1.day_offset AS first_departure_day_offset,
+            s2.day_offset AS first_arrival_day_offset,
             COALESCE(s2.distance, 0) - COALESCE(s1.distance, 0) AS first_distance,
             s2.stop_sequence - s1.stop_sequence AS first_stop_count
         FROM staging_train_stops s1
@@ -160,6 +176,8 @@ def load_second_leg_candidates(
             s4.stop_sequence AS destination_sequence,
             s3.departure AS second_departure,
             s4.arrival AS second_arrival,
+            s3.day_offset AS second_departure_day_offset,
+            s4.day_offset AS second_arrival_day_offset,
             COALESCE(s4.distance, 0) - COALESCE(s3.distance, 0) AS second_distance,
             s4.stop_sequence - s3.stop_sequence AS second_stop_count
         FROM staging_train_stops s3
@@ -266,6 +284,7 @@ def find_one_transfer_routes(
     source_station_code: str,
     destination_station_code: str,
     limit: int = 10,
+    journey_date: str | None = None,
 ) -> list[dict[str, Any]]:
     source = source_station_code.upper().strip()
     destination = destination_station_code.upper().strip()
@@ -354,6 +373,16 @@ def find_one_transfer_routes(
                         "to_sequence": first_leg["transfer_arrival_sequence"],
                         "departure": first_leg["first_departure"],
                         "arrival": first_leg["first_arrival"],
+                        "from_day_offset": safe_int(
+                            first_leg[
+                                "first_departure_day_offset"
+                            ]
+                        ),
+                        "to_day_offset": safe_int(
+                            first_leg[
+                                "first_arrival_day_offset"
+                            ]
+                        ),
                         "distance": first_distance,
                         "stop_count": first_stop_count,
                     },
@@ -367,6 +396,16 @@ def find_one_transfer_routes(
                         "to_sequence": second_leg["destination_sequence"],
                         "departure": second_leg["second_departure"],
                         "arrival": second_leg["second_arrival"],
+                        "from_day_offset": safe_int(
+                            second_leg[
+                                "second_departure_day_offset"
+                            ]
+                        ),
+                        "to_day_offset": safe_int(
+                            second_leg[
+                                "second_arrival_day_offset"
+                            ]
+                        ),
                         "distance": second_distance,
                         "stop_count": second_stop_count,
                     },
@@ -394,7 +433,10 @@ def find_one_transfer_routes(
         )
     )
 
-    return routes[:safe_limit]
+    return [
+        enrich_route_timing(route, journey_date)
+        for route in routes[:safe_limit]
+    ]
 
 
 def score_direct_route(row: dict[str, Any]) -> int:
@@ -431,6 +473,7 @@ def search_staging_routes(
     destination_station_code: str,
     direct_limit: int = 10,
     transfer_limit: int = 10,
+    journey_date: str | None = None,
 ) -> dict[str, Any]:
     source = source_station_code.upper().strip()
     destination = destination_station_code.upper().strip()
@@ -439,12 +482,14 @@ def search_staging_routes(
         source_station_code=source,
         destination_station_code=destination,
         limit=direct_limit,
+        journey_date=journey_date,
     )
 
     transfer_routes = find_one_transfer_routes(
         source_station_code=source,
         destination_station_code=destination,
         limit=transfer_limit,
+        journey_date=journey_date,
     )
 
     all_routes = direct_routes + transfer_routes
@@ -461,6 +506,7 @@ def search_staging_routes(
         "engine": "phase_3_staging_route_engine",
         "source": source,
         "destination": destination,
+        "journey_date": journey_date,
         "count": len(all_routes),
         "direct_count": len(direct_routes),
         "one_transfer_count": len(transfer_routes),
