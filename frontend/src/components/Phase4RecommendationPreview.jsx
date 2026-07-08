@@ -499,6 +499,73 @@ export default function Phase4RecommendationPreview() {
                             "Transfer safety details unavailable."
                           )}
                         </p>
+
+                        {route.route_type === "one_transfer" &&
+                          route.transfer_connection && (
+                            <div
+                              className={
+                                "phase4-transfer-connection " +
+                                `phase4-transfer-connection--${
+                                  route.transfer_connection
+                                    .risk_level || "unknown"
+                                }`
+                              }
+                            >
+                              <div>
+                                <span>Transfer station</span>
+                                <strong>
+                                  {displayValue(
+                                    route.transfer_station
+                                  )}
+                                </strong>
+                              </div>
+
+                              <div>
+                                <span>First train arrival</span>
+                                <strong>
+                                  {displayValue(
+                                    route.transfer_connection
+                                      .arrival
+                                  )}
+                                </strong>
+                              </div>
+
+                              <div>
+                                <span>Next train departure</span>
+                                <strong>
+                                  {displayValue(
+                                    route.transfer_connection
+                                      .departure
+                                  )}
+                                </strong>
+                              </div>
+
+                              <div>
+                                <span>Estimated wait</span>
+                                <strong>
+                                  {displayValue(
+                                    route.transfer_connection
+                                      .wait_label,
+                                    "Unavailable"
+                                  )}
+                                </strong>
+                              </div>
+
+                              {route.transfer_connection
+                                .rolls_to_next_day && (
+                                <p>
+                                  Next-day departure assumed
+                                  from timetable clock values.
+                                </p>
+                              )}
+
+                              <small>
+                                Preview estimate only. Actual
+                                connection depends on journey
+                                date, operating days and delays.
+                              </small>
+                            </div>
+                          )}
                       </div>
 
                       <div className="phase4-reasons-box">

@@ -6340,3 +6340,67 @@ li {
   }
 }
 /* Phase 24 intermediate stops end */
+
+/* Phase 24 transfer connection start */
+.phase4-transfer-connection {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.phase4-transfer-connection > div {
+  display: grid;
+  gap: 3px;
+}
+
+.phase4-transfer-connection span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.phase4-transfer-connection strong {
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.phase4-transfer-connection p,
+.phase4-transfer-connection small {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.phase4-transfer-connection--risky {
+  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(254, 242, 242, 0.9);
+}
+
+.phase4-transfer-connection--tight {
+  border-color: rgba(234, 88, 12, 0.25);
+  background: rgba(255, 247, 237, 0.9);
+}
+
+.phase4-transfer-connection--comfortable {
+  border-color: rgba(22, 163, 74, 0.2);
+  background: rgba(240, 253, 244, 0.9);
+}
+
+.phase4-transfer-connection--long_wait,
+.phase4-transfer-connection--unknown {
+  border-color: rgba(37, 99, 235, 0.18);
+  background: rgba(239, 246, 255, 0.88);
+}
+
+@media (max-width: 760px) {
+  .phase4-transfer-connection {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Phase 24 transfer connection end */

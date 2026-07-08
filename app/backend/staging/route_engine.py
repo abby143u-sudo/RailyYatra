@@ -179,6 +179,89 @@ def load_second_leg_candidates(
     return rows_to_dicts(rows)
 
 
+def parse_clock_minutes(value: Any) -> int | None:
+    if value in (None, ""):
+        return None
+
+    parts = str(value).strip().split(":")
+
+    if len(parts) < 2:
+        return None
+
+    try:
+        hours = int(parts[0])
+        minutes = int(parts[1])
+    except (TypeError, ValueError):
+        return None
+
+    if not 0 <= hours <= 23 or not 0 <= minutes <= 59:
+        return None
+
+    return hours * 60 + minutes
+
+
+def build_transfer_connection(
+    first_arrival: Any,
+    second_departure: Any,
+) -> dict[str, Any]:
+    arrival_minutes = parse_clock_minutes(first_arrival)
+    departure_minutes = parse_clock_minutes(second_departure)
+
+    if arrival_minutes is None or departure_minutes is None:
+        return {
+            "status": "unknown",
+            "estimated": True,
+            "arrival": first_arrival,
+            "departure": second_departure,
+            "wait_minutes": None,
+            "wait_label": "Timing unavailable",
+            "risk_level": "unknown",
+            "rolls_to_next_day": False,
+            "reason": (
+                "Transfer wait cannot be estimated because an "
+                "arrival or departure time is missing."
+            ),
+        }
+
+    wait_minutes = departure_minutes - arrival_minutes
+    rolls_to_next_day = wait_minutes < 0
+
+    if rolls_to_next_day:
+        wait_minutes += 24 * 60
+
+    hours, minutes = divmod(wait_minutes, 60)
+
+    if hours:
+        wait_label = f"{hours}h {minutes}m"
+    else:
+        wait_label = f"{minutes}m"
+
+    if wait_minutes < 30:
+        risk_level = "risky"
+        reason = "Estimated transfer wait is below 30 minutes."
+    elif wait_minutes < 60:
+        risk_level = "tight"
+        reason = "Estimated transfer wait is below one hour."
+    elif wait_minutes <= 240:
+        risk_level = "comfortable"
+        reason = "Estimated transfer wait is between one and four hours."
+    else:
+        risk_level = "long_wait"
+        reason = "Estimated transfer wait is longer than four hours."
+
+    return {
+        "status": "estimated",
+        "estimated": True,
+        "arrival": first_arrival,
+        "departure": second_departure,
+        "wait_minutes": wait_minutes,
+        "wait_label": wait_label,
+        "risk_level": risk_level,
+        "rolls_to_next_day": rolls_to_next_day,
+        "reason": reason,
+    }
+
+
 def find_one_transfer_routes(
     source_station_code: str,
     destination_station_code: str,
@@ -234,8 +317,21 @@ def find_one_transfer_routes(
 
             warnings: list[str] = []
 
-            if first_leg["first_arrival"] in (None, "") or second_leg["second_departure"] in (None, ""):
+            transfer_connection = build_transfer_connection(
+                first_arrival=first_leg["first_arrival"],
+                second_departure=second_leg["second_departure"],
+            )
+
+            transfer_risk = transfer_connection["risk_level"]
+
+            if transfer_risk == "unknown":
                 warnings.append("transfer_time_unknown")
+            elif transfer_risk == "risky":
+                warnings.append("transfer_too_tight")
+            elif transfer_risk == "tight":
+                warnings.append("transfer_tight")
+            elif transfer_risk == "long_wait":
+                warnings.append("transfer_long_wait")
 
             first_distance = safe_int(first_leg["first_distance"])
             second_distance = safe_int(second_leg["second_distance"])
@@ -277,6 +373,7 @@ def find_one_transfer_routes(
                 ],
                 "total_stop_count": first_stop_count + second_stop_count,
                 "total_distance": first_distance + second_distance,
+                "transfer_connection": transfer_connection,
                 "warnings": warnings,
             }
 

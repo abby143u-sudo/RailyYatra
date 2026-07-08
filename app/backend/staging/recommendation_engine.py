@@ -27,7 +27,9 @@ def get_confidence_label(score: int) -> str:
     return "low"
 
 
-def get_transfer_safety(route: dict[str, Any]) -> dict[str, Any]:
+def get_transfer_safety(
+    route: dict[str, Any],
+) -> dict[str, Any]:
     route_type = route.get("route_type")
 
     if route_type == "direct":
@@ -37,20 +39,57 @@ def get_transfer_safety(route: dict[str, Any]) -> dict[str, Any]:
             "reason": "Direct route with one train leg.",
         }
 
-    warnings = route.get("warnings") or []
+    connection = route.get("transfer_connection") or {}
+    risk_level = connection.get("risk_level")
+    wait_label = connection.get("wait_label")
 
-    if "transfer_time_unknown" in warnings:
+    if risk_level == "risky":
+        return {
+            "level": "risky",
+            "label": "Risky connection",
+            "reason": (
+                f"Estimated transfer wait is {wait_label}. "
+                "This connection may be too short."
+            ),
+        }
+
+    if risk_level == "tight":
         return {
             "level": "caution",
-            "label": "Transfer time unknown",
-            "reason": "Arrival or departure data is missing for at least one transfer leg.",
+            "label": "Tight connection",
+            "reason": (
+                f"Estimated transfer wait is {wait_label}. "
+                "Extra caution is recommended."
+            ),
+        }
+
+    if risk_level == "comfortable":
+        return {
+            "level": "safe",
+            "label": "Comfortable connection",
+            "reason": (
+                f"Estimated transfer wait is {wait_label}."
+            ),
+        }
+
+    if risk_level == "long_wait":
+        return {
+            "level": "moderate",
+            "label": "Long transfer wait",
+            "reason": (
+                f"Estimated transfer wait is {wait_label}."
+            ),
         }
 
     return {
-        "level": "moderate",
-        "label": "Transfer required",
-        "reason": "Route requires changing trains once.",
+        "level": "caution",
+        "label": "Transfer time unknown",
+        "reason": (
+            "Arrival or departure timing is unavailable, "
+            "so transfer wait cannot be estimated."
+        ),
     }
+
 
 
 def build_reasons(route: dict[str, Any]) -> list[str]:
@@ -63,7 +102,21 @@ def build_reasons(route: dict[str, Any]) -> list[str]:
     if route_type == "direct":
         reasons.append("Direct train route found from staging railway data.")
     elif route_type == "one_transfer":
-        reasons.append(f"One-transfer route via {route.get('transfer_station')} found from staging railway data.")
+        reasons.append(
+            f"One-transfer route via "
+            f"{route.get('transfer_station')} found from "
+            f"staging railway data."
+        )
+
+        connection = route.get("transfer_connection") or {}
+        wait_label = connection.get("wait_label")
+
+        if wait_label:
+            reasons.append(
+                f"Estimated transfer wait at "
+                f"{route.get('transfer_station')}: "
+                f"{wait_label}."
+            )
     else:
         reasons.append("Route found from staging railway data.")
 
