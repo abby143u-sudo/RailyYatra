@@ -76,6 +76,10 @@ run_step \
   python3 scripts/smoke_frontend_api_config.py
 
 run_step \
+  "Account frontend contract smoke test" \
+  python3 scripts/smoke_account_frontend_contract.py
+
+run_step \
   "Frontend smoke test" \
   scripts/smoke_frontend.sh
 
