@@ -1298,3 +1298,8 @@ def remove_beta_feedback(
 from backend.api.auth_api import router as auth_router
 
 app.include_router(auth_router)
+
+# === Phase 34 Account Saved Journeys API ===
+from backend.api.account_api import router as account_router
+
+app.include_router(account_router)

@@ -271,5 +271,235 @@ class AuthenticationApiTests(unittest.TestCase):
         )
 
 
+    def test_saved_journeys_require_authentication(self):
+        response = client.get(
+            "/account/saved-journeys"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            401,
+        )
+
+    def test_saved_journey_create_list_upsert_delete(self):
+        self.register()
+
+        create_response = client.post(
+            "/account/saved-journeys",
+            json={
+                "source": "pnbe",
+                "destination": "ndls",
+                "journey_date": "2026-08-01",
+                "class_code": "3A",
+                "quota": "GN",
+                "label": "Patna to Delhi",
+                "note": "Family journey",
+            },
+        )
+
+        self.assertEqual(
+            create_response.status_code,
+            201,
+            create_response.text,
+        )
+
+        created = create_response.json()[
+            "journey"
+        ]
+
+        self.assertEqual(
+            created["source"],
+            "PNBE",
+        )
+        self.assertEqual(
+            created["destination"],
+            "NDLS",
+        )
+
+        update_response = client.post(
+            "/account/saved-journeys",
+            json={
+                "source": "PNBE",
+                "destination": "NDLS",
+                "journey_date": "2026-08-01",
+                "class_code": "3A",
+                "quota": "GN",
+                "label": "Updated Delhi trip",
+            },
+        )
+
+        self.assertEqual(
+            update_response.status_code,
+            201,
+        )
+        self.assertEqual(
+            update_response.json()[
+                "journey"
+            ]["id"],
+            created["id"],
+        )
+
+        list_response = client.get(
+            "/account/saved-journeys"
+        )
+
+        self.assertEqual(
+            list_response.status_code,
+            200,
+        )
+        self.assertEqual(
+            list_response.json()["count"],
+            1,
+        )
+        self.assertEqual(
+            list_response.json()[
+                "journeys"
+            ][0]["label"],
+            "Updated Delhi trip",
+        )
+
+        delete_response = client.delete(
+            (
+                "/account/saved-journeys/"
+                f"{created['id']}"
+            )
+        )
+
+        self.assertEqual(
+            delete_response.status_code,
+            200,
+        )
+
+        empty_response = client.get(
+            "/account/saved-journeys"
+        )
+
+        self.assertEqual(
+            empty_response.json()["count"],
+            0,
+        )
+
+    def test_saved_journey_import_deduplicates(self):
+        self.register()
+
+        response = client.post(
+            "/account/saved-journeys/import",
+            json={
+                "journeys": [
+                    {
+                        "source": "PNBE",
+                        "destination": "NDLS",
+                        "label": "First label",
+                    },
+                    {
+                        "source": "PNBE",
+                        "destination": "NDLS",
+                        "label": "Latest label",
+                    },
+                    {
+                        "source": "LTT",
+                        "destination": "VVH",
+                        "label": "Mumbai route",
+                    },
+                ]
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+            response.text,
+        )
+        self.assertEqual(
+            response.json()["processed_count"],
+            3,
+        )
+        self.assertEqual(
+            response.json()["account_count"],
+            2,
+        )
+
+        labels = {
+            item["label"]
+            for item in response.json()["journeys"]
+        }
+
+        self.assertIn(
+            "Latest label",
+            labels,
+        )
+
+    def test_saved_journey_ownership_is_enforced(self):
+        self.register()
+
+        create_response = client.post(
+            "/account/saved-journeys",
+            json={
+                "source": "PNBE",
+                "destination": "NDLS",
+            },
+        )
+
+        journey_id = create_response.json()[
+            "journey"
+        ]["id"]
+
+        client.cookies.clear()
+
+        second_register = client.post(
+            "/auth/register",
+            json={
+                "email": "second@example.com",
+                "display_name": "Second Traveller",
+                "password": "SecondPassword123",
+            },
+        )
+
+        self.assertEqual(
+            second_register.status_code,
+            201,
+        )
+
+        forbidden_delete = client.delete(
+            (
+                "/account/saved-journeys/"
+                f"{journey_id}"
+            )
+        )
+
+        self.assertEqual(
+            forbidden_delete.status_code,
+            404,
+        )
+
+        second_user_list = client.get(
+            "/account/saved-journeys"
+        )
+
+        self.assertEqual(
+            second_user_list.json()["count"],
+            0,
+        )
+
+    def test_untrusted_write_origin_is_rejected(self):
+        self.register()
+
+        response = client.post(
+            "/account/saved-journeys",
+            headers={
+                "Origin": "https://evil.example"
+            },
+            json={
+                "source": "PNBE",
+                "destination": "NDLS",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            403,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
