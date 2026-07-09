@@ -69,8 +69,8 @@ export default function Phase5BetaChecklistPanel() {
     <section className="phase5-beta-checklist-card">
       <div className="phase5-beta-checklist-card__header">
         <div>
-          <p className="phase5-beta-checklist-card__eyebrow">Phase 5</p>
-          <h2>Public Beta Checklist</h2>
+          <p className="phase5-beta-checklist-card__eyebrow">Public Beta</p>
+          <h2>Launch Checklist</h2>
         </div>
 
         <span className="phase5-beta-checklist-card__badge">/product/beta-checklist</span>
@@ -111,8 +111,13 @@ export default function Phase5BetaChecklistPanel() {
 
           <div className="phase5-beta-checklist-decision">
             <div className={decision.can_show_demo_to_users ? "allowed" : "blocked"}>
-              <span>User demo</span>
-              <strong>{decisionLabel(decision.can_show_demo_to_users)}</strong>
+              <span>Route beta launch</span>
+              <strong>
+                {decisionLabel(
+                  decision.can_launch_route_recommendation_public_beta ??
+                    decision.can_show_demo_to_users
+                )}
+              </strong>
             </div>
             <div className={decision.can_show_demo_to_investors ? "allowed" : "blocked"}>
               <span>Investor demo</span>
@@ -129,7 +134,7 @@ export default function Phase5BetaChecklistPanel() {
           </div>
 
           <div className="phase5-beta-checklist-section">
-            <h3>Ready for demo</h3>
+            <h3>Ready for public beta</h3>
             <div className="phase5-beta-item-list">
               {readyItems.map((item) => (
                 <article className="phase5-beta-item ready" key={item.key}>
@@ -144,7 +149,7 @@ export default function Phase5BetaChecklistPanel() {
           </div>
 
           <div className="phase5-beta-checklist-section">
-            <h3>Blocked or pending before final product</h3>
+            <h3>Commercial features not included in this beta</h3>
             <div className="phase5-beta-item-list">
               {blockedItems.map((item) => (
                 <article className="phase5-beta-item blocked" key={item.key}>
@@ -159,7 +164,7 @@ export default function Phase5BetaChecklistPanel() {
           </div>
 
           <div className="phase5-beta-checklist-section">
-            <h3>Next actions</h3>
+            <h3>Commercial roadmap</h3>
             <ol className="phase5-beta-next-actions">
               {nextActions.map((action) => (
                 <li key={action}>{action}</li>
@@ -180,7 +185,7 @@ export default function Phase5BetaChecklistPanel() {
           </div>
 
           <p className="phase5-beta-checklist-card__message warning">
-            Public demo is allowed as a real railway route recommendation preview. Live booking, PNR, payments and ticketing claims are blocked.
+            GO for route-recommendation public beta. Live fares, availability, PNR, booking and payments remain unavailable.
           </p>
         </>
       )}

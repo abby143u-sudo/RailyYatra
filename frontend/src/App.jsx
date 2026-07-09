@@ -4025,7 +4025,7 @@ function App() {
     <div className="page">
       <nav className="navbar">
         <div className="brand">🚆 RailYatra</div>
-        <div className="nav-pill">MVP Beta</div>
+        <div className="nav-pill">Public Beta</div>
       </nav>
 
       <main className="app">

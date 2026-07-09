@@ -1,21 +1,30 @@
 export default function PublicDemoWarningBanner() {
   return (
-    <section className="public-demo-warning-banner" aria-label="RailYatra public demo warning">
+    <section
+      className="public-demo-warning-banner"
+      aria-label="RailYatra public beta notice"
+    >
       <div className="public-demo-warning-banner__content">
         <div>
-          <p className="public-demo-warning-banner__eyebrow">Public beta preview</p>
-          <h2>RailYatra is a real railway route recommendation preview.</h2>
+          <p className="public-demo-warning-banner__eyebrow">
+            Public Beta · v0.9.0-beta
+          </p>
+
+          <h2>
+            RailYatra route recommendations are live in public beta.
+          </h2>
         </div>
 
         <div className="public-demo-warning-banner__status">
-          <span>Live booking</span>
-          <strong>Not connected</strong>
+          <span>Launch status</span>
+          <strong>Route beta live</strong>
         </div>
       </div>
 
       <p className="public-demo-warning-banner__message">
-        Live ticket booking, PNR, payment, cancellation, live fare and live seat availability are not connected yet.
-        Use this demo for route discovery, ranked recommendations, transfer safety and product preview only.
+        Explore real-data routes, ranked journeys, estimated dates,
+        duration and transfer safety. Live fares, seat availability,
+        PNR, booking, payments and cancellation are not connected.
       </p>
     </section>
   );

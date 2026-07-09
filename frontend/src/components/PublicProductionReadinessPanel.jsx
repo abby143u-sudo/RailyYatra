@@ -1,44 +1,68 @@
 const checklist = [
   {
-    title: "Route recommendation preview",
+    title: "Real railway data",
     status: "Ready",
-    detail: "Public demo can show route options, ranked recommendations and transfer-safety context.",
+    detail:
+      "8,990 stations, 5,208 trains and 417,080 train stops are available.",
   },
   {
-    title: "Live booking integration",
-    status: "Pending",
-    detail: "No live ticket booking is connected yet.",
+    title: "Date-aware route recommendations",
+    status: "Ready",
+    detail:
+      "Direct and transfer journeys include estimated dates and duration.",
   },
   {
-    title: "Payment integration",
-    status: "Pending",
-    detail: "No payment collection or ticket purchase flow is connected.",
+    title: "Transfer safety and deduplication",
+    status: "Ready",
+    detail:
+      "Unsafe short transfers are rejected and equivalent routes are collapsed.",
   },
   {
-    title: "PNR integration",
-    status: "Pending",
-    detail: "PNR status, cancellation and booked-ticket lifecycle are not connected.",
+    title: "Caching and resilient frontend",
+    status: "Ready",
+    detail:
+      "Repeated searches are cached and users receive timeout, retry and loading feedback.",
   },
   {
-    title: "Live fare and seat availability",
-    status: "Pending",
-    detail: "Current demo uses preview/staging data, not live fare or live availability.",
+    title: "Production smoke testing",
+    status: "Ready",
+    detail:
+      "Live frontend, backend, data health, recommendations and cache are tested.",
   },
   {
-    title: "Production analytics and feedback backend",
+    title: "Scheduled production monitoring",
+    status: "Ready",
+    detail:
+      "GitHub Actions checks the public beta every six hours.",
+  },
+  {
+    title: "Live fares and availability",
     status: "Planned",
-    detail: "Current analytics and feedback are browser-local only.",
+    detail:
+      "Official live fare and seat-availability integrations are not connected.",
+  },
+  {
+    title: "Booking, PNR and payments",
+    status: "Planned",
+    detail:
+      "Ticket booking and transaction features remain part of the commercial roadmap.",
   },
 ];
 
 export default function PublicProductionReadinessPanel() {
   return (
-    <section className="public-production-readiness" aria-label="RailYatra production readiness checklist">
+    <section
+      className="public-production-readiness"
+      aria-label="RailYatra public beta readiness"
+    >
       <div className="public-production-readiness__intro">
-        <span>Phase 9 readiness</span>
-        <strong>Production hardening checklist</strong>
+        <span>Public Beta · v0.9.0-beta</span>
+        <strong>GO for route-recommendation public beta</strong>
+
         <p>
-          RailYatra is stable as a public route recommendation preview. These are the major items required before it can be positioned as a live booking product.
+          RailYatra is ready for public testing as a railway route
+          discovery and recommendation product. It must not be
+          presented as a live ticket-booking platform.
         </p>
       </div>
 
@@ -46,12 +70,16 @@ export default function PublicProductionReadinessPanel() {
         {checklist.map((item) => (
           <article
             key={item.title}
-            className={`public-production-readiness__item public-production-readiness__item--${item.status.toLowerCase()}`}
+            className={
+              "public-production-readiness__item " +
+              `public-production-readiness__item--${item.status.toLowerCase()}`
+            }
           >
             <div>
               <span>{item.status}</span>
               <strong>{item.title}</strong>
             </div>
+
             <p>{item.detail}</p>
           </article>
         ))}

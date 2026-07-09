@@ -68,8 +68,8 @@ export default function Phase5ProductStatusPanel() {
     <section className="phase5-product-status-card">
       <div className="phase5-product-status-card__header">
         <div>
-          <p className="phase5-product-status-card__eyebrow">Phase 5</p>
-          <h2>Public Beta Readiness</h2>
+          <p className="phase5-product-status-card__eyebrow">Public Beta</p>
+          <h2>RailYatra Release Status</h2>
         </div>
 
         <span className="phase5-product-status-card__badge">/product/status</span>
@@ -103,8 +103,8 @@ export default function Phase5ProductStatusPanel() {
               <strong>{data.current_mode}</strong>
             </div>
             <div>
-              <span>Phase</span>
-              <strong>{data.phase}</strong>
+              <span>Version</span>
+              <strong>{data.version || data.phase}</strong>
             </div>
           </div>
 
@@ -183,7 +183,7 @@ export default function Phase5ProductStatusPanel() {
           </div>
 
           <p className="phase5-product-status-card__message">
-            Product status confirms: real route demo is possible, but live booking claims are blocked.
+            RailYatra is live as a route-recommendation public beta. Live ticketing and payment claims remain blocked.
           </p>
         </>
       )}
