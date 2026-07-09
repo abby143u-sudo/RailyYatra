@@ -1,4 +1,8 @@
 from datetime import date
+from collections import OrderedDict
+from copy import deepcopy
+from threading import Lock
+from time import monotonic
 from backend.api.data_quality_api import router as data_quality_router
 from backend.api.legacy_search_fallback import router as legacy_search_fallback_router
 from backend.api.live_status_api import router as live_status_router
@@ -17,7 +21,7 @@ from backend.services.official_fare_service import (
     get_fare_stats,
     search_official_fares,
 )
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Response
 from backend.routing.smart_route import plan_journey
 from backend.routing.direct import find_direct_trains
 from backend.routing.transfer import find_one_transfer_routes
@@ -735,10 +739,92 @@ from backend.staging.recommendation_engine import (
 )
 
 
+
+_PHASE28_CACHE_TTL_SECONDS = 300
+_PHASE28_CACHE_MAX_ENTRIES = 256
+
+_phase28_recommend_cache = OrderedDict()
+_phase28_recommend_cache_lock = Lock()
+_phase28_recommend_cache_stats = {
+    "hits": 0,
+    "misses": 0,
+    "expired": 0,
+    "evictions": 0,
+}
+
+
+def _phase28_cache_get(key):
+    with _phase28_recommend_cache_lock:
+        cached_item = _phase28_recommend_cache.get(key)
+
+        if cached_item is None:
+            _phase28_recommend_cache_stats["misses"] += 1
+            return None, None
+
+        created_at, payload = cached_item
+        age_seconds = monotonic() - created_at
+
+        if age_seconds >= _PHASE28_CACHE_TTL_SECONDS:
+            del _phase28_recommend_cache[key]
+            _phase28_recommend_cache_stats["expired"] += 1
+            _phase28_recommend_cache_stats["misses"] += 1
+            return None, None
+
+        _phase28_recommend_cache.move_to_end(key)
+        _phase28_recommend_cache_stats["hits"] += 1
+
+        return deepcopy(payload), age_seconds
+
+
+def _phase28_cache_store(key, payload):
+    with _phase28_recommend_cache_lock:
+        _phase28_recommend_cache[key] = (
+            monotonic(),
+            deepcopy(payload),
+        )
+        _phase28_recommend_cache.move_to_end(key)
+
+        while (
+            len(_phase28_recommend_cache)
+            > _PHASE28_CACHE_MAX_ENTRIES
+        ):
+            _phase28_recommend_cache.popitem(last=False)
+            _phase28_recommend_cache_stats["evictions"] += 1
+
+
+def _phase28_set_cache_headers(
+    response: Response,
+    status: str,
+    age_seconds: float = 0,
+):
+    response.headers["X-Cache"] = status
+    response.headers["X-Cache-Age"] = str(
+        max(0, int(age_seconds))
+    )
+    response.headers["X-Cache-TTL"] = str(
+        _PHASE28_CACHE_TTL_SECONDS
+    )
+    response.headers["Cache-Control"] = (
+        "public, max-age=60, stale-while-revalidate=30"
+    )
+
+
+def _phase28_clear_recommend_cache():
+    with _phase28_recommend_cache_lock:
+        entry_count = len(_phase28_recommend_cache)
+        _phase28_recommend_cache.clear()
+
+        for key in _phase28_recommend_cache_stats:
+            _phase28_recommend_cache_stats[key] = 0
+
+        return entry_count
+
+
 @app.get("/recommend-v2")
 def recommend_v2(
     source: str,
     destination: str,
+    response: Response,
     direct_limit: int = 8,
     transfer_limit: int = 2,
     journey_date: date | None = None,
@@ -749,7 +835,18 @@ def recommend_v2(
     safe_direct_limit = max(1, min(direct_limit, 20))
     safe_transfer_limit = max(0, min(transfer_limit, 10))
 
+    journey_date_value = (
+        journey_date.isoformat()
+        if journey_date
+        else None
+    )
+
     if not source_code or not destination_code:
+        _phase28_set_cache_headers(
+            response=response,
+            status="BYPASS",
+        )
+
         return {
             "status": "error",
             "message": "source and destination are required",
@@ -763,17 +860,67 @@ def recommend_v2(
             "production_railway_tables_modified": False,
         }
 
-    return phase4_recommend_staging_routes(
+    cache_key = (
+        source_code,
+        destination_code,
+        safe_direct_limit,
+        safe_transfer_limit,
+        journey_date_value,
+    )
+
+    cached_result, cache_age = _phase28_cache_get(
+        cache_key
+    )
+
+    if cached_result is not None:
+        _phase28_set_cache_headers(
+            response=response,
+            status="HIT",
+            age_seconds=cache_age or 0,
+        )
+        return cached_result
+
+    result = phase4_recommend_staging_routes(
         source_station_code=source_code,
         destination_station_code=destination_code,
         direct_limit=safe_direct_limit,
         transfer_limit=safe_transfer_limit,
-        journey_date=(
-            journey_date.isoformat()
-            if journey_date
-            else None
-        ),
+        journey_date=journey_date_value,
     )
+
+    _phase28_cache_store(
+        key=cache_key,
+        payload=result,
+    )
+
+    _phase28_set_cache_headers(
+        response=response,
+        status="MISS",
+    )
+
+    return result
+
+
+@app.get("/recommend-v2/cache-status")
+def recommend_v2_cache_status():
+    with _phase28_recommend_cache_lock:
+        return {
+            "status": "ok",
+            "cache": "recommend-v2-memory-cache",
+            "ttl_seconds": _PHASE28_CACHE_TTL_SECONDS,
+            "maximum_entries": (
+                _PHASE28_CACHE_MAX_ENTRIES
+            ),
+            "current_entries": len(
+                _phase28_recommend_cache
+            ),
+            "statistics": dict(
+                _phase28_recommend_cache_stats
+            ),
+            "scope": (
+                "Current backend process only"
+            ),
+        }
 # --- Phase 4 recommendation-v2 API end ---
 
 # --- Phase 5 product status API start ---
