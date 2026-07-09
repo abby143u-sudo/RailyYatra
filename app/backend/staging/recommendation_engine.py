@@ -132,6 +132,14 @@ def build_reasons(route: dict[str, Any]) -> list[str]:
     if route.get("warnings"):
         reasons.append("Some timetable fields are missing, so timing confidence is limited.")
 
+    ranking = route.get("ranking") or {}
+
+    for ranking_reason in (
+        ranking.get("reasons") or []
+    ):
+        if ranking_reason not in reasons:
+            reasons.append(ranking_reason)
+
     return reasons
 
 
@@ -155,6 +163,199 @@ def enrich_route(route: dict[str, Any], rank: int) -> dict[str, Any]:
     return enriched
 
 
+def optional_int(value: Any) -> int | None:
+    try:
+        if value is None or value == "":
+            return None
+        return int(float(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def rank_and_validate_routes(
+    routes: list[dict[str, Any]],
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    ranked_routes: list[dict[str, Any]] = []
+    rejected_routes: list[dict[str, Any]] = []
+
+    for route in routes:
+        candidate = dict(route)
+        route_type = candidate.get("route_type")
+
+        timing = candidate.get("journey_timing") or {}
+        connection = (
+            candidate.get("transfer_connection") or {}
+        )
+
+        duration_minutes = optional_int(
+            timing.get("total_duration_minutes")
+        )
+        wait_minutes = optional_int(
+            connection.get("wait_minutes")
+        )
+        risk_level = connection.get("risk_level")
+
+        if (
+            route_type == "one_transfer"
+            and wait_minutes is not None
+            and wait_minutes < 30
+        ):
+            rejected = dict(candidate)
+            rejected["rejection"] = {
+                "code": "transfer_below_minimum",
+                "reason": (
+                    "Connection has less than "
+                    "30 minutes transfer time."
+                ),
+                "wait_minutes": wait_minutes,
+            }
+            rejected_routes.append(rejected)
+            continue
+
+        base_score = safe_int(
+            candidate.get("score"),
+            100,
+        )
+
+        if duration_minutes is None:
+            duration_penalty = 90
+        else:
+            duration_penalty = min(
+                max(duration_minutes - 600, 0)
+                // 30
+                * 4,
+                160,
+            )
+
+        direct_bonus = 0
+        transfer_adjustment = 0
+        ranking_reasons: list[str] = []
+
+        if route_type == "direct":
+            direct_bonus = 35
+            ranking_reasons.append(
+                "Direct journey received a simplicity bonus."
+            )
+
+        elif risk_level == "comfortable":
+            transfer_adjustment = 40
+            ranking_reasons.append(
+                "Comfortable transfer received a safety bonus."
+            )
+
+        elif risk_level == "tight":
+            transfer_adjustment = -60
+            ranking_reasons.append(
+                "Tight transfer reduced the final route score."
+            )
+
+        elif risk_level == "long_wait":
+            transfer_adjustment = -100
+            ranking_reasons.append(
+                "Long transfer wait reduced the final score."
+            )
+
+        elif risk_level == "unknown":
+            transfer_adjustment = -140
+            ranking_reasons.append(
+                "Missing transfer timing reduced ranking confidence."
+            )
+
+        elif risk_level == "risky":
+            transfer_adjustment = -220
+            ranking_reasons.append(
+                "Risky transfer received a major score penalty."
+            )
+
+        if duration_minutes is None:
+            ranking_reasons.append(
+                "Total duration is unavailable, so the "
+                "route received a timing-confidence penalty."
+            )
+        else:
+            ranking_reasons.append(
+                "Date-aware total journey duration was "
+                "used in final ranking."
+            )
+
+        final_score = (
+            base_score
+            + direct_bonus
+            + transfer_adjustment
+            - duration_penalty
+        )
+
+        final_score = max(
+            50,
+            min(1000, final_score),
+        )
+
+        candidate["base_score"] = base_score
+        candidate["score"] = final_score
+        candidate["ranking"] = {
+            "base_score": base_score,
+            "final_score": final_score,
+            "direct_bonus": direct_bonus,
+            "transfer_adjustment": (
+                transfer_adjustment
+            ),
+            "duration_penalty": duration_penalty,
+            "duration_minutes": duration_minutes,
+            "minimum_transfer_minutes": 30,
+            "reasons": ranking_reasons,
+        }
+
+        ranked_routes.append(candidate)
+
+    risk_priority = {
+        "comfortable": 0,
+        "tight": 1,
+        "long_wait": 2,
+        "unknown": 3,
+        "risky": 4,
+    }
+
+    def route_sort_key(
+        route: dict[str, Any],
+    ) -> tuple[Any, ...]:
+        timing = route.get("journey_timing") or {}
+        connection = (
+            route.get("transfer_connection") or {}
+        )
+
+        duration = optional_int(
+            timing.get("total_duration_minutes")
+        )
+
+        trains = tuple(
+            str(leg.get("train_number") or "")
+            for leg in route.get("legs", [])
+        )
+
+        return (
+            -safe_int(route.get("score")),
+            route.get("route_type") != "direct",
+            risk_priority.get(
+                connection.get("risk_level"),
+                5,
+            ),
+            duration is None,
+            duration if duration is not None else 999999,
+            safe_int(
+                route.get("total_stop_count"),
+                9999,
+            ),
+            trains,
+        )
+
+    ranked_routes.sort(key=route_sort_key)
+
+    return ranked_routes, rejected_routes
+
+
 def recommend_staging_routes(
     source_station_code: str,
     destination_station_code: str,
@@ -171,9 +372,19 @@ def recommend_staging_routes(
     )
 
     routes = result.get("routes", [])
+
+    ranked_routes, rejected_routes = (
+        rank_and_validate_routes(routes)
+    )
+
     enriched_routes = [
-        enrich_route(route=route, rank=index + 1)
-        for index, route in enumerate(routes)
+        enrich_route(
+            route=route,
+            rank=index + 1,
+        )
+        for index, route in enumerate(
+            ranked_routes
+        )
     ]
 
     direct_count = sum(1 for route in enriched_routes if route.get("route_type") == "direct")
@@ -189,6 +400,16 @@ def recommend_staging_routes(
         "count": len(enriched_routes),
         "direct_count": direct_count,
         "one_transfer_count": transfer_count,
+        "rejected_transfer_count": len(
+            rejected_routes
+        ),
+        "ranking_policy": {
+            "minimum_transfer_minutes": 30,
+            "risky_connections_rejected": True,
+            "unknown_timing_penalized": True,
+            "long_wait_penalized": True,
+            "duration_used_for_ranking": True,
+        },
         "recommendations": enriched_routes,
         "summary": {
             "best_available": enriched_routes[0] if enriched_routes else None,
