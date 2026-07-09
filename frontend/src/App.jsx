@@ -12,6 +12,7 @@ import Phase5ProductStatusPanel from "./components/Phase5ProductStatusPanel.jsx"
 import Phase5BetaChecklistPanel from "./components/Phase5BetaChecklistPanel.jsx";
 import PublicDemoWarningBanner from "./components/PublicDemoWarningBanner.jsx";
 import PublicDemoHero from "./components/PublicDemoHero.jsx";
+import UserAccountPanel from "./components/UserAccountPanel.jsx";
 import PublicDemoInternalPanel from "./components/PublicDemoInternalPanel.jsx";
 import PublicRecommendationIntro from "./components/PublicRecommendationIntro.jsx";
 import SafeStationInput from "./components/SafeStationInput.jsx";
@@ -4031,6 +4032,38 @@ function App() {
       <main className="app">
         <PublicDemoWarningBanner />
       <PublicDemoHero />
+      <UserAccountPanel
+        currentSource={source}
+        currentDestination={destination}
+        currentJourneyDate={journeyDate}
+        currentClassCode={journeyClass}
+        currentQuota={quota}
+        onApplyRoute={(savedJourney) => {
+          setSource(savedJourney.source);
+          setDestination(
+            savedJourney.destination,
+          );
+
+          if (savedJourney.journey_date) {
+            setJourneyDate(
+              savedJourney.journey_date,
+            );
+          }
+
+          if (savedJourney.class_code) {
+            setJourneyClass(
+              savedJourney.class_code,
+            );
+          }
+
+          if (savedJourney.quota) {
+            setQuota(savedJourney.quota);
+          }
+
+          setResult(null);
+          setError("");
+        }}
+      />
       <PublicSavedDemoSearchesPanel
         currentSource={source}
         currentDestination={destination}
