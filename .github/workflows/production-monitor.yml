@@ -1,0 +1,81 @@
+name: Production Monitor
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    # Runs every 6 hours at minute 17.
+    # GitHub scheduled workflow time is UTC.
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: railyatra-production-monitor
+  cancel-in-progress: false
+
+jobs:
+  production-smoke:
+    name: Check live RailYatra
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    env:
+      RAILYATRA_FRONTEND_URL: https://raily-yatra.vercel.app
+      RAILYATRA_BACKEND_URL: https://railyyatra-backend.onrender.com
+      RAILYATRA_SMOKE_SOURCE: NDLS
+      RAILYATRA_SMOKE_DESTINATION: PNBE
+      RAILYATRA_SMOKE_TIMEOUT: "120"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run production smoke test
+        id: smoke
+        shell: bash
+        run: |
+          set +e
+
+          python3 scripts/production_smoke.py \
+            2>&1 | tee production-smoke-output.txt
+
+          smoke_exit="${PIPESTATUS[0]}"
+
+          echo "exit_code=$smoke_exit" >> "$GITHUB_OUTPUT"
+
+          exit "$smoke_exit"
+
+      - name: Add monitoring summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# RailYatra production monitor"
+            echo
+            echo "- Run time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo "- Frontend: $RAILYATRA_FRONTEND_URL"
+            echo "- Backend: $RAILYATRA_BACKEND_URL"
+            echo "- Journey: $RAILYATRA_SMOKE_SOURCE → $RAILYATRA_SMOKE_DESTINATION"
+            echo "- Smoke exit code: ${{ steps.smoke.outputs.exit_code }}"
+            echo
+            echo "## Smoke-test output"
+            echo
+            echo '```text'
+
+            if [ -f production-smoke-output.txt ]; then
+              tail -n 160 production-smoke-output.txt
+            else
+              echo "Smoke-test output file was not created."
+            fi
+
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
