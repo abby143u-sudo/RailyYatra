@@ -32,6 +32,10 @@ run_step \
   env RAILYATRA_CI=1 python3 scripts/smoke_backend.py
 
 run_step \
+  "Authentication test suite" \
+  python3 -m unittest discover -s tests -p "test_auth*.py" -v
+
+run_step \
   "Beta feedback smoke test" \
   python3 scripts/smoke_beta_feedback.py
 

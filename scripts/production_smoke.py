@@ -242,6 +242,75 @@ else:
     pass_check("Backend health payload")
 
 
+
+# Authentication health
+auth_status, _, auth_health, auth_time = request_json(
+    f"{BACKEND_URL}/auth/health"
+)
+
+if auth_status == 200:
+    pass_check(
+        "Authentication health endpoint",
+        f"{auth_time:.2f}s",
+    )
+else:
+    fail_check(
+        "Authentication health endpoint",
+        f"HTTP {auth_status}: {auth_health}",
+    )
+
+if auth_health.get("service") == "authentication":
+    pass_check("Authentication service payload")
+else:
+    fail_check(
+        "Authentication service payload",
+        str(auth_health),
+    )
+
+if auth_health.get("raw_session_tokens_stored") is False:
+    pass_check("Raw session tokens are not stored")
+else:
+    fail_check(
+        "Raw session-token policy",
+        str(auth_health),
+    )
+
+if auth_health.get("password_storage") == "scrypt":
+    pass_check("Password hashing policy", "scrypt")
+else:
+    fail_check(
+        "Password hashing policy",
+        str(auth_health.get("password_storage")),
+    )
+
+if auth_health.get("supports_http_only_cookie") is True:
+    pass_check("HTTP-only session cookie support")
+else:
+    fail_check(
+        "HTTP-only session cookie support",
+        str(auth_health),
+    )
+
+auth_storage = str(
+    auth_health.get("storage") or ""
+).lower()
+
+if auth_storage == "postgresql":
+    pass_check(
+        "Authentication production storage",
+        "PostgreSQL",
+    )
+else:
+    fail_check(
+        "Authentication production storage",
+        (
+            f"Expected PostgreSQL, received "
+            f"{auth_storage or 'unknown'}"
+        ),
+    )
+
+
+
 # Real data health
 data_status, _, data_health, data_time = request_json(
     f"{BACKEND_URL}/data-quality/health"

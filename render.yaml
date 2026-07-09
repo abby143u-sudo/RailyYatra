@@ -11,6 +11,12 @@ services:
         value: production
       - key: RAILYATRA_ALLOWED_ORIGINS
         sync: false
+      - key: RAILYATRA_SESSION_COOKIE_NAME
+        value: railyatra_session
+      - key: RAILYATRA_SESSION_DAYS
+        value: 30
+      - key: RAILYATRA_SESSION_COOKIE_SECURE
+        value: true
       - key: RAILYATRA_LIVE_BOOKING_ENABLED
         value: false
       - key: RAILYATRA_LIVE_FARE_ENABLED

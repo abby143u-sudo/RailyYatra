@@ -1293,3 +1293,8 @@ def remove_beta_feedback(
         "message": "Feedback deleted.",
     }
 
+
+# === Phase 34 User Authentication API ===
+from backend.api.auth_api import router as auth_router
+
+app.include_router(auth_router)
