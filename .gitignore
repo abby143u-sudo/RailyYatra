@@ -9,3 +9,6 @@ node_modules/
 backups/
 *.db.backup
 *.sqlite.backup
+
+# Local demo analytics database
+app/data/demo_events.db
