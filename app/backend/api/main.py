@@ -6,7 +6,7 @@ from time import monotonic
 from backend.api.data_quality_api import router as data_quality_router
 from backend.api.legacy_search_fallback import router as legacy_search_fallback_router
 from backend.api.live_status_api import router as live_status_router
-from backend.api.cors_public_middleware import railyatra_cors_middleware
+from backend.api.cors_public_middleware import configured_allowed_origins
 from backend.staging.route_engine import search_staging_routes as phase3_search_staging_routes
 from backend.services.official_fare_service import upsert_official_fare
 from backend.services.fare_source_adapter import (
@@ -148,12 +148,26 @@ def apply_train_type_filter_to_response(response, train_type):
     return response
 
 app = FastAPI(title="RailYatra v2 API", version="2.1.0")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=sorted(configured_allowed_origins()),
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS",
+    ],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-RailYatra-Admin-Token",
+        "X-Requested-With",
+    ],
 )
 
 
@@ -943,17 +957,7 @@ def product_beta_checklist():
 
 # --- Phase 6 CORS configuration start ---
 from backend.product.deployment import (
-    get_allowed_origins as phase6_get_allowed_origins,
     get_deployment_status as phase6_get_deployment_status,
-)
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=phase6_get_allowed_origins(),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
 
@@ -976,24 +980,8 @@ register_security_middleware(app)
 
 from backend.api.error_handlers import register_error_handlers
 register_error_handlers(app)
-app.middleware("http")(railyatra_cors_middleware)
 
 
-
-# RailYatra hard CORS for Vercel frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://raily-yatra.vercel.app",
-        "https://rail-yatra.vercel.app",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_origin_regex=r"https://.*\\.vercel\\.app",
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 app.include_router(live_status_router)
 
