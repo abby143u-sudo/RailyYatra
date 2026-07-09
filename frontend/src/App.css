@@ -6466,3 +6466,164 @@ li {
   }
 }
 /* Phase 25 journey date and timing end */
+
+/* Phase 29 frontend resilience start */
+.phase4-loading-panel,
+.phase4-error-panel,
+.phase4-empty-panel {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 16px;
+}
+
+.phase4-loading-panel {
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  background: rgba(239, 246, 255, 0.72);
+}
+
+.phase4-loading-panel__heading {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.phase4-loading-panel__heading strong,
+.phase4-error-panel strong,
+.phase4-empty-panel strong {
+  display: block;
+  color: #0f172a;
+}
+
+.phase4-loading-panel__heading p,
+.phase4-error-panel p,
+.phase4-empty-panel p {
+  margin: 0.3rem 0 0;
+  line-height: 1.5;
+}
+
+.phase4-loading-spinner {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border: 3px solid rgba(37, 99, 235, 0.18);
+  border-top-color: #2563eb;
+  border-radius: 999px;
+  animation: phase4-loading-spin 0.8s linear infinite;
+}
+
+.phase4-slow-notice {
+  margin: 0.9rem 0 0;
+  padding: 0.75rem;
+  border-radius: 12px;
+  color: #92400e;
+  background: rgba(254, 243, 199, 0.9);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.phase4-loading-list {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.phase4-loading-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.9rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.phase4-loading-card span {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(148, 163, 184, 0.15),
+      rgba(148, 163, 184, 0.35),
+      rgba(148, 163, 184, 0.15)
+    );
+  background-size: 220% 100%;
+  animation: phase4-loading-shimmer 1.3s linear infinite;
+}
+
+.phase4-loading-card span:nth-child(1) {
+  width: 34%;
+}
+
+.phase4-loading-card span:nth-child(2) {
+  width: 72%;
+}
+
+.phase4-loading-card span:nth-child(3) {
+  width: 52%;
+}
+
+.phase4-error-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  background: rgba(254, 242, 242, 0.92);
+}
+
+.phase4-error-panel strong,
+.phase4-error-panel p {
+  color: #991b1b;
+}
+
+.phase4-error-panel button,
+.phase4-empty-panel button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.phase4-empty-panel {
+  border: 1px dashed rgba(15, 23, 42, 0.18);
+  text-align: center;
+  background: rgba(248, 250, 252, 0.88);
+}
+
+.phase4-empty-panel button {
+  margin-top: 0.8rem;
+}
+
+@keyframes phase4-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes phase4-loading-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase4-loading-spinner,
+  .phase4-loading-card span {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .phase4-error-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .phase4-error-panel button,
+  .phase4-empty-panel button {
+    width: 100%;
+  }
+}
+/* Phase 29 frontend resilience end */

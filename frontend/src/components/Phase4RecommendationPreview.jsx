@@ -79,6 +79,7 @@ export default function Phase4RecommendationPreview() {
   const [stopDetails, setStopDetails] = useState({});
   const [state, setState] = useState({
     loading: false,
+    slow: false,
     error: "",
     data: null,
   });
@@ -165,16 +166,25 @@ export default function Phase4RecommendationPreview() {
     }
   }
 
-  async function loadRecommendations(event) {
-    event.preventDefault();
-
+  async function runRecommendationSearch() {
     const sourceCode = cleanStationCode(source);
     const destinationCode = cleanStationCode(destination);
 
     if (!sourceCode || !destinationCode) {
       setState({
         loading: false,
+        slow: false,
         error: "Enter both source and destination station codes.",
+        data: null,
+      });
+      return;
+    }
+
+    if (!journeyDate || journeyDate < minimumJourneyDate) {
+      setState({
+        loading: false,
+        slow: false,
+        error: "Choose today or a future journey date.",
         data: null,
       });
       return;
@@ -184,9 +194,29 @@ export default function Phase4RecommendationPreview() {
 
     setState({
       loading: true,
+      slow: false,
       error: "",
       data: null,
     });
+
+    const controller = new AbortController();
+
+    const slowTimer = window.setTimeout(() => {
+      setState((current) => {
+        if (!current.loading) {
+          return current;
+        }
+
+        return {
+          ...current,
+          slow: true,
+        };
+      });
+    }, 2500);
+
+    const timeoutTimer = window.setTimeout(() => {
+      controller.abort();
+    }, 20000);
 
     try {
       const params = new URLSearchParams({
@@ -197,26 +227,57 @@ export default function Phase4RecommendationPreview() {
         transfer_limit: "2",
       });
 
-      const response = await fetch(`${API_BASE}/recommend-v2?${params.toString()}`);
+      const response = await fetch(
+        `${API_BASE}/recommend-v2?${params.toString()}`,
+        {
+          signal: controller.signal,
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        if (response.status >= 500) {
+          throw new Error(
+            "The recommendation server is temporarily unavailable."
+          );
+        }
+
+        throw new Error(
+          `Recommendation request failed with HTTP ${response.status}.`
+        );
       }
 
       const data = await response.json();
 
       setState({
         loading: false,
+        slow: false,
         error: "",
         data,
       });
     } catch (error) {
+      const message =
+        error instanceof Error &&
+        error.name === "AbortError"
+          ? "The request took too long. Please try again."
+          : error instanceof Error
+            ? error.message
+            : "Unable to reach the recommendation server.";
+
       setState({
         loading: false,
-        error: error instanceof Error ? error.message : "Unable to reach recommend-v2 engine",
+        slow: false,
+        error: message,
         data: null,
       });
+    } finally {
+      window.clearTimeout(slowTimer);
+      window.clearTimeout(timeoutTimer);
     }
+  }
+
+  function loadRecommendations(event) {
+    event.preventDefault();
+    runRecommendationSearch();
   }
 
   async function toggleTrainStops(
@@ -404,8 +465,12 @@ export default function Phase4RecommendationPreview() {
           />
         </label>
 
-        <button type="submit" disabled={state.loading}>
-          {state.loading ? "Ranking..." : "Get recommendations"}
+        <button
+          type="submit"
+          disabled={state.loading}
+          aria-busy={state.loading}
+        >
+          {state.loading ? "Searching routes..." : "Get recommendations"}
         </button>
       </form>
 
@@ -417,10 +482,63 @@ export default function Phase4RecommendationPreview() {
         This uses /recommend-v2 with confidence, transfer safety, reasons, and booking readiness labels.
       </p>
 
+      {state.loading && (
+        <div
+          className="phase4-loading-panel"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="phase4-loading-panel__heading">
+            <span className="phase4-loading-spinner" aria-hidden="true" />
+            <div>
+              <strong>Finding the best journeys</strong>
+              <p>
+                Checking direct trains, transfers and total journey time.
+              </p>
+            </div>
+          </div>
+
+          {state.slow && (
+            <p className="phase4-slow-notice">
+              This is taking longer than usual. The server may be
+              completing a cold start.
+            </p>
+          )}
+
+          <div className="phase4-loading-list" aria-hidden="true">
+            {[1, 2, 3].map((item) => (
+              <div
+                className="phase4-loading-card"
+                key={`recommend-loading-${item}`}
+              >
+                <span />
+                <span />
+                <span />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {state.error && (
-        <p className="phase4-recommend-card__message error">
-          {state.error}
-        </p>
+        <div
+          className="phase4-error-panel"
+          role="alert"
+          aria-live="assertive"
+        >
+          <div>
+            <strong>Unable to load recommendations</strong>
+            <p>{state.error}</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={runRecommendationSearch}
+            disabled={state.loading}
+          >
+            Try again
+          </button>
+        </div>
       )}
 
       {state.data && !state.error && (
@@ -457,9 +575,29 @@ export default function Phase4RecommendationPreview() {
           )}
 
           {recommendations.length === 0 && (
-            <p className="phase4-recommend-card__message">
-              No recommendation found for this pair yet.
-            </p>
+            <div className="phase4-empty-panel">
+              <strong>No journey recommendation found</strong>
+              <p>
+                Check the station codes, choose another date, or try a
+                nearby major station.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSource(destination);
+                  setDestination(source);
+                  setState({
+                    loading: false,
+                    slow: false,
+                    error: "",
+                    data: null,
+                  });
+                }}
+              >
+                Reverse route
+              </button>
+            </div>
           )}
 
           {recommendations.length > 0 && (
