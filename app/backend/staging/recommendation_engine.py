@@ -356,6 +356,73 @@ def rank_and_validate_routes(
     return ranked_routes, rejected_routes
 
 
+
+def canonical_train_number(value: Any) -> str:
+    number = str(value or "").strip().upper()
+
+    for suffix in ("-SLIP", " SLIP", "/SLIP"):
+        if number.endswith(suffix):
+            number = number[:-len(suffix)].strip()
+
+    return number
+
+
+def route_duplicate_key(
+    route: dict[str, Any],
+) -> tuple[Any, ...]:
+    legs = tuple(
+        (
+            canonical_train_number(
+                leg.get("train_number")
+            ),
+            str(
+                leg.get("from_station_code") or ""
+            ).upper(),
+            str(
+                leg.get("to_station_code") or ""
+            ).upper(),
+            str(leg.get("departure") or ""),
+            str(leg.get("arrival") or ""),
+        )
+        for leg in route.get("legs") or []
+    )
+
+    return (
+        route.get("route_type"),
+        str(route.get("source") or "").upper(),
+        str(
+            route.get("transfer_station") or ""
+        ).upper(),
+        str(
+            route.get("destination") or ""
+        ).upper(),
+        legs,
+    )
+
+
+def deduplicate_ranked_routes(
+    routes: list[dict[str, Any]],
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    unique_routes = []
+    duplicate_routes = []
+    seen = set()
+
+    for route in routes:
+        key = route_duplicate_key(route)
+
+        if key in seen:
+            duplicate_routes.append(route)
+            continue
+
+        seen.add(key)
+        unique_routes.append(route)
+
+    return unique_routes, duplicate_routes
+
+
 def recommend_staging_routes(
     source_station_code: str,
     destination_station_code: str,
@@ -377,13 +444,19 @@ def recommend_staging_routes(
         rank_and_validate_routes(routes)
     )
 
+    deduplicated_routes, duplicate_routes = (
+        deduplicate_ranked_routes(
+            ranked_routes
+        )
+    )
+
     enriched_routes = [
         enrich_route(
             route=route,
             rank=index + 1,
         )
         for index, route in enumerate(
-            ranked_routes
+            deduplicated_routes
         )
     ]
 
@@ -403,6 +476,14 @@ def recommend_staging_routes(
         "rejected_transfer_count": len(
             rejected_routes
         ),
+        "duplicate_route_count": len(
+            duplicate_routes
+        ),
+        "deduplication_policy": {
+            "enabled": True,
+            "slip_suffix_normalized": True,
+            "highest_ranked_route_kept": True,
+        },
         "ranking_policy": {
             "minimum_transfer_minutes": 30,
             "risky_connections_rejected": True,
