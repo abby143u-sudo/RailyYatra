@@ -501,5 +501,228 @@ class AuthenticationApiTests(unittest.TestCase):
         )
 
 
+    def test_change_password_rotates_all_sessions(self):
+        self.register()
+
+        second_client = TestClient(app)
+        second_login = second_client.post(
+            "/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+            },
+        )
+
+        self.assertEqual(
+            second_login.status_code,
+            200,
+            second_login.text,
+        )
+
+        old_token = client.cookies.get(
+            "railyatra_session"
+        )
+        new_password = "NewStrongRailPassword456"
+
+        response = client.post(
+            "/auth/change-password",
+            json={
+                "current_password": TEST_PASSWORD,
+                "new_password": new_password,
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+            response.text,
+        )
+        self.assertTrue(
+            response.json()["sessions_revoked"] >= 2
+        )
+
+        new_token = client.cookies.get(
+            "railyatra_session"
+        )
+
+        self.assertTrue(new_token)
+        self.assertNotEqual(old_token, new_token)
+        self.assertEqual(
+            client.get("/auth/me").status_code,
+            200,
+        )
+        self.assertEqual(
+            second_client.get("/auth/me").status_code,
+            401,
+        )
+
+        old_password_client = TestClient(app)
+        old_login = old_password_client.post(
+            "/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+            },
+        )
+        self.assertEqual(old_login.status_code, 401)
+
+        new_password_client = TestClient(app)
+        new_login = new_password_client.post(
+            "/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": new_password,
+            },
+        )
+        self.assertEqual(
+            new_login.status_code,
+            200,
+            new_login.text,
+        )
+
+    def test_logout_all_revokes_every_session(self):
+        self.register()
+
+        second_client = TestClient(app)
+        second_login = second_client.post(
+            "/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+            },
+        )
+        self.assertEqual(second_login.status_code, 200)
+
+        response = client.post("/auth/logout-all")
+
+        self.assertEqual(
+            response.status_code,
+            200,
+            response.text,
+        )
+        self.assertTrue(
+            response.json()["sessions_revoked"] >= 2
+        )
+        self.assertEqual(
+            client.get("/auth/me").status_code,
+            401,
+        )
+        self.assertEqual(
+            second_client.get("/auth/me").status_code,
+            401,
+        )
+
+    def test_account_deletion_requires_confirmation_and_cascades(self):
+        self.register()
+
+        saved_response = client.post(
+            "/account/saved-journeys",
+            json={
+                "source": "PNBE",
+                "destination": "NDLS",
+                "journey_date": "2026-08-01",
+                "class_code": "SL",
+                "quota": "GN",
+                "label": "Deletion test",
+                "note": "",
+            },
+        )
+        self.assertEqual(
+            saved_response.status_code,
+            201,
+            saved_response.text,
+        )
+
+        invalid_confirmation = client.request(
+            "DELETE",
+            "/auth/account",
+            json={
+                "password": TEST_PASSWORD,
+                "confirmation": "delete",
+            },
+        )
+        self.assertEqual(
+            invalid_confirmation.status_code,
+            422,
+        )
+
+        wrong_password = client.request(
+            "DELETE",
+            "/auth/account",
+            json={
+                "password": "WrongPassword123",
+                "confirmation": "DELETE MY ACCOUNT",
+            },
+        )
+        self.assertEqual(
+            wrong_password.status_code,
+            401,
+        )
+
+        response = client.request(
+            "DELETE",
+            "/auth/account",
+            json={
+                "password": TEST_PASSWORD,
+                "confirmation": "DELETE MY ACCOUNT",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+            response.text,
+        )
+        self.assertTrue(
+            response.json()["account_deleted"]
+        )
+        self.assertEqual(
+            client.get("/auth/me").status_code,
+            401,
+        )
+
+        failed_login = client.post(
+            "/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+            },
+        )
+        self.assertEqual(failed_login.status_code, 401)
+
+        with sqlite3.connect(
+            AUTH_TEST_DATABASE
+        ) as database:
+            user_count = database.execute(
+                "SELECT COUNT(*) FROM users"
+            ).fetchone()[0]
+            session_count = database.execute(
+                "SELECT COUNT(*) FROM user_sessions"
+            ).fetchone()[0]
+            journey_count = database.execute(
+                "SELECT COUNT(*) FROM saved_journeys"
+            ).fetchone()[0]
+
+        self.assertEqual(user_count, 0)
+        self.assertEqual(session_count, 0)
+        self.assertEqual(journey_count, 0)
+
+    def test_untrusted_auth_security_origin_is_rejected(self):
+        self.register()
+
+        response = client.post(
+            "/auth/logout-all",
+            headers={
+                "Origin": "https://malicious.example",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            client.get("/auth/me").status_code,
+            200,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

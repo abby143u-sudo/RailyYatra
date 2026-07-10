@@ -10,6 +10,10 @@ from fastapi import (
 )
 from pydantic import BaseModel, Field
 
+from backend.api.cors_public_middleware import (
+    configured_allowed_origins,
+)
+
 from backend.api.auth_security import (
     create_session_token,
     hash_password,
@@ -24,10 +28,13 @@ from backend.api.auth_store import (
     auth_store_status,
     create_session,
     create_user,
+    delete_user_account,
     get_session_user,
     get_user_by_email,
     revoke_session,
+    revoke_user_sessions,
     update_last_login,
+    update_user_password,
 )
 
 
@@ -74,6 +81,33 @@ class LoginPayload(BaseModel):
         ...,
         min_length=1,
         max_length=128,
+    )
+
+
+
+class ChangePasswordPayload(BaseModel):
+    current_password: str = Field(
+        ...,
+        min_length=1,
+        max_length=128,
+    )
+    new_password: str = Field(
+        ...,
+        min_length=10,
+        max_length=128,
+    )
+
+
+class DeleteAccountPayload(BaseModel):
+    password: str = Field(
+        ...,
+        min_length=1,
+        max_length=128,
+    )
+    confirmation: str = Field(
+        ...,
+        min_length=1,
+        max_length=40,
     )
 
 
@@ -135,6 +169,36 @@ def request_session_token(
         bearer_token(request)
         or request.cookies.get(COOKIE_NAME, "")
     ).strip()
+
+
+
+def require_safe_write_origin(
+    request: Request,
+) -> None:
+    origin = str(
+        request.headers.get("origin") or ""
+    ).strip().rstrip("/")
+
+    # CLI, native and server-to-server clients may omit Origin.
+    if not origin:
+        return
+
+    allowed = {
+        item.rstrip("/")
+        for item in configured_allowed_origins()
+    }
+
+    hostname = request.url.hostname
+
+    if hostname:
+        allowed.add(f"https://{hostname}")
+        allowed.add(f"http://{hostname}")
+
+    if origin not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail="Request origin is not allowed.",
+        )
 
 
 def set_session_cookie(
@@ -367,4 +431,176 @@ def logout_user(
         "ok": True,
         "message": "Logged out.",
         "session_revoked": revoked,
+    }
+
+
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordPayload,
+    request: Request,
+    response: Response,
+):
+    require_safe_write_origin(request)
+
+    authenticated = require_authenticated_session(
+        request
+    )
+    user = authenticated["user"]
+
+    user_record = get_user_by_email(
+        user["email"],
+        include_password=True,
+    )
+
+    if (
+        not user_record
+        or not verify_password(
+            payload.current_password,
+            user_record["password_hash"],
+        )
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Current password is incorrect.",
+        )
+
+    try:
+        new_password = validate_password(
+            payload.new_password
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+    if verify_password(
+        new_password,
+        user_record["password_hash"],
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "New password must be different "
+                "from the current password."
+            ),
+        )
+
+    user_id = int(user_record["id"])
+
+    updated = update_user_password(
+        user_id=user_id,
+        password_hash=hash_password(new_password),
+    )
+
+    if not updated:
+        raise HTTPException(
+            status_code=503,
+            detail="Password could not be updated.",
+        )
+
+    sessions_revoked = revoke_user_sessions(user_id)
+
+    raw_token, token_hash = create_session_token()
+
+    session = create_session(
+        user_id=user_id,
+        token_hash=token_hash,
+        user_agent=request.headers.get(
+            "user-agent",
+            "",
+        ),
+        ip_address=request_ip(request),
+    )
+
+    set_session_cookie(response, raw_token)
+
+    return {
+        "ok": True,
+        "message": "Password changed successfully.",
+        "user": get_user_by_email(user["email"]),
+        "session": session,
+        "sessions_revoked": sessions_revoked,
+    }
+
+
+@router.post("/logout-all")
+def logout_all_devices(
+    request: Request,
+    response: Response,
+):
+    require_safe_write_origin(request)
+
+    authenticated = require_authenticated_session(
+        request
+    )
+
+    sessions_revoked = revoke_user_sessions(
+        int(authenticated["user"]["id"])
+    )
+
+    delete_session_cookie(response)
+
+    return {
+        "ok": True,
+        "message": "Logged out from all devices.",
+        "sessions_revoked": sessions_revoked,
+    }
+
+
+@router.delete("/account")
+def remove_current_account(
+    payload: DeleteAccountPayload,
+    request: Request,
+    response: Response,
+):
+    require_safe_write_origin(request)
+
+    authenticated = require_authenticated_session(
+        request
+    )
+    user = authenticated["user"]
+
+    if payload.confirmation.strip() != "DELETE MY ACCOUNT":
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                'Confirmation must exactly match '
+                '"DELETE MY ACCOUNT".'
+            ),
+        )
+
+    user_record = get_user_by_email(
+        user["email"],
+        include_password=True,
+    )
+
+    if (
+        not user_record
+        or not verify_password(
+            payload.password,
+            user_record["password_hash"],
+        )
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Password is incorrect.",
+        )
+
+    deleted = delete_user_account(
+        int(user_record["id"])
+    )
+
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="Account was not found.",
+        )
+
+    delete_session_cookie(response)
+
+    return {
+        "ok": True,
+        "message": "Account permanently deleted.",
+        "account_deleted": True,
     }

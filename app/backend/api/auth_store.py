@@ -683,3 +683,165 @@ def revoke_session(token_hash: str) -> bool:
         database.commit()
 
         return cursor.rowcount > 0
+
+
+def update_user_password(
+    user_id: int,
+    password_hash: str,
+) -> bool:
+    init_auth_store()
+    updated_at = iso_datetime(utc_now())
+
+    if postgres_enabled():
+        with postgres_connect() as database:
+            with database.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE users
+                    SET
+                        password_hash = %s,
+                        updated_at = %s
+                    WHERE
+                        id = %s
+                        AND is_active = TRUE
+                    """,
+                    (
+                        password_hash,
+                        updated_at,
+                        user_id,
+                    ),
+                )
+                changed = cursor.rowcount > 0
+
+            database.commit()
+
+        return changed
+
+    with sqlite_connect() as database:
+        cursor = database.execute(
+            """
+            UPDATE users
+            SET
+                password_hash = ?,
+                updated_at = ?
+            WHERE
+                id = ?
+                AND is_active = 1
+            """,
+            (
+                password_hash,
+                updated_at,
+                user_id,
+            ),
+        )
+        database.commit()
+
+        return cursor.rowcount > 0
+
+
+def revoke_user_sessions(user_id: int) -> int:
+    init_auth_store()
+    revoked_at = iso_datetime(utc_now())
+
+    if postgres_enabled():
+        with postgres_connect() as database:
+            with database.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE user_sessions
+                    SET revoked_at = %s
+                    WHERE
+                        user_id = %s
+                        AND revoked_at IS NULL
+                    """,
+                    (
+                        revoked_at,
+                        user_id,
+                    ),
+                )
+                changed = cursor.rowcount
+
+            database.commit()
+
+        return int(changed)
+
+    with sqlite_connect() as database:
+        cursor = database.execute(
+            """
+            UPDATE user_sessions
+            SET revoked_at = ?
+            WHERE
+                user_id = ?
+                AND revoked_at IS NULL
+            """,
+            (
+                revoked_at,
+                user_id,
+            ),
+        )
+        database.commit()
+
+        return int(cursor.rowcount)
+
+
+def delete_user_account(user_id: int) -> bool:
+    init_auth_store()
+
+    if postgres_enabled():
+        with postgres_connect() as database:
+            with database.cursor() as cursor:
+                cursor.execute(
+                    """
+                    DELETE FROM users
+                    WHERE id = %s
+                    """,
+                    (user_id,),
+                )
+                deleted = cursor.rowcount > 0
+
+            database.commit()
+
+        return deleted
+
+    with sqlite_connect() as database:
+        database.execute("PRAGMA foreign_keys = ON")
+
+        saved_journeys_exists = database.execute(
+            """
+            SELECT 1
+            FROM sqlite_master
+            WHERE
+                type = 'table'
+                AND name = 'saved_journeys'
+            LIMIT 1
+            """
+        ).fetchone()
+
+        if saved_journeys_exists:
+            database.execute(
+                """
+                DELETE FROM saved_journeys
+                WHERE user_id = ?
+                """,
+                (user_id,),
+            )
+
+        database.execute(
+            """
+            DELETE FROM user_sessions
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        )
+
+        cursor = database.execute(
+            """
+            DELETE FROM users
+            WHERE id = ?
+            """,
+            (user_id,),
+        )
+
+        database.commit()
+
+        return cursor.rowcount > 0
