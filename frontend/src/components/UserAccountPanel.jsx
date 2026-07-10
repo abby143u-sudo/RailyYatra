@@ -7,6 +7,14 @@ const LOCAL_SAVED_ROUTES_KEY =
   "railyatra_saved_demo_searches";
 
 
+const EMPTY_SECURITY_FORM = {
+  current_password: "",
+  new_password: "",
+  delete_password: "",
+  delete_confirmation: "",
+};
+
+
 function normalizeCode(value) {
   return String(value || "")
     .trim()
@@ -142,6 +150,10 @@ export default function UserAccountPanel({
     email: "",
     password: "",
   });
+  const [securityForm, setSecurityForm] =
+    useState({
+      ...EMPTY_SECURITY_FORM,
+    });
 
   useEffect(() => {
     let cancelled = false;
@@ -202,6 +214,14 @@ export default function UserAccountPanel({
 
   function updateForm(field, value) {
     setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+
+  function updateSecurityForm(field, value) {
+    setSecurityForm((current) => ({
       ...current,
       [field]: value,
     }));
@@ -278,10 +298,141 @@ export default function UserAccountPanel({
       setUser(null);
       setJourneys([]);
       setSessionState("guest");
+      setSecurityForm({
+        ...EMPTY_SECURITY_FORM,
+      });
       setBusy("");
       setMessage("You have been logged out.");
     }
   }
+
+  async function changePassword(event) {
+    event.preventDefault();
+    setBusy("change-password");
+    setMessage("");
+
+    try {
+      const payload = await accountRequest(
+        "/auth/change-password",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            current_password:
+              securityForm.current_password,
+            new_password:
+              securityForm.new_password,
+          }),
+        },
+      );
+
+      setUser(payload.user || user);
+      setSecurityForm((current) => ({
+        ...current,
+        current_password: "",
+        new_password: "",
+      }));
+      setMessage(
+        "Password changed. Other active sessions were signed out.",
+      );
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+
+  async function logoutAllDevices() {
+    const confirmed = window.confirm(
+      "Log out this account from every device?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setBusy("logout-all");
+    setMessage("");
+
+    try {
+      await accountRequest(
+        "/auth/logout-all",
+        {
+          method: "POST",
+        },
+      );
+
+      setUser(null);
+      setJourneys([]);
+      setSessionState("guest");
+      setSecurityForm({
+        ...EMPTY_SECURITY_FORM,
+      });
+      setMessage(
+        "You have been logged out from all devices.",
+      );
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+
+  async function deleteAccount(event) {
+    event.preventDefault();
+
+    if (
+      securityForm.delete_confirmation !==
+      "DELETE MY ACCOUNT"
+    ) {
+      setMessage(
+        'Type "DELETE MY ACCOUNT" exactly to continue.',
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Permanently delete your RailYatra account and all cloud journeys? This cannot be undone.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setBusy("delete-account");
+    setMessage("");
+
+    try {
+      await accountRequest(
+        "/auth/account",
+        {
+          method: "DELETE",
+          body: JSON.stringify({
+            password:
+              securityForm.delete_password,
+            confirmation:
+              securityForm.delete_confirmation,
+          }),
+        },
+      );
+
+      setUser(null);
+      setJourneys([]);
+      setSessionState("guest");
+      setSecurityForm({
+        ...EMPTY_SECURITY_FORM,
+      });
+      setMessage(
+        "Your RailYatra account was permanently deleted.",
+      );
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
 
   async function saveCurrentJourney() {
     const source = normalizeCode(
@@ -609,6 +760,187 @@ export default function UserAccountPanel({
               Logout
             </button>
           </div>
+
+          <section
+            className="user-account-panel__security"
+            aria-label="Account security"
+          >
+            <div className="user-account-panel__security-heading">
+              <div>
+                <span>Account security</span>
+                <strong>
+                  Password and session controls
+                </strong>
+              </div>
+
+              <p>
+                Manage your password, active
+                sessions and permanent account
+                deletion.
+              </p>
+            </div>
+
+            <div className="user-account-panel__security-grid">
+              <form
+                className="user-account-panel__security-card"
+                onSubmit={changePassword}
+              >
+                <div>
+                  <span>Password</span>
+                  <strong>Change password</strong>
+                  <p>
+                    Changing your password signs
+                    out every other active session.
+                  </p>
+                </div>
+
+                <label>
+                  <span>Current password</span>
+                  <input
+                    type="password"
+                    value={
+                      securityForm.current_password
+                    }
+                    onChange={(event) =>
+                      updateSecurityForm(
+                        "current_password",
+                        event.target.value,
+                      )
+                    }
+                    autoComplete="current-password"
+                    minLength={1}
+                    maxLength={128}
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>New password</span>
+                  <input
+                    type="password"
+                    value={
+                      securityForm.new_password
+                    }
+                    onChange={(event) =>
+                      updateSecurityForm(
+                        "new_password",
+                        event.target.value,
+                      )
+                    }
+                    autoComplete="new-password"
+                    minLength={10}
+                    maxLength={128}
+                    required
+                  />
+                </label>
+
+                <p className="user-account-panel__security-note">
+                  Use at least 10 characters,
+                  including a letter and a number.
+                </p>
+
+                <button
+                  type="submit"
+                  disabled={Boolean(busy)}
+                >
+                  {busy === "change-password"
+                    ? "Changing password…"
+                    : "Change password"}
+                </button>
+              </form>
+
+              <div className="user-account-panel__security-card">
+                <div>
+                  <span>Sessions</span>
+                  <strong>
+                    Log out all devices
+                  </strong>
+                  <p>
+                    Revoke every active session,
+                    including this browser.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="is-warning"
+                  onClick={logoutAllDevices}
+                  disabled={Boolean(busy)}
+                >
+                  {busy === "logout-all"
+                    ? "Logging out devices…"
+                    : "Log out all devices"}
+                </button>
+              </div>
+
+              <form
+                className="user-account-panel__security-card user-account-panel__security-card--danger"
+                onSubmit={deleteAccount}
+              >
+                <div>
+                  <span>Danger zone</span>
+                  <strong>
+                    Delete account permanently
+                  </strong>
+                  <p>
+                    Your account, sessions and
+                    cloud journeys will be deleted.
+                    This cannot be undone.
+                  </p>
+                </div>
+
+                <label>
+                  <span>Account password</span>
+                  <input
+                    type="password"
+                    value={
+                      securityForm.delete_password
+                    }
+                    onChange={(event) =>
+                      updateSecurityForm(
+                        "delete_password",
+                        event.target.value,
+                      )
+                    }
+                    autoComplete="current-password"
+                    minLength={1}
+                    maxLength={128}
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>
+                    Type DELETE MY ACCOUNT
+                  </span>
+                  <input
+                    type="text"
+                    value={
+                      securityForm.delete_confirmation
+                    }
+                    onChange={(event) =>
+                      updateSecurityForm(
+                        "delete_confirmation",
+                        event.target.value,
+                      )
+                    }
+                    autoComplete="off"
+                    required
+                  />
+                </label>
+
+                <button
+                  type="submit"
+                  className="is-danger"
+                  disabled={Boolean(busy)}
+                >
+                  {busy === "delete-account"
+                    ? "Deleting account…"
+                    : "Delete account permanently"}
+                </button>
+              </form>
+            </div>
+          </section>
 
           <div className="user-account-panel__saved-heading">
             <div>

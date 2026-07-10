@@ -308,3 +308,138 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.user-account-panel__security {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 20px;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.user-account-panel__security-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.user-account-panel__security-heading > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.user-account-panel__security-heading span,
+.user-account-panel__security-card > div > span {
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.user-account-panel__security-heading strong {
+  color: #0f172a;
+  font-size: 1.1rem;
+}
+
+.user-account-panel__security-heading p {
+  max-width: 420px;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.user-account-panel__security-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.user-account-panel__security-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(37, 99, 235, 0.13);
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.user-account-panel__security-card > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.user-account-panel__security-card strong {
+  color: #0f172a;
+}
+
+.user-account-panel__security-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.user-account-panel__security-card label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.user-account-panel__security-card label > span {
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.user-account-panel__security-card input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.68rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.user-account-panel__security-card input:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgba(37, 99, 235, 0.12);
+}
+
+.user-account-panel__security-card button {
+  min-height: 42px;
+  margin-top: auto;
+  padding: 0.62rem 0.95rem;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.user-account-panel__security-note {
+  font-size: 0.75rem !important;
+}
+
+.user-account-panel__security-card .is-warning {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.user-account-panel__security-card--danger {
+  border-color: rgba(220, 38, 38, 0.22);
+  background: rgba(254, 242, 242, 0.82);
+}
+
+.user-account-panel__security-card--danger
+  > div
+  > span {
+  color: #b91c1c;
+}
+
+.user-account-panel__security-card .is-danger {
+  color: #ffffff;
+  background: #b91c1c;
+}

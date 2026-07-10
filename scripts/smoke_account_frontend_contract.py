@@ -80,6 +80,34 @@ component_requirements = [
         "logout request",
     ),
     (
+        '"/auth/change-password"',
+        "change password request",
+    ),
+    (
+        '"/auth/logout-all"',
+        "all-device logout request",
+    ),
+    (
+        '"/auth/account"',
+        "account deletion request",
+    ),
+    (
+        '"DELETE MY ACCOUNT"',
+        "exact account deletion confirmation",
+    ),
+    (
+        "Change password",
+        "change password action",
+    ),
+    (
+        "Log out all devices",
+        "all-device logout action",
+    ),
+    (
+        "Delete account permanently",
+        "permanent account deletion action",
+    ),
+    (
         '"/account/saved-journeys"',
         "saved journey list/create request",
     ),
