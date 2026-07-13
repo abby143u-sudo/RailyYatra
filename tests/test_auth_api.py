@@ -21,6 +21,11 @@ os.environ.pop("DATABASE_URL", None)
 os.environ.pop("RAILYATRA_DEMO_DATABASE_URL", None)
 os.environ["RAILYATRA_ENV"] = "development"
 os.environ["RAILYATRA_SESSION_COOKIE_SECURE"] = "false"
+os.environ["RAILYATRA_AUTH_LOGIN_FAILURE_MAX"] = "3"
+os.environ["RAILYATRA_AUTH_LOGIN_WINDOW_SECONDS"] = "900"
+os.environ["RAILYATRA_AUTH_LOGIN_IP_MAX"] = "6"
+os.environ["RAILYATRA_AUTH_REGISTER_IP_MAX"] = "4"
+os.environ["RAILYATRA_AUTH_REGISTER_WINDOW_SECONDS"] = "3600"
 
 _test_directory = tempfile.TemporaryDirectory()
 atexit.register(_test_directory.cleanup)
@@ -39,6 +44,9 @@ from fastapi.testclient import TestClient  # noqa: E402
 from backend.api.auth_security import (  # noqa: E402
     hash_session_token,
 )
+from backend.api.auth_rate_limit import (  # noqa: E402
+    reset_auth_rate_limits,
+)
 from backend.api.main import app  # noqa: E402
 
 
@@ -52,6 +60,7 @@ TEST_NAME = "Rail Traveller"
 class AuthenticationApiTests(unittest.TestCase):
     def setUp(self):
         client.cookies.clear()
+        reset_auth_rate_limits()
 
         if AUTH_TEST_DATABASE.exists():
             AUTH_TEST_DATABASE.unlink()
@@ -721,6 +730,250 @@ class AuthenticationApiTests(unittest.TestCase):
         self.assertEqual(
             client.get("/auth/me").status_code,
             200,
+        )
+
+
+    def test_auth_write_origins_are_enforced(self):
+        malicious_origin = {
+            "Origin": "https://malicious.example",
+        }
+
+        blocked_register = client.post(
+            "/auth/register",
+            headers=malicious_origin,
+            json={
+                "email": TEST_EMAIL,
+                "display_name": TEST_NAME,
+                "password": TEST_PASSWORD,
+            },
+        )
+
+        self.assertEqual(
+            blocked_register.status_code,
+            403,
+        )
+
+        self.register()
+        client.cookies.clear()
+
+        blocked_login = client.post(
+            "/auth/login",
+            headers=malicious_origin,
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+            },
+        )
+
+        self.assertEqual(
+            blocked_login.status_code,
+            403,
+        )
+
+        login = client.post(
+            "/auth/login",
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+            },
+        )
+
+        self.assertEqual(login.status_code, 200)
+
+        blocked_logout = client.post(
+            "/auth/logout",
+            headers=malicious_origin,
+        )
+
+        self.assertEqual(
+            blocked_logout.status_code,
+            403,
+        )
+        self.assertEqual(
+            client.get("/auth/me").status_code,
+            200,
+        )
+
+    def test_failed_login_is_temporarily_limited(self):
+        self.register()
+        client.cookies.clear()
+
+        headers = {
+            "X-Forwarded-For": "203.0.113.10",
+        }
+
+        for _ in range(2):
+            response = client.post(
+                "/auth/login",
+                headers=headers,
+                json={
+                    "email": TEST_EMAIL,
+                    "password": "WrongPassword123",
+                },
+            )
+
+            self.assertEqual(
+                response.status_code,
+                401,
+                response.text,
+            )
+
+        blocked = client.post(
+            "/auth/login",
+            headers=headers,
+            json={
+                "email": TEST_EMAIL,
+                "password": "WrongPassword123",
+            },
+        )
+
+        self.assertEqual(blocked.status_code, 429)
+        self.assertTrue(
+            int(blocked.headers["retry-after"]) >= 1
+        )
+
+        correct_password_still_blocked = (
+            client.post(
+                "/auth/login",
+                headers=headers,
+                json={
+                    "email": TEST_EMAIL,
+                    "password": TEST_PASSWORD,
+                },
+            )
+        )
+
+        self.assertEqual(
+            correct_password_still_blocked.status_code,
+            429,
+        )
+
+    def test_successful_login_clears_failure_counter(self):
+        self.register()
+        client.cookies.clear()
+
+        headers = {
+            "X-Forwarded-For": "203.0.113.11",
+        }
+
+        for _ in range(2):
+            failed = client.post(
+                "/auth/login",
+                headers=headers,
+                json={
+                    "email": TEST_EMAIL,
+                    "password": "WrongPassword123",
+                },
+            )
+            self.assertEqual(failed.status_code, 401)
+
+        successful = client.post(
+            "/auth/login",
+            headers=headers,
+            json={
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD,
+            },
+        )
+
+        self.assertEqual(
+            successful.status_code,
+            200,
+            successful.text,
+        )
+
+        client.cookies.clear()
+
+        failed_after_success = client.post(
+            "/auth/login",
+            headers=headers,
+            json={
+                "email": TEST_EMAIL,
+                "password": "WrongPassword123",
+            },
+        )
+
+        self.assertEqual(
+            failed_after_success.status_code,
+            401,
+        )
+
+    def test_login_ip_attempt_limit(self):
+        headers = {
+            "X-Forwarded-For": "203.0.113.12",
+        }
+
+        for index in range(6):
+            response = client.post(
+                "/auth/login",
+                headers=headers,
+                json={
+                    "email": (
+                        f"unknown{index}@example.com"
+                    ),
+                    "password": "WrongPassword123",
+                },
+            )
+
+            self.assertEqual(
+                response.status_code,
+                401,
+                response.text,
+            )
+
+        blocked = client.post(
+            "/auth/login",
+            headers=headers,
+            json={
+                "email": "another@example.com",
+                "password": "WrongPassword123",
+            },
+        )
+
+        self.assertEqual(blocked.status_code, 429)
+        self.assertTrue(
+            int(blocked.headers["retry-after"]) >= 1
+        )
+
+    def test_registration_ip_attempt_limit(self):
+        headers = {
+            "X-Forwarded-For": "203.0.113.13",
+        }
+
+        for index in range(4):
+            response = client.post(
+                "/auth/register",
+                headers=headers,
+                json={
+                    "email": (
+                        f"traveller{index}@example.com"
+                    ),
+                    "display_name": (
+                        f"Traveller {index}"
+                    ),
+                    "password": TEST_PASSWORD,
+                },
+            )
+
+            self.assertEqual(
+                response.status_code,
+                201,
+                response.text,
+            )
+
+        blocked = client.post(
+            "/auth/register",
+            headers=headers,
+            json={
+                "email": "blocked@example.com",
+                "display_name": "Blocked User",
+                "password": TEST_PASSWORD,
+            },
+        )
+
+        self.assertEqual(blocked.status_code, 429)
+        self.assertTrue(
+            int(blocked.headers["retry-after"]) >= 1
         )
 
 

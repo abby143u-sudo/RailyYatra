@@ -14,6 +14,15 @@ from backend.api.cors_public_middleware import (
     configured_allowed_origins,
 )
 
+from backend.api.auth_rate_limit import (
+    auth_rate_limit_status,
+    clear_login_failures,
+    consume_login_ip_attempt,
+    consume_registration_attempt,
+    login_failure_retry_after,
+    record_login_failure,
+)
+
 from backend.api.auth_security import (
     create_session_token,
     hash_password,
@@ -201,6 +210,22 @@ def require_safe_write_origin(
         )
 
 
+
+def raise_auth_rate_limit(
+    message: str,
+    retry_after: int,
+) -> None:
+    raise HTTPException(
+        status_code=429,
+        detail=message,
+        headers={
+            "Retry-After": str(
+                max(1, int(retry_after))
+            ),
+        },
+    )
+
+
 def set_session_cookie(
     response: Response,
     raw_token: str,
@@ -265,6 +290,7 @@ def auth_health():
         "cookie_secure": cookie_secure(),
         "supports_http_only_cookie": True,
         "supports_bearer_token": True,
+        "rate_limits": auth_rate_limit_status(),
     }
 
 
@@ -274,6 +300,23 @@ def register_user(
     request: Request,
     response: Response,
 ):
+    require_safe_write_origin(request)
+
+    registration_retry_after = (
+        consume_registration_attempt(
+            request_ip(request)
+        )
+    )
+
+    if registration_retry_after:
+        raise_auth_rate_limit(
+            (
+                "Too many account creation attempts. "
+                "Please wait and try again."
+            ),
+            registration_retry_after,
+        )
+
     try:
         email = normalize_email(payload.email)
         display_name = normalize_display_name(
@@ -345,10 +388,43 @@ def login_user(
     request: Request,
     response: Response,
 ):
+    require_safe_write_origin(request)
+
+    client_ip = request_ip(request)
+
+    login_retry_after = (
+        consume_login_ip_attempt(client_ip)
+    )
+
+    if login_retry_after:
+        raise_auth_rate_limit(
+            (
+                "Too many login attempts. "
+                "Please wait and try again."
+            ),
+            login_retry_after,
+        )
+
     try:
         email = normalize_email(payload.email)
     except ValueError:
         email = str(payload.email or "").strip().casefold()
+
+    failure_retry_after = (
+        login_failure_retry_after(
+            client_ip,
+            email,
+        )
+    )
+
+    if failure_retry_after:
+        raise_auth_rate_limit(
+            (
+                "Too many failed login attempts. "
+                "Please wait before trying again."
+            ),
+            failure_retry_after,
+        )
 
     user_record = get_user_by_email(
         email,
@@ -371,10 +447,31 @@ def login_user(
         or not password_valid
         or not bool(user_record["is_active"])
     ):
+        failure_retry_after = (
+            record_login_failure(
+                client_ip,
+                email,
+            )
+        )
+
+        if failure_retry_after:
+            raise_auth_rate_limit(
+                (
+                    "Too many failed login attempts. "
+                    "Please wait before trying again."
+                ),
+                failure_retry_after,
+            )
+
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password.",
         )
+
+    clear_login_failures(
+        client_ip,
+        email,
+    )
 
     raw_token, token_hash = create_session_token()
 
@@ -416,6 +513,8 @@ def logout_user(
     request: Request,
     response: Response,
 ):
+    require_safe_write_origin(request)
+
     raw_token = request_session_token(request)
 
     revoked = False

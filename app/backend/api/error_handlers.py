@@ -29,6 +29,11 @@ def register_error_handlers(app):
         message = detail if isinstance(detail, str) else "HTTP error"
         return JSONResponse(
             status_code=exc.status_code,
+            headers=getattr(
+                exc,
+                "headers",
+                None,
+            ),
             content=build_error_payload(
                 code="http_error",
                 message=message,

@@ -17,6 +17,16 @@ services:
         value: 30
       - key: RAILYATRA_SESSION_COOKIE_SECURE
         value: true
+      - key: RAILYATRA_AUTH_LOGIN_FAILURE_MAX
+        value: 5
+      - key: RAILYATRA_AUTH_LOGIN_WINDOW_SECONDS
+        value: 900
+      - key: RAILYATRA_AUTH_LOGIN_IP_MAX
+        value: 30
+      - key: RAILYATRA_AUTH_REGISTER_IP_MAX
+        value: 10
+      - key: RAILYATRA_AUTH_REGISTER_WINDOW_SECONDS
+        value: 3600
       - key: RAILYATRA_LIVE_BOOKING_ENABLED
         value: false
       - key: RAILYATRA_LIVE_FARE_ENABLED
