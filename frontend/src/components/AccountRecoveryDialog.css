@@ -1,0 +1,144 @@
+.account-recovery-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+.account-recovery-dialog__card {
+  width: min(100%, 520px);
+  max-height: min(92vh, 760px);
+  overflow: auto;
+  padding: 1.2rem;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
+}
+
+.account-recovery-dialog__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.account-recovery-dialog__heading span {
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.account-recovery-dialog__heading h3 {
+  margin: 0.35rem 0 0;
+  color: #0f172a;
+  font-size: 1.55rem;
+  letter-spacing: -0.035em;
+}
+
+.account-recovery-dialog__close {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 999px;
+  color: #334155;
+  background: #e2e8f0;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.account-recovery-dialog__form,
+.account-recovery-dialog__verify {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.account-recovery-dialog__form p,
+.account-recovery-dialog__verify p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.account-recovery-dialog__form label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.account-recovery-dialog__form label span {
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.account-recovery-dialog__form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 13px;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.account-recovery-dialog__form input:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgba(37, 99, 235, 0.12);
+}
+
+.account-recovery-dialog__form button,
+.account-recovery-dialog__continue {
+  min-height: 44px;
+  padding: 0.68rem 1rem;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #2563eb;
+  font-weight: 900;
+}
+
+.account-recovery-dialog__form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.account-recovery-dialog__status {
+  margin: 1rem 0 0;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.account-recovery-dialog__status.is-loading {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.account-recovery-dialog__status.is-success {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.account-recovery-dialog__status.is-error {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.account-recovery-dialog__continue {
+  width: 100%;
+  margin-top: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .account-recovery-dialog__card {
+    padding: 1rem;
+    border-radius: 20px;
+  }
+}

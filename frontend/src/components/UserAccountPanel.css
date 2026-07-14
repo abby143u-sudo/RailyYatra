@@ -443,3 +443,51 @@
   color: #ffffff;
   background: #b91c1c;
 }
+
+.user-account-panel__verification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(217, 119, 6, 0.24);
+  border-radius: 18px;
+  color: #92400e;
+  background: rgba(254, 243, 199, 0.84);
+}
+
+.user-account-panel__verification > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.user-account-panel__verification strong {
+  color: #78350f;
+}
+
+.user-account-panel__verification span {
+  color: #92400e;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.user-account-panel__verification button {
+  min-height: 42px;
+  flex: 0 0 auto;
+  padding: 0.62rem 0.95rem;
+  border-radius: 999px;
+  color: #78350f;
+  background: #fde68a;
+  font-weight: 900;
+}
+
+@media (max-width: 620px) {
+  .user-account-panel__verification {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .user-account-panel__verification button {
+    width: 100%;
+  }
+}

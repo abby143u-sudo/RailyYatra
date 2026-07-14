@@ -1,10 +1,35 @@
 import { useEffect, useState } from "react";
 import { apiUrl } from "../config/api.js";
+import AccountRecoveryDialog from "./AccountRecoveryDialog.jsx";
 import "./UserAccountPanel.css";
 
 
 const LOCAL_SAVED_ROUTES_KEY =
   "railyatra_saved_demo_searches";
+
+
+function recoveryDialogFromLocation() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const path = window.location.pathname
+    .replace(/\/+$/, "")
+    .toLowerCase();
+  const token = new URLSearchParams(
+    window.location.search,
+  ).get("token") || "";
+
+  if (path.endsWith("/verify-email")) {
+    return { mode: "verify", token };
+  }
+
+  if (path.endsWith("/reset-password")) {
+    return { mode: "reset", token };
+  }
+
+  return null;
+}
 
 
 const EMPTY_SECURITY_FORM = {
@@ -145,6 +170,8 @@ export default function UserAccountPanel({
   const [busy, setBusy] = useState("");
   const [message, setMessage] =
     useState("");
+  const [recoveryDialog, setRecoveryDialog] =
+    useState(recoveryDialogFromLocation);
   const [form, setForm] = useState({
     display_name: "",
     email: "",
@@ -272,6 +299,39 @@ export default function UserAccountPanel({
         isRegister
           ? "Account created successfully."
           : "Login successful.",
+      );
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function resendVerificationEmail() {
+    setBusy("resend-verification");
+    setMessage("");
+
+    try {
+      const payload = await accountRequest(
+        "/auth/email-verification/resend",
+        { method: "POST" },
+      );
+
+      setUser((current) =>
+        current
+          ? {
+              ...current,
+              email_verified:
+                payload.email_verified,
+              email_verified_at:
+                payload.email_verified_at,
+            }
+          : current,
+      );
+
+      setMessage(
+        payload.message ||
+          "Verification email requested.",
       );
     } catch (error) {
       setMessage(error.message);
@@ -597,6 +657,67 @@ export default function UserAccountPanel({
         )}
       </div>
 
+      {sessionState === "authenticated" &&
+        user &&
+        !user.email_verified && (
+        <div
+          className="user-account-panel__verification"
+          role="status"
+        >
+          <div>
+            <strong>Verify your email address</strong>
+            <span>
+              Verification protects password recovery
+              and future account alerts.
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={resendVerificationEmail}
+            disabled={
+              busy === "resend-verification"
+            }
+          >
+            {busy === "resend-verification"
+              ? "Sending…"
+              : "Resend verification"}
+          </button>
+        </div>
+      )}
+
+      <AccountRecoveryDialog
+        dialog={recoveryDialog}
+        initialEmail={
+          user?.email || form.email
+        }
+        onClose={() =>
+          setRecoveryDialog(null)
+        }
+        onVerified={(payload) => {
+          setUser((current) =>
+            current
+              ? {
+                  ...current,
+                  email_verified: true,
+                  email_verified_at:
+                    payload.email_verified_at,
+                }
+              : current,
+          );
+          setMessage("Email address verified.");
+        }}
+        onPasswordReset={() => {
+          setUser(null);
+          setJourneys([]);
+          setSessionState("guest");
+          setMode("login");
+          setMessage(
+            "Password reset successfully. Log in with your new password.",
+          );
+        }}
+      />
+
       {sessionState === "checking" && (
         <div
           className="user-account-panel__loading"
@@ -637,6 +758,19 @@ export default function UserAccountPanel({
               }}
             >
               Create account
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setRecoveryDialog({
+                  mode: "forgot",
+                  token: "",
+                });
+                setMessage("");
+              }}
+            >
+              Forgot password
             </button>
           </div>
 

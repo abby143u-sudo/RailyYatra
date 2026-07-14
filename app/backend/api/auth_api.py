@@ -40,10 +40,36 @@ from backend.api.auth_store import (
     delete_user_account,
     get_session_user,
     get_user_by_email,
+    get_user_by_id,
     revoke_session,
     revoke_user_sessions,
     update_last_login,
     update_user_password,
+)
+from backend.api.auth_action_security import (
+    create_auth_action_token,
+    hash_auth_action_token,
+)
+from backend.api.auth_email_delivery import (
+    send_password_reset_email,
+    send_verification_email,
+)
+from backend.api.auth_recovery_rate_limit import (
+    auth_recovery_rate_limit_status,
+    consume_password_reset_attempt,
+    consume_verification_resend_attempt,
+)
+from backend.api.auth_recovery_store import (
+    EMAIL_VERIFICATION_PURPOSE,
+    EMAIL_VERIFICATION_SECONDS,
+    PASSWORD_RESET_PURPOSE,
+    PASSWORD_RESET_SECONDS,
+    auth_recovery_store_status,
+    consume_auth_action_token,
+    email_verification_status,
+    issue_auth_action_token,
+    mark_email_verified,
+    revoke_auth_action_tokens,
 )
 
 
@@ -117,6 +143,35 @@ class DeleteAccountPayload(BaseModel):
         ...,
         min_length=1,
         max_length=40,
+    )
+
+
+class EmailVerificationTokenPayload(BaseModel):
+    token: str = Field(
+        ...,
+        min_length=20,
+        max_length=500,
+    )
+
+
+class ForgotPasswordPayload(BaseModel):
+    email: str = Field(
+        ...,
+        min_length=3,
+        max_length=254,
+    )
+
+
+class ResetPasswordPayload(BaseModel):
+    token: str = Field(
+        ...,
+        min_length=20,
+        max_length=500,
+    )
+    new_password: str = Field(
+        ...,
+        min_length=10,
+        max_length=128,
     )
 
 
@@ -281,6 +336,40 @@ def require_authenticated_session(
     return authenticated
 
 
+def user_with_email_status(
+    user: dict | None,
+) -> dict | None:
+    if not user:
+        return None
+
+    enriched = dict(user)
+    enriched.update(
+        email_verification_status(int(user["id"]))
+    )
+    return enriched
+
+
+def issue_verification_for_user(
+    user: dict,
+    request: Request,
+) -> bool:
+    raw_token, token_hash = create_auth_action_token()
+
+    issue_auth_action_token(
+        user_id=int(user["id"]),
+        purpose=EMAIL_VERIFICATION_PURPOSE,
+        token_hash=token_hash,
+        ttl_seconds=EMAIL_VERIFICATION_SECONDS,
+        requested_ip=request_ip(request),
+    )
+
+    return send_verification_email(
+        str(user["email"]),
+        str(user["display_name"]),
+        raw_token,
+    )
+
+
 @router.get("/health")
 def auth_health():
     return {
@@ -291,6 +380,12 @@ def auth_health():
         "supports_http_only_cookie": True,
         "supports_bearer_token": True,
         "rate_limits": auth_rate_limit_status(),
+        "recovery": {
+            **auth_recovery_store_status(),
+            "rate_limits": (
+                auth_recovery_rate_limit_status()
+            ),
+        },
     }
 
 
@@ -359,6 +454,11 @@ def register_user(
             detail="Account storage is temporarily unavailable.",
         ) from error
 
+    verification_email_sent = issue_verification_for_user(
+        user,
+        request,
+    )
+
     raw_token, token_hash = create_session_token()
 
     session = create_session(
@@ -377,8 +477,13 @@ def register_user(
     return {
         "ok": True,
         "message": "Account created.",
-        "user": get_user_by_email(email),
+        "user": user_with_email_status(
+            get_user_by_email(email)
+        ),
         "session": session,
+        "verification_email_sent": (
+            verification_email_sent
+        ),
     }
 
 
@@ -491,7 +596,9 @@ def login_user(
     return {
         "ok": True,
         "message": "Login successful.",
-        "user": get_user_by_email(email),
+        "user": user_with_email_status(
+            get_user_by_email(email)
+        ),
         "session": session,
     }
 
@@ -500,6 +607,11 @@ def login_user(
 def current_user(request: Request):
     authenticated = require_authenticated_session(
         request
+    )
+
+    authenticated = dict(authenticated)
+    authenticated["user"] = user_with_email_status(
+        authenticated["user"]
     )
 
     return {
@@ -617,7 +729,9 @@ def change_password(
     return {
         "ok": True,
         "message": "Password changed successfully.",
-        "user": get_user_by_email(user["email"]),
+        "user": user_with_email_status(
+            get_user_by_email(user["email"])
+        ),
         "session": session,
         "sessions_revoked": sessions_revoked,
     }
@@ -702,4 +816,213 @@ def remove_current_account(
         "ok": True,
         "message": "Account permanently deleted.",
         "account_deleted": True,
+    }
+
+@router.get("/email-verification/status")
+def current_email_verification_status(
+    request: Request,
+):
+    authenticated = require_authenticated_session(
+        request
+    )
+    user = authenticated["user"]
+
+    return {
+        "ok": True,
+        **email_verification_status(int(user["id"])),
+    }
+
+
+@router.post("/email-verification/resend")
+def resend_email_verification(
+    request: Request,
+):
+    require_safe_write_origin(request)
+
+    authenticated = require_authenticated_session(
+        request
+    )
+    user = authenticated["user"]
+    user_id = int(user["id"])
+    status = email_verification_status(user_id)
+
+    if status["email_verified"]:
+        return {
+            "ok": True,
+            "message": "Email address is already verified.",
+            **status,
+        }
+
+    retry_after = consume_verification_resend_attempt(
+        request_ip(request),
+        user_id,
+    )
+
+    if retry_after:
+        raise_auth_rate_limit(
+            (
+                "Too many verification email requests. "
+                "Please wait and try again."
+            ),
+            retry_after,
+        )
+
+    email_sent = issue_verification_for_user(
+        user,
+        request,
+    )
+
+    return {
+        "ok": True,
+        "message": "Verification email requested.",
+        "verification_email_sent": email_sent,
+        **email_verification_status(user_id),
+    }
+
+
+@router.post("/email-verification/confirm")
+def confirm_email_verification(
+    payload: EmailVerificationTokenPayload,
+    request: Request,
+):
+    require_safe_write_origin(request)
+
+    token_record = consume_auth_action_token(
+        hash_auth_action_token(payload.token),
+        EMAIL_VERIFICATION_PURPOSE,
+    )
+
+    if not token_record:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Verification link is invalid or expired."
+            ),
+        )
+
+    status = mark_email_verified(
+        int(token_record["user_id"])
+    )
+
+    return {
+        "ok": True,
+        "message": "Email address verified.",
+        **status,
+    }
+
+
+@router.post("/forgot-password", status_code=202)
+def request_password_reset(
+    payload: ForgotPasswordPayload,
+    request: Request,
+):
+    require_safe_write_origin(request)
+
+    try:
+        email = normalize_email(payload.email)
+    except ValueError:
+        email = str(payload.email or "").strip().casefold()
+
+    retry_after = consume_password_reset_attempt(
+        request_ip(request),
+        email,
+    )
+
+    if retry_after:
+        raise_auth_rate_limit(
+            (
+                "Too many password reset requests. "
+                "Please wait and try again."
+            ),
+            retry_after,
+        )
+
+    user = get_user_by_email(email)
+
+    if user and bool(user["is_active"]):
+        raw_token, token_hash = create_auth_action_token()
+
+        issue_auth_action_token(
+            user_id=int(user["id"]),
+            purpose=PASSWORD_RESET_PURPOSE,
+            token_hash=token_hash,
+            ttl_seconds=PASSWORD_RESET_SECONDS,
+            requested_ip=request_ip(request),
+        )
+
+        send_password_reset_email(
+            str(user["email"]),
+            str(user["display_name"]),
+            raw_token,
+        )
+
+    return {
+        "ok": True,
+        "message": (
+            "If an active account exists for that email, "
+            "a password reset link has been requested."
+        ),
+    }
+
+
+@router.post("/reset-password")
+def reset_password(
+    payload: ResetPasswordPayload,
+    request: Request,
+    response: Response,
+):
+    require_safe_write_origin(request)
+
+    try:
+        new_password = validate_password(
+            payload.new_password
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+    token_record = consume_auth_action_token(
+        hash_auth_action_token(payload.token),
+        PASSWORD_RESET_PURPOSE,
+    )
+
+    if not token_record:
+        raise HTTPException(
+            status_code=400,
+            detail="Reset link is invalid or expired.",
+        )
+
+    user_id = int(token_record["user_id"])
+    user = get_user_by_id(user_id)
+
+    if not user or not bool(user["is_active"]):
+        raise HTTPException(
+            status_code=400,
+            detail="Reset link is invalid or expired.",
+        )
+
+    updated = update_user_password(
+        user_id=user_id,
+        password_hash=hash_password(new_password),
+    )
+
+    if not updated:
+        raise HTTPException(
+            status_code=503,
+            detail="Password could not be updated.",
+        )
+
+    sessions_revoked = revoke_user_sessions(user_id)
+    revoke_auth_action_tokens(
+        user_id,
+        PASSWORD_RESET_PURPOSE,
+    )
+    delete_session_cookie(response)
+
+    return {
+        "ok": True,
+        "message": "Password reset successfully.",
+        "sessions_revoked": sessions_revoked,
     }
