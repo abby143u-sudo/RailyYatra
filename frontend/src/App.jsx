@@ -4025,7 +4025,21 @@ function App() {
   return (
     <div className="page">
       <nav className="navbar">
-        <div className="brand">🚆 RailBay</div>
+        <a className="brand" href="/" aria-label="RailBay home">
+          <img
+            className="brand__mark"
+            src="/railbay-mark.svg"
+            alt=""
+            width="44"
+            height="44"
+          />
+          <span className="brand__copy">
+            <strong className="brand__name">RailBay</strong>
+            <small className="brand__tagline">
+              Smarter railway routes
+            </small>
+          </span>
+        </a>
         <div className="nav-pill">Public Beta</div>
       </nav>
 

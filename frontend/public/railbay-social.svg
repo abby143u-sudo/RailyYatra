@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">RailBay</title>
+  <desc id="description">Smarter railway route recommendations</desc>
+  <defs>
+    <linearGradient id="background" x1="50" y1="20" x2="1120" y2="610" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123B68"/>
+      <stop offset="1" stop-color="#061526"/>
+    </linearGradient>
+    <linearGradient id="rail" x1="120" y1="520" x2="390" y2="105" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <circle cx="1080" cy="80" r="240" fill="#38BDF8" opacity=".08"/>
+  <circle cx="1120" cy="600" r="330" fill="#22D3EE" opacity=".06"/>
+  <rect x="90" y="95" width="330" height="440" rx="70" fill="#0A223D" stroke="#38BDF8" stroke-opacity=".35" stroke-width="4"/>
+  <path d="M165 475C205 370 245 260 270 145" fill="none" stroke="url(#rail)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M345 475C305 370 280 260 270 145" fill="none" stroke="url(#rail)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M184 430H326M198 365H312M216 300H298M236 235H286" fill="none" stroke="#E0F2FE" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="270" cy="132" r="37" fill="#FFFFFF"/>
+  <circle cx="270" cy="132" r="15" fill="#0EA5E9"/>
+  <text x="500" y="285" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="112" font-weight="800" letter-spacing="-4">RailBay</text>
+  <text x="507" y="365" fill="#BAE6FD" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="600">Smarter railway route recommendations</text>
+  <text x="507" y="430" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="30">Compare direct, transfer and alternative journeys.</text>
+  <text x="507" y="485" fill="#38BDF8" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">railbay.xyz</text>
+</svg>

@@ -27,8 +27,60 @@ button {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.brand__mark {
+  width: 44px;
+  height: 44px;
+  display: block;
+  flex: 0 0 auto;
+  border-radius: 13px;
+  box-shadow:
+    0 8px 20px rgba(15, 23, 42, 0.16),
+    0 1px 2px rgba(15, 23, 42, 0.12);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.brand:hover .brand__mark {
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 26px rgba(15, 23, 42, 0.2),
+    0 2px 4px rgba(15, 23, 42, 0.12);
+}
+
+.brand:focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.35);
+  outline-offset: 5px;
+  border-radius: 14px;
+}
+
+.brand__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brand__name {
+  font-size: 23px;
   font-weight: 900;
-  font-size: 22px;
+  letter-spacing: -0.7px;
+}
+
+.brand__tagline {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .nav-pill,
@@ -6627,3 +6679,34 @@ li {
   }
 }
 /* Phase 29 frontend resilience end */
+
+
+@media (max-width: 560px) {
+  .navbar {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .brand {
+    gap: 9px;
+  }
+
+  .brand__mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .brand__name {
+    font-size: 21px;
+  }
+
+  .brand__tagline {
+    display: none;
+  }
+
+  .nav-pill {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+}
