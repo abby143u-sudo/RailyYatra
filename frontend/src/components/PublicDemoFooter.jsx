@@ -29,7 +29,7 @@ export default function PublicDemoFooter() {
 
       <div className="public-demo-footer__links">
         <a href="https://raily-yatra.vercel.app">Frontend demo</a>
-        <a href="https://railyyatra-backend.onrender.com">Backend API</a>
+        <a href="https://api.railbay.xyz">Backend API</a>
       </div>
     </footer>
   );

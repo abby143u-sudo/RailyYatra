@@ -7,7 +7,7 @@ import React, {
 import "./AdminBetaFeedbackPanel.css";
 
 const LOCAL_API_BASE = "http://127.0.0.1:8000";
-const LIVE_API_BASE = "https://railyyatra-backend.onrender.com";
+const LIVE_API_BASE = "https://api.railbay.xyz";
 const PAGE_SIZE = 25;
 
 const STATUS_OPTIONS = ["new", "reviewed", "resolved"];

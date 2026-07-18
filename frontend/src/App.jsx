@@ -535,13 +535,13 @@ function App() {
     setFareAdminMessage("");
 
     try {
-      const statsResponse = await fetch("https://railyyatra-backend.onrender.com/fares/stats");
+      const statsResponse = await fetch("https://api.railbay.xyz/fares/stats");
       const statsData = await statsResponse.json();
 
-      const filesResponse = await fetch("https://railyyatra-backend.onrender.com/fares/import/files");
+      const filesResponse = await fetch("https://api.railbay.xyz/fares/import/files");
       const filesData = await filesResponse.json();
 
-      const faresResponse = await fetch("https://railyyatra-backend.onrender.com/fares?limit=20");
+      const faresResponse = await fetch("https://api.railbay.xyz/fares?limit=20");
       const faresData = await faresResponse.json();
 
       setFareStats(statsData);
@@ -564,7 +564,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `https://railyyatra-backend.onrender.com/fares/import?csv_file=${encodeURIComponent(fileName)}`,
+        `https://api.railbay.xyz/fares/import?csv_file=${encodeURIComponent(fileName)}`,
         { method: "POST" }
       );
 
@@ -633,7 +633,7 @@ function App() {
       });
 
       const response = await fetch(
-        `https://railyyatra-backend.onrender.com/fare/manual?${params.toString()}`,
+        `https://api.railbay.xyz/fare/manual?${params.toString()}`,
         { method: "POST" }
       );
 
@@ -689,7 +689,7 @@ function App() {
       });
 
       const response = await fetch(
-        `https://railyyatra-backend.onrender.com/fare/lookup?${params.toString()}`
+        `https://api.railbay.xyz/fare/lookup?${params.toString()}`
       );
 
       const data = await response.json();
