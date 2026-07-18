@@ -2,7 +2,7 @@ export default function PublicDemoWarningBanner() {
   return (
     <section
       className="public-demo-warning-banner"
-      aria-label="RailYatra public beta notice"
+      aria-label="RailBay public beta notice"
     >
       <div className="public-demo-warning-banner__content">
         <div>
@@ -11,7 +11,7 @@ export default function PublicDemoWarningBanner() {
           </p>
 
           <h2>
-            RailYatra route recommendations are live in public beta.
+            RailBay route recommendations are live in public beta.
           </h2>
         </div>
 

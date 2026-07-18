@@ -319,7 +319,7 @@ export default function AccountRecoveryDialog({
       >
         <div className="account-recovery-dialog__heading">
           <div>
-            <span>RailYatra security</span>
+            <span>RailBay security</span>
             <h3 id="account-recovery-title">
               {title}
             </h3>
@@ -342,7 +342,7 @@ export default function AccountRecoveryDialog({
           >
             <p>
               Enter your account email. For
-              security, RailYatra gives the same
+              security, RailBay gives the same
               response whether or not an account
               exists.
             </p>
@@ -431,7 +431,7 @@ export default function AccountRecoveryDialog({
         {mode === "verify" && (
           <div className="account-recovery-dialog__verify">
             <p>
-              RailYatra is checking this one-time
+              RailBay is checking this one-time
               verification link.
             </p>
           </div>
@@ -461,7 +461,7 @@ export default function AccountRecoveryDialog({
             className="account-recovery-dialog__continue"
             onClick={closeDialog}
           >
-            Continue to RailYatra
+            Continue to RailBay
           </button>
         )}
       </section>

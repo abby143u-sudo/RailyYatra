@@ -453,7 +453,7 @@ export default function UserAccountPanel({
     }
 
     const confirmed = window.confirm(
-      "Permanently delete your RailYatra account and all cloud journeys? This cannot be undone.",
+      "Permanently delete your RailBay account and all cloud journeys? This cannot be undone.",
     );
 
     if (!confirmed) {
@@ -484,7 +484,7 @@ export default function UserAccountPanel({
         ...EMPTY_SECURITY_FORM,
       });
       setMessage(
-        "Your RailYatra account was permanently deleted.",
+        "Your RailBay account was permanently deleted.",
       );
     } catch (error) {
       setMessage(error.message);
@@ -535,7 +535,7 @@ export default function UserAccountPanel({
               currentQuota || "GN",
             label: `${source} to ${destination}`,
             note:
-              "Saved from the RailYatra main search.",
+              "Saved from the RailBay main search.",
           }),
         },
       );
@@ -631,11 +631,11 @@ export default function UserAccountPanel({
   return (
     <section
       className="user-account-panel"
-      aria-label="RailYatra traveller account"
+      aria-label="RailBay traveller account"
     >
       <div className="user-account-panel__heading">
         <div>
-          <span>RailYatra account</span>
+          <span>RailBay account</span>
           <h2>
             Save journeys across devices
           </h2>

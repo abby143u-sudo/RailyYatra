@@ -53,14 +53,14 @@ export default function PublicProductionReadinessPanel() {
   return (
     <section
       className="public-production-readiness"
-      aria-label="RailYatra public beta readiness"
+      aria-label="RailBay public beta readiness"
     >
       <div className="public-production-readiness__intro">
         <span>Public Beta · v0.9.0-beta</span>
         <strong>GO for route-recommendation public beta</strong>
 
         <p>
-          RailYatra is ready for public testing as a railway route
+          RailBay is ready for public testing as a railway route
           discovery and recommendation product. It must not be
           presented as a live ticket-booking platform.
         </p>

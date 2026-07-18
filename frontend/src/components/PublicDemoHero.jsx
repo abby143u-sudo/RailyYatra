@@ -2,7 +2,7 @@ export default function PublicDemoHero() {
   return (
     <section className="public-demo-hero">
       <div className="public-demo-hero__content">
-        <p className="public-demo-hero__eyebrow">RailYatra Public Demo</p>
+        <p className="public-demo-hero__eyebrow">RailBay Public Demo</p>
         <h1>Real railway route recommendation preview</h1>
         <p className="public-demo-hero__subtitle">
           Explore route options, ranked recommendations and transfer-safety signals using real staging railway data.

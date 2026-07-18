@@ -1,11 +1,11 @@
 export default function PublicRecommendationIntro() {
   return (
-    <section className="public-recommendation-intro" aria-label="RailYatra recommendation engine intro">
+    <section className="public-recommendation-intro" aria-label="RailBay recommendation engine intro">
       <div>
         <p className="public-recommendation-intro__eyebrow">Recommendation engine</p>
         <h2>Ranked route options with transfer-safety signals</h2>
         <p>
-          RailYatra compares route options and presents preview recommendations with confidence-style scoring, transfer context and clear safety warnings.
+          RailBay compares route options and presents preview recommendations with confidence-style scoring, transfer context and clear safety warnings.
         </p>
       </div>
 

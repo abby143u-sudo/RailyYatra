@@ -101,7 +101,7 @@ export default function PublicDemoAnalyticsPanel() {
   }
 
   return (
-    <section className="public-demo-analytics-panel" aria-label="RailYatra demo analytics">
+    <section className="public-demo-analytics-panel" aria-label="RailBay demo analytics">
       <div className="public-demo-analytics-panel__intro">
         <span>Phase 9 analytics</span>
         <strong>Local demo event tracking</strong>

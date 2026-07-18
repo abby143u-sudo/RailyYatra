@@ -21,7 +21,7 @@ const boundaries = [
   "Payment is not connected yet.",
   "PNR is not connected yet.",
   "Live fare and live seat availability are not connected yet.",
-  "RailYatra currently recommends railway routes from prepared railway data.",
+  "RailBay currently recommends railway routes from prepared railway data.",
 ];
 
 export default function BetaReadinessPanel() {
@@ -60,10 +60,10 @@ export default function BetaReadinessPanel() {
   }, []);
 
   return (
-    <section className="beta-readiness-panel" aria-label="RailYatra beta readiness">
+    <section className="beta-readiness-panel" aria-label="RailBay beta readiness">
       <div className="beta-readiness-panel__header">
         <span>Beta readiness</span>
-        <strong>RailYatra is ready for controlled public demo testing</strong>
+        <strong>RailBay is ready for controlled public demo testing</strong>
         <p>Use this app as a route recommendation preview. It is not a booking, payment, PNR or live availability product yet.</p>
       </div>
 

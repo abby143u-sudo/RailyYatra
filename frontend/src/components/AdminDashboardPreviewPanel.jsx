@@ -132,7 +132,7 @@ export default function AdminDashboardPreviewPanel() {
   const analyticsTypeRows = useMemo(() => Object.entries(analyticsTypes), [analyticsTypes]);
 
   return (
-    <section className="admin-dashboard-preview" aria-label="RailYatra admin dashboard preview">
+    <section className="admin-dashboard-preview" aria-label="RailBay admin dashboard preview">
       <div className="admin-dashboard-preview__header">
         <span>Protected admin dashboard</span>
         <strong>Internal product health snapshot</strong>

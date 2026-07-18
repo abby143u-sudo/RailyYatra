@@ -502,7 +502,7 @@ export default function AdminBetaFeedbackPanel() {
       <div className="admin-feedback-card">
         <div className="admin-feedback-header">
           <div>
-            <h2>RailYatra Beta Feedback Admin</h2>
+            <h2>RailBay Beta Feedback Admin</h2>
             <p>API: {apiBase}</p>
           </div>
 

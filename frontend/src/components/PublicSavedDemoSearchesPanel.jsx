@@ -100,7 +100,7 @@ export default function PublicSavedDemoSearchesPanel({
   const allRoutes = [...DEFAULT_ROUTES, ...savedRoutes];
 
   return (
-    <section className="public-saved-demo-searches" aria-label="RailYatra saved demo searches">
+    <section className="public-saved-demo-searches" aria-label="RailBay saved demo searches">
       <div className="public-saved-demo-searches__intro">
         <span>Phase 9 saved searches</span>
         <strong>Quick demo routes</strong>

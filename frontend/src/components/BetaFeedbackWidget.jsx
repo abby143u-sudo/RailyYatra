@@ -62,7 +62,7 @@ function BetaFeedbackWidget() {
       {open && (
         <form className="beta-feedback-panel" onSubmit={submitFeedback}>
           <div className="beta-feedback-header">
-            <strong>RailYatra Beta Feedback</strong>
+            <strong>RailBay Beta Feedback</strong>
             <button type="button" onClick={() => setOpen(false)} aria-label="Close feedback">
               ×
             </button>

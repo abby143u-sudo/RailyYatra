@@ -69,7 +69,7 @@ export default function Phase5ProductStatusPanel() {
       <div className="phase5-product-status-card__header">
         <div>
           <p className="phase5-product-status-card__eyebrow">Public Beta</p>
-          <h2>RailYatra Release Status</h2>
+          <h2>RailBay Release Status</h2>
         </div>
 
         <span className="phase5-product-status-card__badge">/product/status</span>
@@ -77,7 +77,7 @@ export default function Phase5ProductStatusPanel() {
 
       {state.loading && (
         <p className="phase5-product-status-card__message">
-          Checking RailYatra product readiness...
+          Checking RailBay product readiness...
         </p>
       )}
 
@@ -183,7 +183,7 @@ export default function Phase5ProductStatusPanel() {
           </div>
 
           <p className="phase5-product-status-card__message">
-            RailYatra is live as a route-recommendation public beta. Live ticketing and payment claims remain blocked.
+            RailBay is live as a route-recommendation public beta. Live ticketing and payment claims remain blocked.
           </p>
         </>
       )}

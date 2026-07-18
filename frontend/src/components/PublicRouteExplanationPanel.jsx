@@ -12,18 +12,18 @@ const explanationItems = [
   {
     label: "Preview warning",
     title: "Not live booking data",
-    detail: "RailYatra does not currently confirm live seats, fare, PNR, payment or ticket booking.",
+    detail: "RailBay does not currently confirm live seats, fare, PNR, payment or ticket booking.",
   },
   {
     label: "Best demo use",
     title: "Compare, then explain why",
-    detail: "Use DSNR to TPKR first, then show how RailYatra compares route choices and explains recommendation signals.",
+    detail: "Use DSNR to TPKR first, then show how RailBay compares route choices and explains recommendation signals.",
   },
 ];
 
 export default function PublicRouteExplanationPanel() {
   return (
-    <section className="public-route-explanation" aria-label="How to read RailYatra route recommendations">
+    <section className="public-route-explanation" aria-label="How to read RailBay route recommendations">
       <div className="public-route-explanation__intro">
         <span>Phase 9 route explanation</span>
         <strong>How to read the recommendation results</strong>

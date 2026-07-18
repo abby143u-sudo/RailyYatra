@@ -1,8 +1,8 @@
 export default function PublicDemoFooter() {
   return (
-    <footer className="public-demo-footer" aria-label="RailYatra public demo status">
+    <footer className="public-demo-footer" aria-label="RailBay public demo status">
       <div className="public-demo-footer__brand">
-        <span>RailYatra</span>
+        <span>RailBay</span>
         <strong>Public demo preview is live</strong>
         <p>
           Real railway route recommendation preview with staging railway data, ranked recommendations and transfer-safety context.

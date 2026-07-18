@@ -1,7 +1,7 @@
 function trainObject(value, fallback = {}) {
   const source = value && typeof value === "object" ? value : {};
   const trainNo = source.train_no || source.train_number || source.number || fallback.train_no || fallback.train_number || fallback.primary_train_no || "12302";
-  const trainName = source.train_name || source.name || source.display_name || fallback.train_name || fallback.name || fallback.primary_train_name || "RailYatra Journey Option";
+  const trainName = source.train_name || source.name || source.display_name || fallback.train_name || fallback.name || fallback.primary_train_name || "RailBay Journey Option";
   return {
     ...source,
     train_no: String(trainNo),

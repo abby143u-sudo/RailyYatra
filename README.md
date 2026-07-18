@@ -1,6 +1,6 @@
-# RailYatra
+# RailBay
 
-RailYatra is a real railway route recommendation preview.
+RailBay is a real railway route recommendation preview.
 
 It can currently demonstrate:
 
@@ -118,7 +118,7 @@ Frontend: https://raily-yatra.vercel.app
 
 Backend: https://railyyatra-backend.onrender.com
 
-Public label: RailYatra — Real railway route recommendation preview
+Public label: RailBay — Real railway route recommendation preview
 
 Safety note: This is not a live ticket booking service yet. Live booking, payment, PNR, live fare, live seat availability and cancellation are not connected.
 
@@ -131,7 +131,7 @@ Current live demo:
 - Frontend: https://raily-yatra.vercel.app
 - Backend: https://railyyatra-backend.onrender.com
 
-Public label: RailYatra — Real railway route recommendation preview
+Public label: RailBay — Real railway route recommendation preview
 
 ## Phase 8 QA
 
@@ -151,7 +151,7 @@ The main top From/To autocomplete is temporarily disabled to keep the public dem
 
 ## Phase 8 stable public demo release
 
-RailYatra Phase 8 stable public demo release is ready.
+RailBay Phase 8 stable public demo release is ready.
 
 Frontend: https://raily-yatra.vercel.app
 
@@ -325,7 +325,7 @@ Added safe fallback routes for legacy /search and /recommend, exception-safe COR
 
 ## No Routes Found Demo Route Fix
 
-Fixed the no-routes-found issue by adding guaranteed demo route fallbacks for common RailYatra test routes, including PNBE to NDLS and NDLS to PNBE.
+Fixed the no-routes-found issue by adding guaranteed demo route fallbacks for common RailBay test routes, including PNBE to NDLS and NDLS to PNBE.
 
 ## Route UI Compatibility Fix
 
@@ -353,7 +353,7 @@ Live backend route-search response is frontend-safe and local frontend build pas
 
 ## Phase 16 Public Beta Checklist
 
-RailYatra is ready for controlled public beta testing as a route recommendation preview. Live booking, payment, PNR, live fare and live availability remain outside the current product boundary.
+RailBay is ready for controlled public beta testing as a route recommendation preview. Live booking, payment, PNR, live fare and live availability remain outside the current product boundary.
 
 Next: Phase 17 real data quality, station autocomplete polish and investor demo materials.
 

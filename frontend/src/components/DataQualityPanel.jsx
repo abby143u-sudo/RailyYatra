@@ -32,7 +32,7 @@ export default function DataQualityPanel() {
   const counts = quality?.counts || {};
 
   return (
-    <section className="data-quality-panel" aria-label="RailYatra data quality">
+    <section className="data-quality-panel" aria-label="RailBay data quality">
       <div className="data-quality-panel__header">
         <span>Phase 17 data quality</span>
         <strong>Railway data and station autocomplete readiness</strong>

@@ -79,7 +79,7 @@ export default function PublicFeedbackPanel() {
   }
 
   return (
-    <section className="public-feedback-panel" aria-label="RailYatra feedback capture">
+    <section className="public-feedback-panel" aria-label="RailBay feedback capture">
       <div className="public-feedback-panel__intro">
         <span>Phase 10 backend feedback</span>
         <strong>Help improve the public demo</strong>

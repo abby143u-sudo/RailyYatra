@@ -1,7 +1,7 @@
 export function normalizeTrain(train, fallback = {}) {
   if (train && typeof train === "object") {
     const trainNo = train.train_no || train.train_number || train.number || fallback.train_no || fallback.train_number || "12302";
-    const trainName = train.train_name || train.name || train.display_name || fallback.train_name || fallback.name || "RailYatra Journey Option";
+    const trainName = train.train_name || train.name || train.display_name || fallback.train_name || fallback.name || "RailBay Journey Option";
     return {
       ...train,
       train_no: trainNo,
@@ -13,7 +13,7 @@ export function normalizeTrain(train, fallback = {}) {
   }
 
   const trainNo = String(train || fallback.train_no || fallback.train_number || "12302");
-  const trainName = fallback.train_name || fallback.name || "RailYatra Journey Option";
+  const trainName = fallback.train_name || fallback.name || "RailBay Journey Option";
   return {
     train_no: trainNo,
     train_number: trainNo,
