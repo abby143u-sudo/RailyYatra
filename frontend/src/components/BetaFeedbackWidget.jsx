@@ -1,9 +1,7 @@
 import { useState } from "react";
 import "./BetaFeedbackWidget.css";
 
-const fallbackApiBase = "http://127.0.0.1:8000";
-const API_BASE = import.meta.env.VITE_RAILYATRA_API_BASE || fallbackApiBase;
-
+import { API_BASE } from "../config/api.js";
 function BetaFeedbackWidget() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
