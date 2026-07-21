@@ -491,3 +491,51 @@
     width: 100%;
   }
 }
+
+/* Phase 39 account mobile hardening start */
+
+.user-account-panel,
+.user-account-panel * {
+  min-width: 0;
+}
+
+.user-account-panel button,
+.user-account-panel input,
+.user-account-panel select {
+  min-height: 44px;
+}
+
+.user-account-panel strong,
+.user-account-panel p,
+.user-account-panel span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .user-account-panel__security-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .user-account-panel__security-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 620px) {
+  .user-account-panel__journey-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .user-account-panel__tabs {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .user-account-panel__security,
+  .user-account-panel__security-card {
+    border-radius: 16px;
+  }
+}
+
+/* Phase 39 account mobile hardening end */

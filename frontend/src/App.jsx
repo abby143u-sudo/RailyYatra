@@ -4033,7 +4033,14 @@ function App() {
 
   return (
     <div className="page">
-      <nav className="navbar">
+      <a className="skip-link" href="#main-search">
+        Skip to route search
+      </a>
+
+      <nav
+        className="navbar"
+        aria-label="Primary navigation"
+      >
         <a className="brand" href="/" aria-label="RailBay home">
           <img
             className="brand__mark"
@@ -4144,7 +4151,13 @@ function App() {
           </section>
         )}
 
-        <form id="main-search" className="search-card" onSubmit={searchJourney}>
+        <form
+          id="main-search"
+          className="search-card"
+          aria-label="RailBay railway route search"
+          aria-busy={loading}
+          onSubmit={searchJourney}
+        >
           <SafeStationInput
             label="From"
             value={source}
@@ -4152,7 +4165,13 @@ function App() {
             placeholder="PNBE or Patna"
           />
 
-          <button type="button" className="swap-btn" onClick={swapStations}>
+          <button
+            type="button"
+            className="swap-btn"
+            aria-label="Swap departure and destination stations"
+            title="Swap departure and destination"
+            onClick={swapStations}
+          >
             ⇅
           </button>
 
@@ -4238,7 +4257,10 @@ function App() {
 
         {renderRecentSearchesPanel()}
 
-        <div className="quick-routes">
+        <div
+          className="quick-routes"
+          aria-label="Popular route shortcuts"
+        >
           <button type="button" onClick={() => setQuickRoute("NDLS", "PNBE")}>
             NDLS → PNBE
           </button>
@@ -4250,17 +4272,36 @@ function App() {
           </button>
         </div>
 
-        {error && <div className="error">{error}</div>}
+        {error && (
+          <div
+            className="error"
+            role="alert"
+            aria-live="assertive"
+          >
+            {error}
+          </div>
+        )}
 
         {loading && (
-          <div className="loading">
-            <div className="spinner"></div>
+          <div
+            className="loading"
+            role="status"
+            aria-live="polite"
+          >
+            <div
+              className="spinner"
+              aria-hidden="true"
+            ></div>
             Finding best journeys...
           </div>
         )}
 
         {result && (
-          <section className="results">
+          <section
+            className="results"
+            aria-label="RailBay route recommendations"
+            aria-live="polite"
+          >
             <h2>
               {result.source} → {result.destination}
             </h2>
