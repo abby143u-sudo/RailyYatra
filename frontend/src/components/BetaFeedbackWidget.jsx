@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./BetaFeedbackWidget.css";
-
 import { API_BASE } from "../config/api.js";
+
 function BetaFeedbackWidget() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
