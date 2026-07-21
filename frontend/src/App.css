@@ -6710,3 +6710,132 @@ li {
     font-size: 11px;
   }
 }
+
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.navbar__link {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.navbar__link:hover {
+  color: #0369a1;
+}
+
+.public-demo-hero__highlights {
+  margin: 18px 0 0;
+  padding-left: 20px;
+  color: #334155;
+  line-height: 1.75;
+}
+
+.public-trust-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 34px 0;
+  scroll-margin-top: 20px;
+}
+
+.public-trust-card {
+  padding: 26px;
+  border: 1px solid #dbe4ee;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.public-trust-card > span {
+  display: block;
+  margin-bottom: 9px;
+  color: #0284c7;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.public-trust-card h2 {
+  margin: 0 0 14px;
+  color: #0f172a;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+}
+
+.public-trust-card p {
+  margin: 0 0 12px;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.public-trust-card__email {
+  display: inline-flex;
+  margin-top: 5px;
+  color: #0369a1;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.public-trust-disclaimer {
+  grid-column: 1 / -1;
+  padding: 18px 22px;
+  border: 1px solid #bae6fd;
+  border-radius: 16px;
+  background: #f0f9ff;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.internal-tools-shell {
+  margin: 28px 0;
+  padding: 18px;
+  border: 2px dashed #f59e0b;
+  border-radius: 18px;
+  background: #fffbeb;
+}
+
+.internal-tools-shell__notice {
+  margin-bottom: 16px;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.public-demo-footer__legal {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+  color: #64748b;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .navbar__link {
+    display: none;
+  }
+
+  .navbar__actions {
+    gap: 8px;
+  }
+
+  .public-trust-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .public-demo-footer__legal {
+    flex-direction: column;
+  }
+}

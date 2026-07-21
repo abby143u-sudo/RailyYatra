@@ -9,14 +9,19 @@ import AdminBetaFeedbackPanel from "./components/AdminBetaFeedbackPanel.jsx";
 
 installRailYatraRouteCompatibility();
 
+const showInternalTools =
+  import.meta.env.DEV ||
+  new URLSearchParams(window.location.search).get("internal") ===
+    "1";
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AppErrorBoundary>
       <>
-      <App />
-      <BetaFeedbackWidget />
-      <AdminBetaFeedbackPanel />
-    </>
+        <App />
+        <BetaFeedbackWidget />
+        {showInternalTools && <AdminBetaFeedbackPanel />}
+      </>
     </AppErrorBoundary>
-  </StrictMode>
+  </StrictMode>,
 );

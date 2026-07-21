@@ -1,35 +1,35 @@
 export default function PublicDemoFooter() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="public-demo-footer" aria-label="RailBay public demo status">
+    <footer
+      className="public-demo-footer"
+      aria-label="RailBay footer"
+    >
       <div className="public-demo-footer__brand">
         <span>RailBay</span>
-        <strong>Public demo preview is live</strong>
+        <strong>Smarter railway route recommendations</strong>
         <p>
-          Real railway route recommendation preview with staging railway data, ranked recommendations and transfer-safety context.
+          Compare direct and alternative railway journeys
+          before checking final details with an authorised
+          railway source.
         </p>
       </div>
 
-      <div className="public-demo-footer__grid">
-        <article>
-          <span>Status</span>
-          <strong>Preview mode</strong>
-          <p>No live booking, payment, PNR, live fare or live seat availability yet.</p>
-        </article>
-        <article>
-          <span>Demo route</span>
-          <strong>DSNR → TPKR</strong>
-          <p>Recommended route for showing direct and one-transfer intelligence.</p>
-        </article>
-        <article>
-          <span>Phase</span>
-          <strong>Phase 8</strong>
-          <p>Public demo polish, mobile UX and investor/demo flow.</p>
-        </article>
-      </div>
+      <nav
+        className="public-demo-footer__links"
+        aria-label="Footer navigation"
+      >
+        <a href="#main-search">Route search</a>
+        <a href="#about">About</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#terms">Terms</a>
+        <a href="#contact">Contact</a>
+      </nav>
 
-      <div className="public-demo-footer__links">
-        <a href="https://raily-yatra.vercel.app">Frontend demo</a>
-        <a href="https://api.railbay.xyz">Backend API</a>
+      <div className="public-demo-footer__legal">
+        <span>© {currentYear} RailBay</span>
+        <span>Independent public-beta railway planner</span>
       </div>
     </footer>
   );

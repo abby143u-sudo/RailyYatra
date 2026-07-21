@@ -3,6 +3,7 @@ import AdminDashboardGate from "./components/AdminDashboardGate.jsx";
 import { useMemo, useState, useEffect } from "react";
 import "./App.css";
 import PublicDemoFooter from "./components/PublicDemoFooter.jsx";
+import PublicTrustSections from "./components/PublicTrustSections.jsx";
 import { API_BASE } from "./config/api.js";
 import Phase3StagingCard from "./components/Phase3StagingCard.jsx";
 import Phase3DirectPreview from "./components/Phase3DirectPreview.jsx";
@@ -30,6 +31,14 @@ const FAVORITES_STORAGE_KEY = "railyatra_favorite_routes";
 const RECENT_SEARCHES_STORAGE_KEY = "railyatra_recent_searches";
 
 function App() {
+  const showInternalTools =
+    import.meta.env.DEV ||
+    (
+      typeof window !== "undefined" &&
+      new URLSearchParams(
+        window.location.search,
+      ).get("internal") === "1"
+    );
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
   const [trainType, setTrainType] = useState("All");
@@ -4040,7 +4049,15 @@ function App() {
             </small>
           </span>
         </a>
-        <div className="nav-pill">Public Beta</div>
+        <div className="navbar__actions">
+          <a className="navbar__link" href="#about">
+            About
+          </a>
+          <a className="navbar__link" href="#contact">
+            Contact
+          </a>
+          <div className="nav-pill">Public Beta</div>
+        </div>
       </nav>
 
       <main className="app">
@@ -4087,28 +4104,45 @@ function App() {
           setError("");
         }}
       />
-        <PublicDemoInternalPanel title="Staging data health" description="Backend data/status check for demo verification.">
-        <Phase3StagingCard />
-      </PublicDemoInternalPanel>
-        <Phase3DirectPreview />
-        <Phase3RouteSearchPreview />
         <PublicRouteExplanationPanel />
-      <div id="recommendations-preview" className="recommendations-preview-section">
-        <PublicRecommendationIntro />
-        <Phase4RecommendationPreview />
-      </div>
-        <PublicDemoInternalPanel title="Product status flags" description="Confirms live booking/payment/PNR are not enabled.">
-        <Phase5ProductStatusPanel />
-      </PublicDemoInternalPanel>
-        <Phase5BetaChecklistPanel />
-        <header className="hero">
-          <div className="pill">Smart Railway Planner</div>
-          <h1>Find the best train journey</h1>
-          <p>
-            Search direct trains, transfer routes, duration, score and smart
-            recommendations.
-          </p>
-        </header>
+
+        <div
+          id="recommendations-preview"
+          className="recommendations-preview-section"
+        >
+          <PublicRecommendationIntro />
+        </div>
+
+        {showInternalTools && (
+          <section
+            className="internal-tools-shell"
+            aria-label="RailBay internal testing tools"
+          >
+            <div className="internal-tools-shell__notice">
+              Internal testing mode
+            </div>
+
+            <PublicDemoInternalPanel
+              title="Staging data health"
+              description="Backend data/status check for demo verification."
+            >
+              <Phase3StagingCard />
+            </PublicDemoInternalPanel>
+
+            <Phase3DirectPreview />
+            <Phase3RouteSearchPreview />
+            <Phase4RecommendationPreview />
+
+            <PublicDemoInternalPanel
+              title="Product status flags"
+              description="Confirms live booking/payment/PNR are not enabled."
+            >
+              <Phase5ProductStatusPanel />
+            </PublicDemoInternalPanel>
+
+            <Phase5BetaChecklistPanel />
+          </section>
+        )}
 
         <form id="main-search" className="search-card" onSubmit={searchJourney}>
           <SafeStationInput
@@ -4176,7 +4210,7 @@ function App() {
           </button>
         </form>
 
-          {renderFareAdminPanel()}
+          {showInternalTools && renderFareAdminPanel()}
 
         {renderFavoritesPanel()}
 
@@ -4406,13 +4440,23 @@ function App() {
             )}
           </section>
         )}
+        {showInternalTools && (
+          <section
+            className="internal-tools-shell"
+            aria-label="RailBay internal status panels"
+          >
             <PublicProductionReadinessPanel />
-      <PublicDemoAnalyticsPanel />
-      <PublicFeedbackPanel />
-      <BetaReadinessPanel />
-      <DataQualityPanel />
-      <AdminDashboardGate />
-      <PublicDemoFooter />
+            <PublicDemoAnalyticsPanel />
+            <BetaReadinessPanel />
+            <DataQualityPanel />
+            <AdminDashboardGate />
+          </section>
+        )}
+
+        <PublicFeedbackPanel />
+        <PublicTrustSections />
+        <PublicDemoFooter />
+
 </main>
     </div>
   );
