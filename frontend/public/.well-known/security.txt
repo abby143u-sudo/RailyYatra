@@ -1,0 +1,5 @@
+Contact: mailto:abby143u@gmail.com
+Canonical: https://railbay.xyz/.well-known/security.txt
+Preferred-Languages: en, hi
+Policy: https://railbay.xyz/#contact
+Expires: 2027-07-21T00:00:00Z

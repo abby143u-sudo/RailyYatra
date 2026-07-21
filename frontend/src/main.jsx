@@ -6,8 +6,10 @@ import { installRailYatraRouteCompatibility } from "./utils/routeCompatibilityRu
 import "./index.css";
 import BetaFeedbackWidget from "./components/BetaFeedbackWidget.jsx";
 import AdminBetaFeedbackPanel from "./components/AdminBetaFeedbackPanel.jsx";
+import { installGlobalFrontendDiagnostics } from "./utils/frontendDiagnostics.js";
 
 installRailYatraRouteCompatibility();
+installGlobalFrontendDiagnostics();
 
 const showInternalTools =
   import.meta.env.DEV ||
